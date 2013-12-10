@@ -1,4 +1,63 @@
 # OASIS_START
+# DO NOT EDIT (digest: b4764b04ca958cc1d52f8729c0a6112f)
+# Ignore VCS directories, you can use the same kind of rule outside 
+# OASIS_START/STOP if you want to exclude directories that contains 
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library typerep_kernel
+"kernel/lib/typerep_kernel.cmxs": use_typerep_kernel
+"kernel/lib/make_typename.cmx": for-pack(Typerep_kernel)
+"kernel/lib/named_intf.cmx": for-pack(Typerep_kernel)
+"kernel/lib/std.cmx": for-pack(Typerep_kernel)
+"kernel/lib/std_internal.cmx": for-pack(Typerep_kernel)
+"kernel/lib/type_abstract.cmx": for-pack(Typerep_kernel)
+"kernel/lib/type_equal.cmx": for-pack(Typerep_kernel)
+"kernel/lib/type_generic_intf.cmx": for-pack(Typerep_kernel)
+"kernel/lib/type_generic.cmx": for-pack(Typerep_kernel)
+"kernel/lib/typename.cmx": for-pack(Typerep_kernel)
+"kernel/lib/typerepable.cmx": for-pack(Typerep_kernel)
+"kernel/lib/typerep_obj.cmx": for-pack(Typerep_kernel)
+"kernel/lib/variant_and_record_intf.cmx": for-pack(Typerep_kernel)
+# Library typerep_kernel_syntax
+"syntax/with_typerep/typerep_kernel_syntax.cmxs": use_typerep_kernel_syntax
+<syntax/with_typerep/*.ml{,i}>: pkg_camlp4.lib
+<syntax/with_typerep/*.ml{,i}>: pkg_camlp4.extend
+<syntax/with_typerep/*.ml{,i}>: pkg_camlp4.quotations
+<syntax/with_typerep/*.ml{,i}>: pkg_type_conv
+# Library typerep_core
+"core/lib/typerep_core.cmxs": use_typerep_core
+"core/lib/flat_map_intf.cmx": for-pack(Typerep_core)
+"core/lib/flat_map.cmx": for-pack(Typerep_core)
+"core/lib/pre_core.cmx": for-pack(Typerep_core)
+"core/lib/std.cmx": for-pack(Typerep_core)
+"core/lib/tagged_generic.cmx": for-pack(Typerep_core)
+"core/lib/tagged.cmx": for-pack(Typerep_core)
+"core/lib/typestructable.cmx": for-pack(Typerep_core)
+"core/lib/type_struct.cmx": for-pack(Typerep_core)
+<core/lib/*.ml{,i}>: use_typerep_kernel
+<core/lib/*.ml{,i}>: pkg_sexplib
+<core/lib/*.ml{,i}>: pkg_sexplib.syntax
+<core/lib/*.ml{,i}>: pkg_bin_prot
+<core/lib/*.ml{,i}>: pkg_bin_prot.syntax
+# Library typerep_generics_sexprep
+"generics/sexprep/lib/typerep_generics_sexprep.cmxs": use_typerep_generics_sexprep
+"generics/sexprep/lib/sexprep.cmx": for-pack(Typerep_generics_sexprep)
+"generics/sexprep/lib/std.cmx": for-pack(Typerep_generics_sexprep)
+<generics/sexprep/lib/*.ml{,i}>: use_typerep_core
+<generics/sexprep/lib/*.ml{,i}>: use_typerep_kernel
+<generics/sexprep/lib/*.ml{,i}>: pkg_sexplib
+<generics/sexprep/lib/*.ml{,i}>: pkg_sexplib.syntax
+<generics/sexprep/lib/*.ml{,i}>: pkg_bin_prot
+<generics/sexprep/lib/*.ml{,i}>: pkg_bin_prot.syntax
 # OASIS_STOP
 <syntax/**/*.ml{,i}>: syntax_camlp4o, locfix
 <{core,generics}/**/*.ml{,i}>: syntax_camlp4o, pa_typerep
