@@ -14,6 +14,7 @@ module type Adapter = sig
   val int : int adapter
   val int32 : int32 adapter
   val int64 : int64 adapter
+  val nativeint : nativeint adapter
   val char : char adapter
   val bool : bool adapter
   val string : string adapter
@@ -52,6 +53,7 @@ module Make_advanced
       | S.Int -> A.int X.int
       | S.Int32 -> A.int32 X.int32
       | S.Int64 -> A.int64 X.int64
+      | S.Nativeint -> A.nativeint X.nativeint
       | S.Char -> A.char X.char
       | S.Float -> A.float X.float
       | S.String -> A.string X.string
@@ -102,7 +104,7 @@ module Make_advanced
         end
 
       | S.Record (infos, fields_str) ->
-        let module Typename_of_t = Type_named.Make0(struct
+        let module Typename_of_t = Make_typename.Make0(struct
           type t = Tagged.t
           let name = "dynamic record"
         end) in
@@ -122,7 +124,7 @@ module Make_advanced
             label;
             rep = of_typestruct str;
             index;
-            tyid = Type_name.create ();
+            tyid = Typename.create ();
             get;
           }
         ) in
@@ -147,7 +149,7 @@ module Make_advanced
           let infos = infos
           let branches = tags_str
         end) in
-        let module Typename_of_t = Type_named.Make0(struct
+        let module Typename_of_t = Make_typename.Make0(struct
           type t = Tagged.t
           let name = "dynamic record"
         end) in
@@ -176,7 +178,7 @@ module Make_advanced
             arity;
             index;
             ocaml_repr;
-            tyid = Type_name.create ();
+            tyid = Typename.create ();
             create;
           }
         ) in
@@ -201,7 +203,7 @@ module Make_advanced
           match content with
           | Some str ->
             let shared =
-              let module M = Type_name.Make0(struct
+              let module M = Typename.Make0(struct
                 type t = Tagged.t
                 let name = "untyped-uniq"
               end) in
@@ -231,6 +233,7 @@ end) : Adapter with type 'a t = 'a Builder.t
   let int    clos = make Tagged.int_of_t clos
   let int32  clos = make Tagged.int32_of_t clos
   let int64  clos = make Tagged.int64_of_t clos
+  let nativeint clos = make Tagged.nativeint_of_t clos
   let char   clos = make Tagged.char_of_t clos
   let float  clos = make Tagged.float_of_t clos
   let bool   clos = make Tagged.bool_of_t clos
@@ -260,6 +263,7 @@ end) : Adapter with type 'a t = 'a Builder.t
   let int    clos = make Tagged.t_of_int clos
   let int32  clos = make Tagged.t_of_int32 clos
   let int64  clos = make Tagged.t_of_int64 clos
+  let nativeint clos = make Tagged.t_of_nativeint clos
   let char   clos = make Tagged.t_of_char clos
   let bool   clos = make Tagged.t_of_bool clos
   let string clos = make Tagged.t_of_string clos

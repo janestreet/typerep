@@ -53,7 +53,7 @@ module Key = struct
 end
 
 type 'a t = Key.t
-type 'a type_name = 'a t
+type 'a typename = 'a t
 
 let key t = t
 let uid t = t.Key.uid
@@ -75,56 +75,56 @@ include struct
   let same_witness_exn (type a) (type b) (nm1 : a t) (nm2 : b t) =
     if Key.compare nm1 nm2 = 0
     then (Obj.magic Type_equal.refl : (a, b) Type_equal.t)
-    else failwith "Type_name.same_witness_exn"
+    else failwith "Typename.same_witness_exn"
 
 end
 
 module type S0 = sig
   type t
-  val typename_of_t : t type_name
+  val typename_of_t : t typename
 end
 
 module type S1 = sig
   type 'a t
-  val typename_of_t : 'a type_name -> 'a t type_name
+  val typename_of_t : 'a typename -> 'a t typename
 end
 
 module type S2 = sig
   type ('a, 'b) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> ('a, 'b) t type_name
+    'a typename
+    -> 'b typename
+    -> ('a, 'b) t typename
 end
 
 module type S3 = sig
   type ('a, 'b, 'c) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> ('a, 'b, 'c) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> ('a, 'b, 'c) t typename
 end
 
 module type S4 = sig
   type ('a, 'b, 'c, 'd) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> 'd type_name
-    -> ('a, 'b, 'c, 'd) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> 'd typename
+    -> ('a, 'b, 'c, 'd) t typename
 end
 
 module type S5 = sig
   type ('a, 'b, 'c, 'd, 'e) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> 'd type_name
-    -> 'e type_name
-    -> ('a, 'b, 'c, 'd, 'e) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> 'd typename
+    -> 'e typename
+    -> ('a, 'b, 'c, 'd, 'e) t typename
 end
 
 module Make0 (X : Named_intf.S0) = struct
@@ -173,7 +173,7 @@ end) = struct
   let set table name data =
     Key_table.replace table (key name) (Data (name, data))
 
-  let find (type a) table (name : a type_name) =
+  let find (type a) table (name : a typename) =
     let data =
       try Some (Key_table.find table (key name))
       with Not_found -> None
@@ -181,7 +181,7 @@ end) = struct
     match data with
     | None -> None
     | Some (Data (name', data)) ->
-      (fun (type b) (name' : b type_name) (data : b X.t) ->
+      (fun (type b) (name' : b typename) (data : b X.t) ->
         let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
         Some (data : a X.t)
       ) name' data

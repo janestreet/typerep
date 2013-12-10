@@ -2,21 +2,10 @@
 open Camlp4
 open PreCast
 
-module Array : sig
-  include module type of StdLabels.Array
-  val mapi : f:(int -> 'a -> 'b) -> 'a array -> 'b array
-  val reduce_left : f:('a -> 'a -> 'a) -> 'a array -> 'a option
-end
-
-module List : sig
-  include module type of StdLabels.List
-  val filter_map : f:('a -> 'b option) -> 'a list -> 'b list
-end
-
 module Tuple : sig
-  val expr : Ast.loc -> int -> f:(int -> Ast.expr) -> Ast.expr
-  val patt : Ast.loc -> int -> f:(int -> Ast.patt) -> Ast.patt
-  val ctyp : Ast.loc -> int -> f:(int -> Ast.ctyp) -> Ast.ctyp
+  val expr : Ast.loc -> Ast.expr list -> Ast.expr
+  val patt : Ast.loc -> Ast.patt list -> Ast.patt
+  val ctyp : Ast.loc -> Ast.ctyp list -> Ast.ctyp
 end
 
 module Field_case : sig
@@ -33,21 +22,17 @@ module Variant_case : sig
     ctyp : Ast.ctyp option;
     poly : bool;
     arity : int;
-    patt : Ast.patt;
-    expr : Ast.expr;
     index : int;
     arity_index : int;
   }
 
-  val ocaml_repr : Ast.loc -> t -> Ast.expr
+  (** expr and patt for the constructor *)
+  val expr       : loc:Ast.loc -> t -> Ast.expr
+  val patt       : loc:Ast.loc -> t -> Ast.patt
+  val ocaml_repr : loc:Ast.loc -> t -> Ast.expr
 end
 
 module Branches : sig
-  type t =
-  | Fields of Field_case.t array
-  | Variants of Variant_case.t array
-
-  val length : t -> int
-
-  val compute : Ast.ctyp -> t
+  val fields   : Ast.ctyp -> Field_case.t list
+  val variants : Ast.ctyp -> Variant_case.t list
 end

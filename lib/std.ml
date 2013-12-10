@@ -1,6 +1,4 @@
-module Typerep = Typerep
-include (Typerep_core.Std : (module type of Typerep_core.Std
-  with module Typerep := Typerep_kernel.Type.Std.Typerep))
+include Typerep_core.Std
 include Typerep_sexp.Std
 include Typerep_bin_io.Std
 module Farray = Pre_core.Std.Farray

@@ -30,14 +30,15 @@ module type Adapter = sig
   type 'a t
   type 'a adapter = 'a t -> Tagged.t t
 
-  val int    : int adapter
-  val int32  : int32 adapter
-  val int64  : int64 adapter
-  val char   : char adapter
-  val bool   : bool adapter
-  val string : string adapter
-  val float  : float adapter
-  val unit   : unit adapter
+  val int        : int adapter
+  val int32      : int32 adapter
+  val int64      : int64 adapter
+  val nativeint  : nativeint adapter
+  val char       : char adapter
+  val bool       : bool adapter
+  val string     : string adapter
+  val float      : float adapter
+  val unit       : unit adapter
 
   val option : Tagged.t option adapter
   val list   : Tagged.t list adapter

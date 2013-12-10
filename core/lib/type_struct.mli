@@ -60,6 +60,7 @@ type t =
 | Int
 | Int32
 | Int64
+| Nativeint
 | Char
 | Float
 | String
@@ -163,7 +164,7 @@ val of_typerep : 'a Typerep.t -> t
    behavior overrides done via the generic registering mechanism will not occur when
    working out of the returned type_rep.
 *)
-val to_typerep : t -> Typerepable.t
+val to_typerep : t -> Typerep.packed
 
 (* shorthand: returns the sexp of the struct computed from the rep *)
 val sexp_of_typerep : _ Typerep.t -> Sexp.t
@@ -182,6 +183,8 @@ val sexp_of_typerep : _ Typerep.t -> Sexp.t
 module Diff : sig
 
   type t with sexp_of
+
+  val is_empty : t -> bool
 
   val compute : type_struct -> type_struct -> t
 
@@ -231,7 +234,8 @@ module Versioned : sig
 
   val least_upper_bound_exn : t -> t -> t
 
-  val to_typerep : t -> Typerepable.t
+  val to_typerep : t -> Typerep.packed
+  val of_typerep : version:Version.t -> _ Typerep.t -> t
 end
 
 class traverse : object

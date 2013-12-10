@@ -1,5 +1,5 @@
 open Core.Std
-open Core_extended
+module Bench = Core_extended.Deprecated_bench
 open Typereplib.Std
 
 let int_list_command = Command.basic

@@ -4,17 +4,18 @@ open Pre_core.Std
 type t with sexp_of
 type untyped = t
 
-val t_of_int    : int -> t
-val t_of_int32  : int32 -> t
-val t_of_int64  : int64 -> t
-val t_of_char   : char -> t
-val t_of_float  : float -> t
-val t_of_string : string -> t
-val t_of_bool   : bool -> t
-val t_of_unit   : unit -> t
-val t_of_option : ('a -> t) -> 'a option -> t
-val t_of_list   : ('a -> t) -> 'a list -> t
-val t_of_array  : ('a -> t) -> 'a array -> t
+val t_of_int        : int -> t
+val t_of_int32      : int32 -> t
+val t_of_int64      : int64 -> t
+val t_of_nativeint  : nativeint -> t
+val t_of_char       : char -> t
+val t_of_float      : float -> t
+val t_of_string     : string -> t
+val t_of_bool       : bool -> t
+val t_of_unit       : unit -> t
+val t_of_option     : ('a -> t) -> 'a option -> t
+val t_of_list       : ('a -> t) -> 'a list -> t
+val t_of_array      : ('a -> t) -> 'a array -> t
 
 (* forces the lazy, raises the same exceptions as [Lazy.force] *)
 val t_of_lazy_t : ('a -> t) -> 'a lazy_t -> t
@@ -36,19 +37,20 @@ val t_of_tuple5' : t * t * t * t * t -> t
 
 exception Unexpected of (t * string) with sexp
 
-val int_of_t    : t -> int
-val int32_of_t  : t -> int32
-val int64_of_t  : t -> int64
-val char_of_t   : t -> char
-val float_of_t  : t -> float
-val string_of_t : t -> string
-val bool_of_t   : t -> bool
-val unit_of_t   : t -> unit
-val option_of_t : (t -> 'a) -> t -> 'a option
-val list_of_t   : (t -> 'a) -> t -> 'a list
-val array_of_t  : (t -> 'a) -> t -> 'a array
-val lazy_t_of_t : (t -> 'a) -> t -> 'a lazy_t
-val ref_of_t    : (t -> 'a) -> t -> 'a ref
+val int_of_t        : t -> int
+val int32_of_t      : t -> int32
+val int64_of_t      : t -> int64
+val nativeint_of_t  : t -> nativeint
+val char_of_t       : t -> char
+val float_of_t      : t -> float
+val string_of_t     : t -> string
+val bool_of_t       : t -> bool
+val unit_of_t       : t -> unit
+val option_of_t     : (t -> 'a) -> t -> 'a option
+val list_of_t       : (t -> 'a) -> t -> 'a list
+val array_of_t      : (t -> 'a) -> t -> 'a array
+val lazy_t_of_t     : (t -> 'a) -> t -> 'a lazy_t
+val ref_of_t        : (t -> 'a) -> t -> 'a ref
 
 val option_of_t' : t -> t option
 val list_of_t'   : t -> t list

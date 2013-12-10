@@ -49,11 +49,12 @@ module Of_sexp = struct
 
   module Computation_impl = struct
     type 'a t = Sexp.t -> 'a
-    include Typerep_kernel.Intf.M(struct type nonrec 'a t = 'a t end)
+    include Type_generic.Variant_and_record_intf.M(struct type nonrec 'a t = 'a t end)
 
     let int = SC.int_of_sexp
     let int32 = SC.int32_of_sexp
     let int64 = SC.int64_of_sexp
+    let nativeint = SC.nativeint_of_sexp
     let char = SC.char_of_sexp
     let float = SC.float_of_sexp
     let string = SC.string_of_sexp
@@ -167,11 +168,12 @@ module Sexp_of = struct
 
   module Computation_impl = struct
     type 'a t = 'a -> Sexp.t
-    include Typerep_kernel.Intf.M(struct type nonrec 'a t = 'a t end)
+    include Type_generic.Variant_and_record_intf.M(struct type nonrec 'a t = 'a t end)
 
     let int = SC.sexp_of_int
     let int32 = SC.sexp_of_int32
     let int64 = SC.sexp_of_int64
+    let nativeint = SC.sexp_of_nativeint
     let char = SC.sexp_of_char
     let float = SC.sexp_of_float
     let string = SC.sexp_of_string

@@ -9,6 +9,9 @@ let dispatch = function
     flag ["ocaml"; "compile"; tag] & S[A"-ppopt"; A file];
     flag ["ocaml"; "ocamldep"; tag] & S[A"-ppopt"; A file];
     flag ["ocaml"; "doc"; tag] & S[A"-ppopt"; A file];
+    flag ["ocaml"; "compile"; "locfix"] & S[A"-ppopt"; A "-locloc"];
+    flag ["ocaml"; "ocamldep"; "locfix"] & S[A"-ppopt"; A "-locloc"];
+    flag ["ocaml"; "doc"; "locfix"] & S[A"-ppopt"; A "-locloc"];
     dep ["ocaml"; "ocamldep"; tag] [file]
   | _ ->
     ()

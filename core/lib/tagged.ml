@@ -13,6 +13,7 @@ type t =
 | Int of int
 | Int32 of int32
 | Int64 of int64
+| Nativeint of nativeint
 | Char of char
 | Float of float
 | String of string
@@ -32,14 +33,15 @@ type untyped = t
 
 exception Type_mismatch of Type_struct.t * t with sexp
 
-let t_of_int    t = Int t
-let t_of_int32  t = Int32 t
-let t_of_int64  t = Int64 t
-let t_of_char   t = Char t
-let t_of_float  t = Float t
-let t_of_string t = String t
-let t_of_bool   t = Bool t
-let t_of_unit  () = Unit
+let t_of_int    t     = Int t
+let t_of_int32  t     = Int32 t
+let t_of_int64  t     = Int64 t
+let t_of_nativeint t  = Nativeint t
+let t_of_char   t     = Char t
+let t_of_float  t     = Float t
+let t_of_string t     = String t
+let t_of_bool   t     = Bool t
+let t_of_unit  ()     = Unit
 
 let t_of_option' opt = Option opt
 let t_of_option of_a t = t_of_option' (Option.map t ~f:of_a)
@@ -92,16 +94,17 @@ module Of_typed = struct
 
   module Computation_impl = struct
     type 'a t = 'a -> untyped
-    include Typerep_kernel.Intf.M(struct type nonrec 'a t = 'a t end)
+    include Type_generic.Variant_and_record_intf.M(struct type nonrec 'a t = 'a t end)
 
-    let int    = t_of_int
-    let int32  = t_of_int32
-    let int64  = t_of_int64
-    let char   = t_of_char
-    let float  = t_of_float
-    let string = t_of_string
-    let bool   = t_of_bool
-    let unit   = t_of_unit
+    let int        = t_of_int
+    let int32      = t_of_int32
+    let int64      = t_of_int64
+    let nativeint  = t_of_nativeint
+    let char       = t_of_char
+    let float      = t_of_float
+    let string     = t_of_string
+    let bool       = t_of_bool
+    let unit       = t_of_unit
 
     let option = t_of_option
     let list   = t_of_list
@@ -210,6 +213,10 @@ let int32_of_t = function
 let int64_of_t = function
   | Int64 t -> t
   | expr -> raise (Unexpected (expr, "int64"))
+
+let nativeint_of_t = function
+  | Nativeint t -> t
+  | expr -> raise (Unexpected (expr, "nativeint"))
 
 let char_of_t = function
   | Char t -> t
@@ -330,6 +337,7 @@ let field i expr =
   | Int _
   | Int32 _
   | Int64 _
+  | Nativeint _
   | Char _
   | Float _
   | String _
@@ -341,11 +349,12 @@ module Typed_of = struct
 
   module Computation_impl = struct
     type 'a t = untyped -> 'a
-    include Typerep_kernel.Intf.M(struct type nonrec 'a t = 'a t end)
+    include Type_generic.Variant_and_record_intf.M(struct type nonrec 'a t = 'a t end)
 
     let int = int_of_t
     let int32 = int32_of_t
     let int64 = int64_of_t
+    let nativeint = nativeint_of_t
     let char = char_of_t
     let float = float_of_t
     let string = string_of_t

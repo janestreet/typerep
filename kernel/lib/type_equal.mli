@@ -9,12 +9,6 @@ val conv : ('a, 'b) t -> 'a -> 'b
 (** type equality is reflexive *)
 val refl : ('a, 'a) t
 
-(** type equality is symmetric *)
-val symm : ('a, 'b) t -> ('b, 'a) t
-
-(** type equality is transitive *)
-val trans : ('a, 'b) t -> ('b, 'c) t -> ('a, 'c) t
-
 (** needed in some cases even though t is exported and is a gadt *)
 module Lift (X: sig
   type 'a t

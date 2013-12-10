@@ -1,7 +1,8 @@
 (** runtime representation of the name of type ['a].
     Useful for representing types with a nominal notion of equality *)
+
 type 'a t
-type 'a type_name = 'a t
+type 'a typename = 'a t
 
 val create : ?name:string -> unit -> 'a t
 val static : unit t
@@ -35,50 +36,50 @@ val name : 'a t -> string
 
 module type S0 = sig
   type t
-  val typename_of_t : t type_name
+  val typename_of_t : t typename
 end
 
 module type S1 = sig
   type 'a t
-  val typename_of_t : 'a type_name -> 'a t type_name
+  val typename_of_t : 'a typename -> 'a t typename
 end
 
 module type S2 = sig
   type ('a, 'b) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> ('a, 'b) t type_name
+    'a typename
+    -> 'b typename
+    -> ('a, 'b) t typename
 end
 
 module type S3 = sig
   type ('a, 'b, 'c) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> ('a, 'b, 'c) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> ('a, 'b, 'c) t typename
 end
 
 module type S4 = sig
   type ('a, 'b, 'c, 'd) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> 'd type_name
-    -> ('a, 'b, 'c, 'd) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> 'd typename
+    -> ('a, 'b, 'c, 'd) t typename
 end
 
 module type S5 = sig
   type ('a, 'b, 'c, 'd, 'e) t
   val typename_of_t :
-    'a type_name
-    -> 'b type_name
-    -> 'c type_name
-    -> 'd type_name
-    -> 'e type_name
-    -> ('a, 'b, 'c, 'd, 'e) t type_name
+    'a typename
+    -> 'b typename
+    -> 'c typename
+    -> 'd typename
+    -> 'e typename
+    -> ('a, 'b, 'c, 'd, 'e) t typename
 end
 
 module Make0(X : Named_intf.S0) : S0
@@ -99,9 +100,9 @@ module Table(X : sig
 end) : sig
   type t
   val create : int -> t
-  val mem : t -> 'a type_name -> bool
-  val set : t -> 'a type_name -> 'a X.t -> unit
-  val find : t -> 'a type_name -> 'a X.t option
+  val mem : t -> 'a typename -> bool
+  val set : t -> 'a typename -> 'a X.t -> unit
+  val find : t -> 'a typename -> 'a X.t option
 end
 
 (* witness of equality between non applied types *)

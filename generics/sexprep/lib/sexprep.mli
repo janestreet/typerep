@@ -1,4 +1,3 @@
-open Typerep_kernel.Std
 open Typerep_core.Std
 open Pre_core.Std
 

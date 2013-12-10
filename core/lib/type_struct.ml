@@ -1,6 +1,8 @@
 open Typerep_kernel.Std
 open Pre_core.Std
 
+
+
 module Name = struct
   include Int
   let typerep_of_t = typerep_of_int
@@ -136,6 +138,7 @@ module T = struct
   | Int
   | Int32
   | Int64
+  | Nativeint
   | Char
   | Float
   | String
@@ -220,6 +223,7 @@ object(self)
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -249,6 +253,7 @@ object(self)
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -463,6 +468,7 @@ let reduce t =
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -574,6 +580,7 @@ let are_equivalent a b =
     | Int, Int
     | Int32, Int32
     | Int64, Int64
+    | Nativeint, Nativeint
     | Char, Char
     | Float, Float
     | String, String
@@ -615,6 +622,7 @@ let are_equivalent a b =
     | Int, _
     | Int32, _
     | Int64, _
+    | Nativeint, _
     | Char, _
     | Float, _
     | String, _
@@ -713,6 +721,7 @@ let least_upper_bound_exn a b =
     | Int, Int
     | Int32, Int32
     | Int64, Int64
+    | Nativeint, Nativeint
     | Char, Char
     | Float, Float
     | String, String
@@ -817,6 +826,7 @@ let least_upper_bound_exn a b =
     | Int, _
     | Int32, _
     | Int64, _
+    | Nativeint, _
     | Char, _
     | Float, _
     | String, _
@@ -843,7 +853,7 @@ module Internal_generic = Type_generic.Make(struct
   type 'a t = type_struct
   module Type_struct_variant = Variant
   module Type_struct_field = Field
-  include Typerep_kernel.Intf.M(struct type nonrec 'a t = 'a t end)
+  include Type_generic.Variant_and_record_intf.M(struct type nonrec 'a t = 'a t end)
 
   let name = "typestruct"
   let required = []
@@ -851,6 +861,7 @@ module Internal_generic = Type_generic.Make(struct
   let int                 = Int
   let int32               = Int32
   let int64               = Int64
+  let nativeint           = Nativeint
   let char                = Char
   let float               = Float
   let string              = String
@@ -938,6 +949,7 @@ module Internal_generic = Type_generic.Make(struct
       | Typerep.Int        -> false
       | Typerep.Int32      -> false
       | Typerep.Int64      -> false
+      | Typerep.Nativeint  -> false
       | Typerep.Char       -> false
       | Typerep.Float      -> false
       | Typerep.String     -> false
@@ -1000,6 +1012,8 @@ module Diff = struct
   end
 
   type t = (Path.t * Atom.t) list with sexp
+
+  let is_empty = List.is_empty
 
   (*
     The diff is done such as the length of the path associated with atoms is maximal
@@ -1081,6 +1095,7 @@ module Diff = struct
       | Int, Int
       | Int32, Int32
       | Int64, Int64
+      | Nativeint, Nativeint
       | Char, Char
       | Float, Float
       | String, String
@@ -1200,6 +1215,7 @@ module Diff = struct
       | Int, _
       | Int32, _
       | Int64, _
+      | Nativeint, _
       | Char, _
       | Float, _
       | String, _
@@ -1248,57 +1264,57 @@ module To_typerep = struct
   exception Unbound_name of t * Name.t with sexp
   exception Unsupported_tuple of t with sexp
 
-  let to_typerep : t -> Typerepable.t = fun type_struct ->
+  let to_typerep : t -> Typerep.packed = fun type_struct ->
     let table = Name.Table.create () in
-    let open Typerepable in
     let rec aux = function
-      | Int -> Rep typerep_of_int
-      | Int32 -> Rep typerep_of_int32
-      | Int64 -> Rep typerep_of_int64
-      | Char -> Rep typerep_of_char
-      | Float -> Rep typerep_of_float
-      | String -> Rep typerep_of_string
-      | Bool -> Rep typerep_of_bool
-      | Unit -> Rep typerep_of_unit
+      | Int -> Typerep.T typerep_of_int
+      | Int32 -> Typerep.T typerep_of_int32
+      | Int64 -> Typerep.T typerep_of_int64
+      | Nativeint -> Typerep.T typerep_of_nativeint
+      | Char -> Typerep.T typerep_of_char
+      | Float -> Typerep.T typerep_of_float
+      | String -> Typerep.T typerep_of_string
+      | Bool -> Typerep.T typerep_of_bool
+      | Unit -> Typerep.T typerep_of_unit
       | Option t ->
-        let Rep rep = aux t in
-        Rep (typerep_of_option rep)
+        let Typerep.T rep = aux t in
+        Typerep.T (typerep_of_option rep)
       | List t ->
-        let Rep rep = aux t in
-        Rep (typerep_of_list rep)
+        let Typerep.T rep = aux t in
+        Typerep.T (typerep_of_list rep)
       | Array t ->
-        let Rep rep = aux t in
-        Rep (typerep_of_array rep)
+        let Typerep.T rep = aux t in
+        Typerep.T (typerep_of_array rep)
       | Lazy t ->
-        let Rep rep = aux t in
-        Rep (typerep_of_lazy_t rep)
+        let Typerep.T rep = aux t in
+        Typerep.T (typerep_of_lazy_t rep)
       | Ref t ->
-        let Rep rep = aux t in
-        Rep (typerep_of_ref rep)
+        let Typerep.T rep = aux t in
+        Typerep.T (typerep_of_ref rep)
       | (Tuple args) as type_struct -> begin
         match Farray.to_array ~f:(fun _ x -> x) args with
         | [| a ; b |] ->
-          let Rep a = aux a in
-          let Rep b = aux b in
-          Rep (typerep_of_tuple2 a b)
+          let Typerep.T a = aux a in
+          let Typerep.T b = aux b in
+          Typerep.T (typerep_of_tuple2 a b)
         | [| a ; b ; c |] ->
-          let Rep a = aux a in
-          let Rep b = aux b in
-          let Rep c = aux c in
-          Rep (typerep_of_tuple3 a b c)
+          let Typerep.T a = aux a in
+          let Typerep.T b = aux b in
+          let Typerep.T c = aux c in
+          Typerep.T (typerep_of_tuple3 a b c)
         | [| a ; b ; c ; d |] ->
-          let Rep a = aux a in
-          let Rep b = aux b in
-          let Rep c = aux c in
-          let Rep d = aux d in
-          Rep (typerep_of_tuple4 a b c d)
+          let Typerep.T a = aux a in
+          let Typerep.T b = aux b in
+          let Typerep.T c = aux c in
+          let Typerep.T d = aux d in
+          Typerep.T (typerep_of_tuple4 a b c d)
         | [| a ; b ; c ; d ; e |] ->
-          let Rep a = aux a in
-          let Rep b = aux b in
-          let Rep c = aux c in
-          let Rep d = aux d in
-          let Rep e = aux e in
-          Rep (typerep_of_tuple5 a b c d e)
+          let Typerep.T a = aux a in
+          let Typerep.T b = aux b in
+          let Typerep.T c = aux c in
+          let Typerep.T d = aux d in
+          let Typerep.T e = aux e in
+          Typerep.T (typerep_of_tuple5 a b c d e)
         | _ -> raise (Unsupported_tuple type_struct)
       end
       | Record (infos, fields) ->
@@ -1306,7 +1322,7 @@ module To_typerep = struct
         let typed_fields = Farray.to_array fields ~f:(fun index (field, str) ->
           if index <> field.Field.index then assert false;
           let label = field.Field.label in
-          let Rep typerep_of_field = aux str in
+          let Typerep.T typerep_of_field = aux str in
           let get obj =
             let cond = Obj.is_block obj && Obj.size obj = len in
             if not cond then assert false;
@@ -1318,13 +1334,13 @@ module To_typerep = struct
             label;
             rep = typerep_of_field;
             index;
-            tyid = Type_name.create ();
+            tyid = Typename.create ();
             get;
           } in
           Typerep.Record_internal.Field (Typerep.Field.internal_use_only field)
         )
         in
-        let module Typename_of_t = Type_named.Make0(struct
+        let module Typename_of_t = Make_typename.Make0(struct
           type t = Obj.t
           let name = "dynamic record"
         end)
@@ -1360,12 +1376,12 @@ module To_typerep = struct
           Typerep.Named ((Typename_of_t.named,
                            (Some (lazy (Typerep.Record record)))))
         in
-        Rep typerep_of_t
+        Typerep.T typerep_of_t
       | Variant ({Variant_infos.kind}, tags_str) ->
         let polymorphic = Variant.Kind.is_polymorphic kind in
         let typed_tags = Farray.to_array tags_str ~f:(fun index (variant, args) ->
           let type_struct = type_struct_of_variant_args args in
-          let Rep typerep_of_tag = aux type_struct in
+          let Typerep.T typerep_of_tag = aux type_struct in
           let index = (if index <> variant.Variant.index then assert false); index in
           let ocaml_repr = variant.Variant.ocaml_repr in
           let arity = Farray.length args in
@@ -1402,9 +1418,9 @@ module To_typerep = struct
                 let Type_equal.T =
                   Typerep.same_witness_exn typerep_of_tuple0 typerep_of_tag
                 in
-                (typename_of_tuple0 : exist Type_name.t)
+                (typename_of_tuple0 : exist Typename.t)
               else
-                (Type_name.create () : exist Type_name.t)
+                (Typename.create () : exist Typename.t)
             ) typerep_of_tag
           in
           let tag = {
@@ -1419,7 +1435,7 @@ module To_typerep = struct
           } in
           Typerep.Variant_internal.Tag (Typerep.Tag.internal_use_only tag)
         ) in
-        let module Typename_of_t = Type_named.Make0(struct
+        let module Typename_of_t = Make_typename.Make0(struct
           type t = Obj.t
           let name = "dynamic variant"
         end) in
@@ -1491,7 +1507,7 @@ module To_typerep = struct
               match find_tag ~no_arg:true (Obj.obj obj) with
               | Typerep.Variant_internal.Tag tag ->
                 let Type_equal.T =
-                  Type_name.same_witness_exn
+                  Typename.same_witness_exn
                     (Typerep.Tag.tyid tag)
                     typename_of_tuple0
                 in
@@ -1528,7 +1544,7 @@ module To_typerep = struct
           Typerep.Named ((Typename_of_t.named,
                            (Some (lazy (Typerep.Variant variant)))))
         in
-        Rep typerep_of_t
+        Typerep.T typerep_of_t
       | Named (name, content) ->
         match Name.Table.find table name with
         | Some content -> content
@@ -1542,7 +1558,7 @@ module To_typerep = struct
             type t
             let name = string_of_int name
           end in
-          let module Named = Type_named.Make0(T) in
+          let module Named = Make_typename.Make0(T) in
           let content =
             match content with
             | Some content -> content
@@ -1553,7 +1569,7 @@ module To_typerep = struct
           let typerep_of_t = Typerep.Named (Named.named, Some (lazy (
             match !release_content_ref with
             | `aux_content content ->
-              let Rep typerep_of_content = aux content in
+              let Typerep.T typerep_of_content = aux content in
               let rep = (fun (type content) (rep:content Typerep.t) ->
                 (Obj.magic (rep : content Typerep.t) : T.t Typerep.t)
               ) typerep_of_content
@@ -1562,7 +1578,7 @@ module To_typerep = struct
               rep
             | `typerep rep -> rep
           ))) in
-          let data = Rep typerep_of_t in
+          let data = Typerep.T typerep_of_t in
           Name.Table.set table ~key:name ~data;
           data
     in
@@ -1608,6 +1624,7 @@ module Versioned = struct
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -1624,19 +1641,20 @@ module Versioned = struct
     with sexp, bin_io, typerep
 
     let rec serialize = function
-      | T.Int      -> Int
-      | T.Int32    -> Int32
-      | T.Int64    -> Int64
-      | T.Char     -> Char
-      | T.Float    -> Float
-      | T.String   -> String
-      | T.Bool     -> Bool
-      | T.Unit     -> Unit
-      | T.Option t -> Option (serialize t)
-      | T.List t   -> List (serialize t)
-      | T.Array t  -> Array (serialize t)
-      | T.Lazy t   -> Lazy (serialize t)
-      | T.Ref t    -> Ref (serialize t)
+      | T.Int       -> Int
+      | T.Int32     -> Int32
+      | T.Int64     -> Int64
+      | T.Nativeint -> Nativeint
+      | T.Char      -> Char
+      | T.Float     -> Float
+      | T.String    -> String
+      | T.Bool      -> Bool
+      | T.Unit      -> Unit
+      | T.Option t  -> Option (serialize t)
+      | T.List t    -> List (serialize t)
+      | T.Array t   -> Array (serialize t)
+      | T.Lazy t    -> Lazy (serialize t)
+      | T.Ref t     -> Ref (serialize t)
       | T.Record (infos, fields) as str ->
         if infos.Record_infos.has_double_array_tag
         then raise (Not_downgradable (T.sexp_of_t str));
@@ -1656,19 +1674,20 @@ module Versioned = struct
       | (T.Named _) as str -> raise (Not_downgradable (T.sexp_of_t str))
 
     let rec unserialize = function
-      | Int      -> T.Int
-      | Int32    -> T.Int32
-      | Int64    -> T.Int64
-      | Char     -> T.Char
-      | Float    -> T.Float
-      | String   -> T.String
-      | Bool     -> T.Bool
-      | Unit     -> T.Unit
-      | Option t -> T.Option (unserialize t)
-      | List t   -> T.List (unserialize t)
-      | Array t  -> T.Array (unserialize t)
-      | Lazy t   -> T.Lazy (unserialize t)
-      | Ref t    -> T.Ref (unserialize t)
+      | Int       -> T.Int
+      | Int32     -> T.Int32
+      | Int64     -> T.Int64
+      | Nativeint -> T.Nativeint
+      | Char      -> T.Char
+      | Float     -> T.Float
+      | String    -> T.String
+      | Bool      -> T.Bool
+      | Unit      -> T.Unit
+      | Option t  -> T.Option (unserialize t)
+      | List t    -> T.List (unserialize t)
+      | Array t   -> T.Array (unserialize t)
+      | Lazy t    -> T.Lazy (unserialize t)
+      | Ref t     -> T.Ref (unserialize t)
       | Record fields ->
         let infos = { Record_infos.
           (* this is wrong is some cases, if so the exec should upgrade to >= v3 *)
@@ -1695,6 +1714,7 @@ module Versioned = struct
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -1712,19 +1732,20 @@ module Versioned = struct
     with sexp, bin_io, typerep
 
     let rec serialize = function
-      | T.Int      -> Int
-      | T.Int32    -> Int32
-      | T.Int64    -> Int64
-      | T.Char     -> Char
-      | T.Float    -> Float
-      | T.String   -> String
-      | T.Bool     -> Bool
-      | T.Unit     -> Unit
-      | T.Option t -> Option (serialize t)
-      | T.List t   -> List (serialize t)
-      | T.Array t  -> Array (serialize t)
-      | T.Lazy t   -> Lazy (serialize t)
-      | T.Ref t    -> Ref (serialize t)
+      | T.Int       -> Int
+      | T.Int32     -> Int32
+      | T.Int64     -> Int64
+      | T.Nativeint -> Nativeint
+      | T.Char      -> Char
+      | T.Float     -> Float
+      | T.String    -> String
+      | T.Bool      -> Bool
+      | T.Unit      -> Unit
+      | T.Option t  -> Option (serialize t)
+      | T.List t    -> List (serialize t)
+      | T.Array t   -> Array (serialize t)
+      | T.Lazy t    -> Lazy (serialize t)
+      | T.Ref t     -> Ref (serialize t)
       | T.Record (infos, fields) as str ->
         if infos.Record_infos.has_double_array_tag
         then raise (Not_downgradable (T.sexp_of_t str));
@@ -1747,19 +1768,20 @@ module Versioned = struct
         Named (name, content)
 
     let rec unserialize = function
-      | Int      -> T.Int
-      | Int32    -> T.Int32
-      | Int64    -> T.Int64
-      | Char     -> T.Char
-      | Float    -> T.Float
-      | String   -> T.String
-      | Bool     -> T.Bool
-      | Unit     -> T.Unit
-      | Option t -> T.Option (unserialize t)
-      | List t   -> T.List (unserialize t)
-      | Array t  -> T.Array (unserialize t)
-      | Lazy t   -> T.Lazy (unserialize t)
-      | Ref t    -> T.Ref (unserialize t)
+      | Int       -> T.Int
+      | Int32     -> T.Int32
+      | Int64     -> T.Int64
+      | Nativeint -> T.Nativeint
+      | Char      -> T.Char
+      | Float     -> T.Float
+      | String    -> T.String
+      | Bool      -> T.Bool
+      | Unit      -> T.Unit
+      | Option t  -> T.Option (unserialize t)
+      | List t    -> T.List (unserialize t)
+      | Array t   -> T.Array (unserialize t)
+      | Lazy t    -> T.Lazy (unserialize t)
+      | Ref t     -> T.Ref (unserialize t)
       | Record fields ->
         let infos = { Record_infos.
           (* this is wrong is some cases, if so the exec should upgrade to >= v3 *)
@@ -1789,6 +1811,7 @@ module Versioned = struct
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -1806,19 +1829,20 @@ module Versioned = struct
     with sexp, bin_io, typerep
 
     let rec serialize = function
-      | T.Int      -> Int
-      | T.Int32    -> Int32
-      | T.Int64    -> Int64
-      | T.Char     -> Char
-      | T.Float    -> Float
-      | T.String   -> String
-      | T.Bool     -> Bool
-      | T.Unit     -> Unit
-      | T.Option t -> Option (serialize t)
-      | T.List t   -> List (serialize t)
-      | T.Array t  -> Array (serialize t)
-      | T.Lazy t   -> Lazy (serialize t)
-      | T.Ref t    -> Ref (serialize t)
+      | T.Int       -> Int
+      | T.Int32     -> Int32
+      | T.Int64     -> Int64
+      | T.Nativeint -> Nativeint
+      | T.Char      -> Char
+      | T.Float     -> Float
+      | T.String    -> String
+      | T.Bool      -> Bool
+      | T.Unit      -> Unit
+      | T.Option t  -> Option (serialize t)
+      | T.List t    -> List (serialize t)
+      | T.Array t   -> Array (serialize t)
+      | T.Lazy t    -> Lazy (serialize t)
+      | T.Ref t     -> Ref (serialize t)
       | T.Record (infos, fields) ->
         let map (field, t) =
           let field = Field.to_v1 field in
@@ -1839,19 +1863,20 @@ module Versioned = struct
         Named (name, content)
 
     let rec unserialize = function
-      | Int      -> T.Int
-      | Int32    -> T.Int32
-      | Int64    -> T.Int64
-      | Char     -> T.Char
-      | Float    -> T.Float
-      | String   -> T.String
-      | Bool     -> T.Bool
-      | Unit     -> T.Unit
-      | Option t -> T.Option (unserialize t)
-      | List t   -> T.List (unserialize t)
-      | Array t  -> T.Array (unserialize t)
-      | Lazy t   -> T.Lazy (unserialize t)
-      | Ref t    -> T.Ref (unserialize t)
+      | Int       -> T.Int
+      | Int32     -> T.Int32
+      | Int64     -> T.Int64
+      | Nativeint -> T.Nativeint
+      | Char      -> T.Char
+      | Float     -> T.Float
+      | String    -> T.String
+      | Bool      -> T.Bool
+      | Unit      -> T.Unit
+      | Option t  -> T.Option (unserialize t)
+      | List t    -> T.List (unserialize t)
+      | Array t   -> T.Array (unserialize t)
+      | Lazy t    -> T.Lazy (unserialize t)
+      | Ref t     -> T.Ref (unserialize t)
       | Record (infos, fields) ->
         let mapi index (field, t) =
           let field = Field.of_v1 index field in
@@ -1878,6 +1903,7 @@ module Versioned = struct
     | Int
     | Int32
     | Int64
+    | Nativeint
     | Char
     | Float
     | String
@@ -1954,12 +1980,16 @@ module Versioned = struct
 
   let to_typerep t =
     To_typerep.to_typerep (aux_unserialize t)
+
+  let of_typerep ~version rep =
+    let type_struct = of_typerep rep in
+    serialize ~version type_struct
 end
 
 type 'a typed_t = t
 
 let recreate_dynamically_typerep_for_test (type a) (rep:a Typerep.t) =
-  let Typerepable.Rep typerep = to_typerep (of_typerep rep) in
+  let Typerep.T typerep = to_typerep (of_typerep rep) in
   (fun (type b) (typerep:b Typerep.t) ->
     (* this Obj.magic is used to be able to add more testing, basically we use the ocaml
        runtime to deal with value create with the Obj module during the execution of
