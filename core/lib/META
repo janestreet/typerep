@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: e2ded632bec1b6b54af8d948a4f77d12)
-version = "109.55.01"
+# DO NOT EDIT (digest: 6651f3faba31d97c21dc14d32998f7c6)
+version = "109.55.02"
 description = "Runtime types for OCaml"
 requires = "typerep_kernel sexplib bin_prot"
 archive(byte) = "typerep_core.cma"
