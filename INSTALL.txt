@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 8cb1d5f51615b496e9f4485bc7400ed1) *)
+(* DO NOT EDIT (digest: adec8ca23c6064a89dcac170937fca8c) *)
 This is the INSTALL file for the typerep distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -26,7 +26,7 @@ Installing
 Uninstalling
 ============
 
-1. Go to the root of the package 
+1. Go to the root of the package
 2. Run 'ocaml setup.ml -uninstall'
 
 OASIS
