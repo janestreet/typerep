@@ -1,5 +1,5 @@
 (* minimal set up since we do not have core available *)
-open Typerep_kernel.Std
+open Typerep_lib.Std
 
 module Std = struct
   include Sexplib.Std

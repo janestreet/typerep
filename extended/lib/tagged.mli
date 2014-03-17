@@ -1,4 +1,4 @@
-open Typerep_kernel.Std
+open Typerep_lib.Std
 open Pre_core.Std
 
 type t with sexp_of

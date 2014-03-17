@@ -1,5 +1,5 @@
 open Core.Std
-open Typereplib.Std
+open Typerep_experimental.Std
 
 module Of_json : sig
   exception Type_mismatch of string * Json.Json_type.t

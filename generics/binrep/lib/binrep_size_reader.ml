@@ -1,6 +1,6 @@
 open Bin_prot
 open Bin_prot.Common
-open Typerep_core.Std
+open Typerep_extended.Std
 
 module Computation_impl = struct
 

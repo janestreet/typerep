@@ -1,7 +1,7 @@
 (*
   Structural representation of [Type.Rep.t]. Serializable.
 *)
-open Typerep_kernel.Std
+open Typerep_lib.Std
 open Pre_core.Std
 
 module Name : sig

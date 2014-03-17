@@ -1,5 +1,5 @@
 open Bin_prot
-open Typerep_core.Std
+open Typerep_extended.Std
 
 let make_vtag_read_err () =
   let str_name = "Reader.unsafe_vtag_read" in

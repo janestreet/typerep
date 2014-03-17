@@ -1,6 +1,6 @@
 open Core.Std
 module Bench = Core_extended.Deprecated_bench
-open Typereplib.Std
+open Typerep_experimental.Std
 
 let int_list_command = Command.basic
     ~summary:"sexprep benchmarks"

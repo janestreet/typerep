@@ -1,4 +1,4 @@
-open Typerep_core.Std
+open Typerep_extended.Std
 open Pre_core.Std
 
 type buf = Bin_prot.Common.buf

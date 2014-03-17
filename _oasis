@@ -2,7 +2,7 @@ OASISFormat:      0.3
 OCamlVersion:     >= 4.00.0
 FindlibVersion:   >= 1.3.2
 Name:             typerep
-Version:          109.55.00
+Version:          111.06.00
 Synopsis:         Runtime types for OCaml
 Authors:          Jane Street Capital LLC <opensource@janestreet.com>
 Copyrights:       (C) 2013 Jane Street Capital LLC <opensource@janestreet.com>
@@ -18,8 +18,8 @@ Description:
   Library for creating runtime representation of OCaml types and
   computing functions from these.
 
-Library typerep_kernel
-  Path:               kernel/lib
+Library typerep_lib
+  Path:               lib
   Pack:               true
   Modules:            Make_typename,
                       Named_intf,
@@ -34,11 +34,11 @@ Library typerep_kernel
                       Typerep_obj,
                       Variant_and_record_intf
 
-Library typerep_kernel_syntax
+Library typerep_syntax
   Path:               syntax/with_typerep
   Modules:            Pa_typerep_conv
   FindlibName:        syntax
-  FindlibParent:      typerep_kernel
+  FindlibParent:      typerep_lib
   BuildDepends:       camlp4.lib,
                       camlp4.extend,
                       camlp4.quotations,
@@ -47,8 +47,8 @@ Library typerep_kernel_syntax
   XMETARequires:      camlp4, type_conv
   XMETADescription:   Syntax extension for the "typerep" converter
 
-Library typerep_core
-  Path:               core/lib
+Library typerep_extended
+  Path:               extended/lib
   Pack:               true
   Modules:            Flat_map_intf,
                       Flat_map,
@@ -58,12 +58,12 @@ Library typerep_core
                       Tagged,
                       Typestructable,
                       Type_struct
-  BuildDepends:       typerep_kernel,
+  BuildDepends:       typerep_lib,
                       sexplib,
                       sexplib.syntax,
                       bin_prot,
                       bin_prot.syntax
-  XMETARequires:      typerep_kernel,
+  XMETARequires:      typerep_lib,
                       sexplib,
                       bin_prot
 
@@ -72,8 +72,8 @@ Library typerep_generics_sexprep
   Pack:               true
   Modules:            Sexprep,
                       Std
-  BuildDepends:       typerep_core,
+  BuildDepends:       typerep_extended,
                       sexplib,
                       sexplib.syntax
-  XMETARequires:      typerep_core,
+  XMETARequires:      typerep_extended,
                       sexplib

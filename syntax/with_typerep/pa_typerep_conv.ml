@@ -86,7 +86,7 @@ module Variant_case = struct
 
   let ocaml_repr ~loc { label ; poly ; arity_index ; _ } =
     if poly
-    then <:expr< Typerep_kernel.Std.Typerep_obj.repr_of_poly_variant `$label$ >>
+    then <:expr< Typerep_lib.Std.Typerep_obj.repr_of_poly_variant `$label$ >>
     else <:expr< $`int:arity_index$ >>
 end
 
@@ -192,11 +192,11 @@ module Typerep_signature = struct
     List.fold_right ~f:fold ~init:returned params
 
   let sig_of_typerep_of_t ~loc =
-    let make_ty params = <:ctyp< Typerep_kernel.Std.Typerep.t $params$ >> in
+    let make_ty params = <:ctyp< Typerep_lib.Std.Typerep.t $params$ >> in
     sig_of_of_t make_ty ~loc
 
   let sig_of_typename_of_t ~loc =
-    let make_ty params = <:ctyp< Typerep_kernel.Std.Typename.t $params$ >> in
+    let make_ty params = <:ctyp< Typerep_lib.Std.Typename.t $params$ >> in
     sig_of_of_t make_ty ~loc
 
   let sig_of_one_def ~loc ~type_name ~params ~rhs:_ ~cl:_ =
@@ -295,9 +295,9 @@ module Typerep_implementation = struct
     let typename_field ~loc ~type_name =
       match type_name with
       | None ->
-        <:expr< Typerep_kernel.Std.Typename.create () >>
+        <:expr< Typerep_lib.Std.Typename.create () >>
       | Some type_name ->
-        <:expr< Typerep_kernel.Std.Typerep.Named.typename_of_t
+        <:expr< Typerep_lib.Std.Typerep.Named.typename_of_t
           $lid:name_of_t ~type_name$ >>
 
     let params_names ~params =
@@ -319,7 +319,7 @@ module Typerep_implementation = struct
       let name_of_t = name_of_t ~type_name in
       let args = <:expr< ( $lid:name_of_t$, Some (lazy $expr$) ) >> in
       <:expr< let $lid:name_of_t$ = $name_t$ in
-              Typerep_kernel.Std.Typerep.Named $args$ >>
+              Typerep_lib.Std.Typerep.Named $args$ >>
 
     let typerep_of_t_coerce ~loc ~type_name ~params_names =
       match params_names with
@@ -329,11 +329,11 @@ module Typerep_implementation = struct
           let fold acc name = <:ctyp< $acc$ '$lid:name$ >> in
           let init = <:ctyp< $lid:type_name$ >> in
           let t = List.fold_left ~f:fold ~init params_names in
-          <:ctyp< Typerep_kernel.Std.Typerep.t $t$ >>
+          <:ctyp< Typerep_lib.Std.Typerep.t $t$ >>
         in
         let coerce =
           let fold name acc =
-            let arg = <:ctyp< Typerep_kernel.Std.Typerep.t '$lid:name$ >> in
+            let arg = <:ctyp< Typerep_lib.Std.Typerep.t '$lid:name$ >> in
             <:ctyp< $arg$ -> $acc$ >>
           in
           List.fold_right ~init:returned ~f:fold params_names
@@ -347,7 +347,7 @@ module Typerep_implementation = struct
     let type_name_module_definition ~loc ~type_name ~params_names =
       let name = type_name_module_name ~type_name in
       let type_arity = List.length params_names in
-      let make = <:module_expr< Typerep_kernel.Std.Make_typename.$uid:"Make"
+      let make = <:module_expr< Typerep_lib.Std.Make_typename.$uid:"Make"
         ^ (string_of_int type_arity)$ >>
       in
       let type_name_struct =
@@ -372,7 +372,7 @@ module Typerep_implementation = struct
       in
       let type_arity = List.length params_names in
       let make =
-        <:module_expr< Typerep_kernel.Std.Type_abstract.$uid:"Make"
+        <:module_expr< Typerep_lib.Std.Type_abstract.$uid:"Make"
         ^ (string_of_int type_arity)$ >>
       in
       <:str_item< include $make$ $type_name_struct$ >>
@@ -388,12 +388,12 @@ module Typerep_implementation = struct
           let map { Field_case.ctyp ; label ; index } =
             let rep = typerep_of_type ctyp in
             index, label, <:expr<
-             Typerep_kernel.Std.Typerep.Field.internal_use_only
-               { Typerep_kernel.Std.Typerep.Field_internal.
+             Typerep_lib.Std.Typerep.Field.internal_use_only
+               { Typerep_lib.Std.Typerep.Field_internal.
                  label  = $str:label$;
                  index  = $`int:index$;
                  rep    = $rep$;
-                 tyid   = Typerep_kernel.Std.Typename.create ();
+                 tyid   = Typerep_lib.Std.Typename.create ();
                  get    = (fun t -> t.$lid:label$);
                }
             >>
@@ -406,11 +406,11 @@ module Typerep_implementation = struct
               (* The value must be a float else this segfaults.  This is tested by the
                  unit tests in case this property changes. *)
               <:rec_binding< $lid:label$ =
-              Typerep_kernel.Std.Typerep_obj.double_array_value >>
+              Typerep_lib.Std.Typerep_obj.double_array_value >>
             in
             List.map ~f:map fields
           in
-          <:expr< Typerep_kernel.Std.Typerep_obj.has_double_array_tag
+          <:expr< Typerep_lib.Std.Typerep_obj.has_double_array_tag
             { $list:fields_binding$ } >>
 
       let create ~loc ~fields =
@@ -429,7 +429,7 @@ module Typerep_implementation = struct
           in
           List.fold_righti fields ~f:foldi ~init:record
         in
-        <:expr< fun { Typerep_kernel.Std.Typerep.Record_internal.get = get }
+        <:expr< fun { Typerep_lib.Std.Typerep.Record_internal.get = get }
         -> $record$ >>
     end
 
@@ -450,7 +450,7 @@ module Typerep_implementation = struct
             let constructor = Variant_case.expr ~loc variant in
             if arity = 0
             then
-              <:expr< Typerep_kernel.Std.Typerep.Tag_internal.Const $constructor$ >>
+              <:expr< Typerep_lib.Std.Typerep.Tag_internal.Const $constructor$ >>
             else
               let arg_tuple i = "v" ^ string_of_int i in
               let patt, expr =
@@ -465,7 +465,7 @@ module Typerep_implementation = struct
                 in
                 patt, expr
               in
-              <:expr< Typerep_kernel.Std.Typerep.Tag_internal.Args
+              <:expr< Typerep_lib.Std.Typerep.Tag_internal.Args
                 (fun $patt$ -> $expr$) >>
           in
           let mapi index' ({ Variant_case.ctyp ; label ; arity ; index ; _ } as variant) =
@@ -473,14 +473,14 @@ module Typerep_implementation = struct
             let rep, tyid =
               match ctyp with
               | Some ctyp ->
-                typerep_of_type ctyp, <:expr< Typerep_kernel.Std.Typename.create () >>
+                typerep_of_type ctyp, <:expr< Typerep_lib.Std.Typename.create () >>
               | None ->
                 <:expr< typerep_of_tuple0 >>, <:expr< typename_of_tuple0 >>
             in
             let label_string = Pa_type_conv.Gen.regular_constr_of_revised_constr label in
             index, <:expr<
-             Typerep_kernel.Std.Typerep.Tag.internal_use_only
-               { Typerep_kernel.Std.Typerep.Tag_internal.
+             Typerep_lib.Std.Typerep.Tag.internal_use_only
+               { Typerep_lib.Std.Typerep.Tag_internal.
                  label       = $str:label_string$;
                  rep         = $rep$;
                  arity       = $`int:arity$;
@@ -514,7 +514,7 @@ module Typerep_implementation = struct
                   patt, expr
               in
               let tag = <:expr< $lid:tag_n_ident ~variants index$ >> in
-              let prod = <:expr< Typerep_kernel.Std.Typerep.Variant_internal.Value
+              let prod = <:expr< Typerep_lib.Std.Typerep.Variant_internal.Value
                 ($tag$, $value$) >>
               in
               <:match_case< $patt$ -> $prod$ >>
@@ -573,7 +573,7 @@ module Typerep_implementation = struct
     let fields_array =
       let fields =
         List.map ~f:(fun (index,_,_) ->
-          <:expr< Typerep_kernel.Std.Typerep.Record_internal.Field
+          <:expr< Typerep_lib.Std.Typerep.Record_internal.Field
             $lid:field_ident index$ >>
         ) indexed_fields
       in
@@ -587,16 +587,16 @@ module Typerep_implementation = struct
     ] in
     let fields_binding =
       let map (name, _) =
-        <:rec_binding< Typerep_kernel.Std.Typerep.Record_internal.$lid:name$ >>
+        <:rec_binding< Typerep_lib.Std.Typerep.Record_internal.$lid:name$ >>
       in
       List.map ~f:map bindings
     in
     let record =
       let fields =
-        <:expr< Typerep_kernel.Std.Typerep.Record.internal_use_only
+        <:expr< Typerep_lib.Std.Typerep.Record.internal_use_only
           { $list:fields_binding$ } >>
       in
-      <:expr< Typerep_kernel.Std.Typerep.Record $fields$ >>
+      <:expr< Typerep_lib.Std.Typerep.Record $fields$ >>
     in
     let record = Gen.let_in loc bindings record in
     let record = List.fold_right indexed_fields ~f:(fun (index, _, expr) acc ->
@@ -613,7 +613,7 @@ module Typerep_implementation = struct
     let tags_array =
       let tags =
         List.map ~f:(fun (index,_) ->
-          <:expr< Typerep_kernel.Std.Typerep.Variant_internal.Tag $lid:tag_ident index$ >>
+          <:expr< Typerep_lib.Std.Typerep.Variant_internal.Tag $lid:tag_ident index$ >>
         ) tags
       in
       <:expr< [| $list:tags$ |] >>
@@ -626,15 +626,15 @@ module Typerep_implementation = struct
     ] in
     let tags_binding =
       let map (name, _) =
-        <:rec_binding< Typerep_kernel.Std.Typerep.Variant_internal.
+        <:rec_binding< Typerep_lib.Std.Typerep.Variant_internal.
           $lid:name$ = $lid:name$ >>
       in
       List.map ~f:map bindings
     in
     let variant =
-      let tags = <:expr< Typerep_kernel.Std.Typerep.Variant.internal_use_only
+      let tags = <:expr< Typerep_lib.Std.Typerep.Variant.internal_use_only
         { $list:tags_binding$ } >> in
-      <:expr< Typerep_kernel.Std.Typerep.Variant $tags$ >>
+      <:expr< Typerep_lib.Std.Typerep.Variant $tags$ >>
     in
     let variant = Gen.let_in loc bindings variant in
     let variant = List.fold_right tags ~f:(fun (index, expr) acc ->
@@ -663,7 +663,7 @@ module Typerep_implementation = struct
     let arguments = List.map2 params_names params_patts ~f:(fun name patt ->
       (* Add type annotations to parameters, at least to avoid the unused type warning. *)
       let loc = Ast.loc_of_patt patt in
-      <:patt< ($patt$ : Typerep_kernel.Std.Typerep.t $lid:name$) >>)
+      <:patt< ($patt$ : Typerep_lib.Std.Typerep.t $lid:name$) >>)
     in
     let body = Gen.abstract loc arguments body in
     let body = List.fold_right params_names ~init:body ~f:(fun name acc ->

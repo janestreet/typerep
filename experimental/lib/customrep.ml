@@ -1,4 +1,4 @@
-open Typerep_core.Std
+open Typerep_extended.Std
 open Typerep_sexp.Std
 open Typerep_bin_io.Std
 

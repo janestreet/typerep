@@ -1,5 +1,5 @@
 open Bin_prot
-open Typerep_core.Std
+open Typerep_extended.Std
 
 module Computation_impl = struct
   type 'a t = 'a Type_class.writer

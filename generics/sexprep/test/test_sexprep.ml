@@ -1,5 +1,5 @@
 open Core.Std
-open Typereplib.Std
+open Typerep_experimental.Std
 
 module S = Sexprep
 

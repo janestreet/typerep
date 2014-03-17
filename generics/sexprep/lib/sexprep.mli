@@ -1,4 +1,4 @@
-open Typerep_core.Std
+open Typerep_extended.Std
 open Pre_core.Std
 
 module Of_sexp : sig

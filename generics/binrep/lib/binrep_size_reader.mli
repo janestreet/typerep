@@ -1,7 +1,7 @@
 (** Compute size of values from the binary protocol (lazy) *)
 
 open Bin_prot.Common
-open Typerep_kernel.Std
+open Typerep_lib.Std
 
 type 'a t = buf -> pos_ref : pos_ref -> unit
 include Type_generic.S with type 'a t := 'a t
