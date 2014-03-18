@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: 71b93cd8177851248f0a541d3ee4a7ed)
+version = "111.06.00"
+description = "Runtime types for OCaml"
+requires = "typerep_lib sexplib bin_prot"
+archive(byte) = "typerep_extended.cma"
+archive(byte, plugin) = "typerep_extended.cma"
+archive(native) = "typerep_extended.cmxa"
+archive(native, plugin) = "typerep_extended.cmxs"
+exists_if = "typerep_extended.cma"
+# OASIS_STOP
+
