@@ -1,9 +1,8 @@
 open Core.Std
-open Json_typerep.Jsonrep
+open Json_typerep.Std
 open Typerep_experimental.Std
 
 module Bench = Core_extended.Deprecated_bench
-
 
 let int_list_command = Command.basic
     ~summary:"benchmark sexprep vs jsonrep on lists of ints"
@@ -21,8 +20,8 @@ let int_list_command = Command.basic
       let values = List.init ~f:(fun _ -> list_of_int) size in
       let `generic x_of_sexp = Sexprep.t_of_sexp (M.typerep_of_t typerep_of_int) in
       let `generic sexp_of_x = Sexprep.sexp_of_t (M.typerep_of_t typerep_of_int) in
-      let `generic x_of_json = t_of_json (M.typerep_of_t typerep_of_int) in
-      let `generic json_of_x = json_of_t (M.typerep_of_t typerep_of_int) in
+      let `generic x_of_json = Jsonrep.V2.t_of_json (M.typerep_of_t typerep_of_int) in
+      let `generic json_of_x = Jsonrep.V2.json_of_t (M.typerep_of_t typerep_of_int) in
       let sexp = M.sexp_of_t sexp_of_int values in
       let json = json_of_x values in
       let tests =
@@ -56,8 +55,8 @@ let string_list_command = Command.basic
       let values = List.init ~f:(fun _ -> list_of_string) size in
       let `generic x_of_sexp = Sexprep.t_of_sexp (M.typerep_of_t typerep_of_string) in
       let `generic sexp_of_x = Sexprep.sexp_of_t (M.typerep_of_t typerep_of_string) in
-      let `generic x_of_json = t_of_json (M.typerep_of_t typerep_of_string) in
-      let `generic json_of_x = json_of_t (M.typerep_of_t typerep_of_string) in
+      let `generic x_of_json = Jsonrep.V2.t_of_json (M.typerep_of_t typerep_of_string) in
+      let `generic json_of_x = Jsonrep.V2.json_of_t (M.typerep_of_t typerep_of_string) in
       let sexp = M.sexp_of_t sexp_of_string values in
       let json = json_of_x values in
       let tests =
@@ -147,8 +146,8 @@ let record_list_command = Command.basic
       in
       let `generic sexp_of_x = Sexprep.sexp_of_t (M.typerep_of_t typerep_of_string) in
       let `generic x_of_sexp = Sexprep.t_of_sexp (M.typerep_of_t typerep_of_string) in
-      let `generic x_of_json = t_of_json (M.typerep_of_t typerep_of_string) in
-      let `generic json_of_x = json_of_t (M.typerep_of_t typerep_of_string) in
+      let `generic x_of_json = Jsonrep.V2.t_of_json (M.typerep_of_t typerep_of_string) in
+      let `generic json_of_x = Jsonrep.V2.json_of_t (M.typerep_of_t typerep_of_string) in
       let json = json_of_x values in
       let tests =
         if is_serial then
@@ -198,8 +197,8 @@ let variant_list_command =
     in
     let `generic sexp_of_x = Sexprep.sexp_of_t M.typerep_of_t in
     let `generic x_of_sexp = Sexprep.t_of_sexp M.typerep_of_t in
-    let `generic x_of_json = t_of_json M.typerep_of_t in
-    let `generic json_of_x = json_of_t M.typerep_of_t in
+    let `generic x_of_json = Jsonrep.V2.t_of_json M.typerep_of_t in
+    let `generic json_of_x = Jsonrep.V2.json_of_t M.typerep_of_t in
     let sexp = M.sexp_of_t values in
     let json = json_of_x values in
     let tests =
@@ -252,8 +251,8 @@ let tree_command = Command.basic
       let sexp = M.sexp_of_t values in
       let `generic x_of_sexp = Sexprep.t_of_sexp M.typerep_of_t in
       let `generic sexp_of_x = Sexprep.sexp_of_t M.typerep_of_t in
-      let `generic x_of_json = t_of_json M.typerep_of_t in
-      let `generic json_of_x = json_of_t M.typerep_of_t in
+      let `generic x_of_json = Jsonrep.V2.t_of_json M.typerep_of_t in
+      let `generic json_of_x = Jsonrep.V2.json_of_t M.typerep_of_t in
       let json = json_of_x values in
       let tests =
         if is_serial then
