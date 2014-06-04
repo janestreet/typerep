@@ -1,0 +1,21 @@
+# OASIS_START
+# DO NOT EDIT (digest: 3386d9a1866facded788d89928d0a513)
+version = "111.17.00"
+description = "Runtime types for OCaml"
+archive(byte) = "typerep_lib.cma"
+archive(byte, plugin) = "typerep_lib.cma"
+archive(native) = "typerep_lib.cmxa"
+archive(native, plugin) = "typerep_lib.cmxs"
+exists_if = "typerep_lib.cma"
+package "syntax" (
+ version = "111.17.00"
+ description = "Syntax extension for the \"typerep\" converter"
+ requires = "camlp4 type_conv"
+ archive(syntax, preprocessor) = "typerep_syntax.cma"
+ archive(syntax, toploop) = "typerep_syntax.cma"
+ archive(syntax, preprocessor, native) = "typerep_syntax.cmxa"
+ archive(syntax, preprocessor, native, plugin) = "typerep_syntax.cmxs"
+ exists_if = "typerep_syntax.cma"
+)
+# OASIS_STOP
+

@@ -1,4 +1,63 @@
 # OASIS_START
+# DO NOT EDIT (digest: f3cf6dd523e9e3e3142a86d9396c39f8)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library typerep_lib
+"lib/typerep_lib.cmxs": use_typerep_lib
+"lib/make_typename.cmx": for-pack(Typerep_lib)
+"lib/named_intf.cmx": for-pack(Typerep_lib)
+"lib/std.cmx": for-pack(Typerep_lib)
+"lib/std_internal.cmx": for-pack(Typerep_lib)
+"lib/type_abstract.cmx": for-pack(Typerep_lib)
+"lib/type_equal.cmx": for-pack(Typerep_lib)
+"lib/type_generic_intf.cmx": for-pack(Typerep_lib)
+"lib/type_generic.cmx": for-pack(Typerep_lib)
+"lib/typename.cmx": for-pack(Typerep_lib)
+"lib/typerepable.cmx": for-pack(Typerep_lib)
+"lib/typerep_obj.cmx": for-pack(Typerep_lib)
+"lib/variant_and_record_intf.cmx": for-pack(Typerep_lib)
+# Library typerep_syntax
+"syntax/with_typerep/typerep_syntax.cmxs": use_typerep_syntax
+<syntax/with_typerep/*.ml{,i}>: package(camlp4.extend)
+<syntax/with_typerep/*.ml{,i}>: package(camlp4.lib)
+<syntax/with_typerep/*.ml{,i}>: package(camlp4.quotations)
+<syntax/with_typerep/*.ml{,i}>: package(type_conv)
+# Library typerep_extended
+"extended/lib/typerep_extended.cmxs": use_typerep_extended
+"extended/lib/flat_map_intf.cmx": for-pack(Typerep_extended)
+"extended/lib/flat_map.cmx": for-pack(Typerep_extended)
+"extended/lib/pre_core.cmx": for-pack(Typerep_extended)
+"extended/lib/std.cmx": for-pack(Typerep_extended)
+"extended/lib/tagged_generic.cmx": for-pack(Typerep_extended)
+"extended/lib/tagged.cmx": for-pack(Typerep_extended)
+"extended/lib/typestructable.cmx": for-pack(Typerep_extended)
+"extended/lib/type_struct.cmx": for-pack(Typerep_extended)
+<extended/lib/*.ml{,i}>: package(bin_prot)
+<extended/lib/*.ml{,i}>: package(bin_prot.syntax)
+<extended/lib/*.ml{,i}>: package(sexplib)
+<extended/lib/*.ml{,i}>: package(sexplib.syntax)
+<extended/lib/*.ml{,i}>: use_typerep_lib
+# Library typerep_generics_sexprep
+"generics/sexprep/lib/typerep_generics_sexprep.cmxs": use_typerep_generics_sexprep
+"generics/sexprep/lib/sexprep.cmx": for-pack(Typerep_generics_sexprep)
+"generics/sexprep/lib/std.cmx": for-pack(Typerep_generics_sexprep)
+<generics/sexprep/lib/*.ml{,i}>: package(bin_prot)
+<generics/sexprep/lib/*.ml{,i}>: package(bin_prot.syntax)
+<generics/sexprep/lib/*.ml{,i}>: package(sexplib)
+<generics/sexprep/lib/*.ml{,i}>: package(sexplib.syntax)
+<generics/sexprep/lib/*.ml{,i}>: use_typerep_extended
+<generics/sexprep/lib/*.ml{,i}>: use_typerep_lib
 # OASIS_STOP
 <syntax/**/*.ml{,i}>: syntax_camlp4o, locfix
 <{extended,generics}/**/*.ml{,i}>: syntax_camlp4o, pa_typerep
