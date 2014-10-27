@@ -106,8 +106,7 @@ module Computation_impl = struct
           if Variant.is_polymorphic variant
           then
             let ocaml_repr = Tag.ocaml_repr tag in
-            let variant = Bin_prot.Common.variant_of_int ocaml_repr in
-            Bin_prot.Write.bin_write_variant_tag buf ~pos variant
+            Bin_prot.Write.bin_write_variant_int buf ~pos ocaml_repr
           else
             let index = Tag.index tag in
             if len < 256
