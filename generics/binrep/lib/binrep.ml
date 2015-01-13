@@ -1,5 +1,5 @@
+open! Core_kernel.Std
 open Typerep_extended.Std
-open Pre_core.Std
 
 type buf = Bin_prot.Common.buf
 type pos_ref = Bin_prot.Common.pos_ref

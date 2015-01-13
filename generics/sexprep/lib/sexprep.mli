@@ -1,5 +1,5 @@
+open! Core_kernel.Std
 open Typerep_extended.Std
-open Pre_core.Std
 
 module Of_sexp : sig
   exception Type_mismatch of string * Sexp.t

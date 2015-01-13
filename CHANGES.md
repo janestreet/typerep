@@ -1,3 +1,7 @@
+## 112.17.00
+
+- Split out typerep_extended which is now using core_kernel
+
 ## 111.06.00
 
 - Renamed `Typerep` libraries for more consistency with the rest of

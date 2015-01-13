@@ -1,5 +1,5 @@
+open! Core_kernel.Std
 open Typerep_extended.Std
-open Pre_core.Std
 
 module Sizer : Type_generic.S with type 'a t = 'a Bin_prot.Size.sizer
 

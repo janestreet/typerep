@@ -1,5 +1,5 @@
+open! Core_kernel.Std
 open Typerep_extended.Std
-open Pre_core.Std
 
 module type S0 = sig
   type t

@@ -1,5 +1,5 @@
+open! Core_kernel.Std
 open Typerep_extended.Std
-open Pre_core.Std
 
 module SC = struct
   include Sexplib.Conv
@@ -80,8 +80,8 @@ module Of_sexp = struct
           Flat_map.Flat_string_map.of_alist (
             List.rev_map sexp_properties ~f:(function
             | Sexp.List [Sexp.Atom name; sexp_value] ->
-              if String.Hash_set.mem seen name then fail ();
-              String.Hash_set.add seen name;
+              if Hash_set.mem seen name then fail ();
+              Hash_set.add seen name;
               (name, sexp_value)
             | _ -> fail ()
             )

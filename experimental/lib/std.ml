@@ -1,7 +1,6 @@
 include Typerep_extended.Std
 include Typerep_sexp.Std
 include Typerep_bin_io.Std
-module Farray = Pre_core.Std.Farray
 (*module Customrep_intf = Customrep_intf
 module Customrep = Customrep*)
 (* Mega-Hack because of applicative name comparison in ocaml first class module *)
