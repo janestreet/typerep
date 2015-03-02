@@ -1,3 +1,7 @@
+## 112.24.00
+
+- Remove unused "bin_proj" rewriter.
+
 ## 112.17.00
 
 - Split out typerep_extended which is now using core_kernel
