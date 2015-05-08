@@ -1,4 +1,4 @@
 # OASIS_START
 # OASIS_STOP
-<syntax/**/*.ml{,i}>: syntax_camlp4o, locfix
+<syntax/*.ml{,i}>: syntax_camlp4o, locfix
 <{extended,generics}/**/*.ml{,i}>: syntax_camlp4o, pa_typerep

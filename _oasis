@@ -35,7 +35,7 @@ Library typerep_lib
                       Variant_and_record_intf
 
 Library typerep_syntax
-  Path:               syntax/with_typerep
+  Path:               syntax
   Modules:            Pa_typerep_conv
   FindlibName:        syntax
   FindlibParent:      typerep_lib
