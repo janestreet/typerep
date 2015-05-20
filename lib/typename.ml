@@ -1,7 +1,7 @@
 (* this lib should not depend on core *)
 module List = struct
   include List
-  let compare a b ~cmp =
+  let compare cmp a b =
     let rec loop a b =
       match a, b with
       | [], [] -> 0
@@ -46,7 +46,7 @@ module Key = struct
     if k1 == k2 then 0 else
     let cmp = Uid.compare k1.uid k2.uid in
     if cmp <> 0 then cmp else
-      List.compare ~cmp:compare k1.params k2.params
+      List.compare compare k1.params k2.params
   let equal a b = compare a b = 0
   let hash = (Hashtbl.hash : t -> int)
   let static = { uid = Uid.static ; params = [] }
