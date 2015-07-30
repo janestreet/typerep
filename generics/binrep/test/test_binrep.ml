@@ -15,6 +15,7 @@ module TreeTest = struct
     if n > 0
     then Node (producer (n-1), producer (n-1))
     else Leaf
+  ;;
 
   let value = producer 15
 end
@@ -27,11 +28,13 @@ TEST_MODULE = struct
   let buf =
     let size = TreeTest.bin_size_t TreeTest.value in
     Bin_prot.Common.create_buf size
+  ;;
 
   let compose_inverts_is_ident writer reader value : bool =
     ignore (writer.write buf ~pos:0 value) ;
     let value' = reader.read buf ~pos_ref:(ref 0) in
     equal value value'
+  ;;
 
   (* ---------------------------------------------------------------------------------- *)
   let check value typerep =
@@ -40,6 +43,7 @@ TEST_MODULE = struct
     compose_inverts_is_ident writer reader value
     (* we lose the "diff" done in the sexp version, but printing a sexp is easy and
       useful, printing a binary buffer, not so much. *)
+  ;;
 
   let check_untyped value typerep =
     let str = Type_struct.of_typerep typerep in
@@ -50,6 +54,7 @@ TEST_MODULE = struct
       converter value
     in
     assert ( compose_inverts_is_ident writer reader untyped_value )
+  ;;
 
   (* ---------------------------------------------------------------------------------- *)
   let check_reader buffer typerep trusted_reader =
@@ -57,6 +62,7 @@ TEST_MODULE = struct
     equal
       (trusted_reader.read buffer ~pos_ref:(ref 0))
       (reader.read buffer ~pos_ref:(ref 0))
+  ;;
 
   let check_untyped_reader buffer typerep trusted_reader =
     let `generic reader = Binrep.Tagged.bin_reader_t (Type_struct.of_typerep typerep) in
@@ -66,18 +72,21 @@ TEST_MODULE = struct
         (trusted_reader.read buffer ~pos_ref:(ref 0))
         (to_typed (reader.read buffer ~pos_ref:(ref 0)))
     )
+  ;;
 
   (* ---------------------------------------------------------------------------------- *)
   let check_writer value typerep trusted_reader =
     let `generic writer = Binrep.bin_writer_t typerep in
     ignore (writer.write buf ~pos:0 value) ;
     equal value (trusted_reader.read buf ~pos_ref:(ref 0))
+  ;;
 
   let check_untyped_writer value typerep trusted_reader =
     let `generic writer   = Binrep.Tagged.bin_writer_t (Type_struct.of_typerep typerep) in
     let `generic of_typed = Tagged.Of_typed.of_typerep typerep in
     ignore (writer.write buf ~pos:0 (of_typed value)) ;
     assert ( equal value (trusted_reader.read buf ~pos_ref:(ref 0)) )
+  ;;
 
   (* ---------------------------------------------------------------------------------- *)
   let test_sequence_typed ~value ~typerep ~trusted_reader ~trusted_writer =
@@ -85,11 +94,12 @@ TEST_MODULE = struct
     ignore (trusted_writer.write buf ~pos:0 value) ;
     assert (check_reader buf typerep trusted_reader) ;
     assert (check_writer value typerep trusted_reader);
-;;
+  ;;
 
   let test_sequence_obj_typed ~value ~typerep ~trusted_reader ~trusted_writer =
     let typerep = Type_struct.recreate_dynamically_typerep_for_test typerep in
     test_sequence_typed ~value ~typerep ~trusted_reader ~trusted_writer
+  ;;
 
   let test_sequence_untyped ~value ~typerep ~trusted_reader ~trusted_writer =
     check_untyped value typerep ;
@@ -98,6 +108,7 @@ TEST_MODULE = struct
     check_untyped_reader buf typerep trusted_reader;
 
     check_untyped_writer value typerep trusted_reader
+  ;;
 
   (* ---------------------------------------------------------------------------------- *)
   let full_cycle ~value ~typerep ~trusted_reader ~trusted_writer =
@@ -142,6 +153,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -153,6 +165,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -164,6 +177,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -175,6 +189,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -186,6 +201,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -197,6 +213,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -209,8 +226,9 @@ TEST_MODULE = struct
         ~trusted_reader:M.bin_reader_t
         ~trusted_writer:M.bin_writer_t
     in
-    test true ;
+    test true;
     test false
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -221,6 +239,7 @@ TEST_MODULE = struct
       ~typerep:M.typerep_of_t
       ~trusted_reader:M.bin_reader_t
       ~trusted_writer:M.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -230,7 +249,6 @@ TEST_MODULE = struct
       let typerep = M.typerep_of_t typerep_of_int in
       let trusted_reader = M.bin_reader_t bin_reader_int in
       let trusted_writer = M.bin_writer_t bin_writer_int in
-
       test_sequence
         ~value
         ~typerep
@@ -239,6 +257,7 @@ TEST_MODULE = struct
     in
     test None;
     test (Some 5)
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -248,7 +267,6 @@ TEST_MODULE = struct
       let typerep = M.typerep_of_t typerep_of_int in
       let trusted_reader = M.bin_reader_t bin_reader_int in
       let trusted_writer = M.bin_writer_t bin_writer_int in
-
       test_sequence
         ~value
         ~typerep
@@ -257,6 +275,7 @@ TEST_MODULE = struct
     in
     test [] ;
     test [1;2;6;5;4;3]
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -266,7 +285,6 @@ TEST_MODULE = struct
       let typerep = M.typerep_of_t typerep_of_int in
       let trusted_reader = M.bin_reader_t bin_reader_int in
       let trusted_writer = M.bin_writer_t bin_writer_int in
-
       test_sequence
         ~value
         ~typerep
@@ -275,6 +293,7 @@ TEST_MODULE = struct
     in
     test [||] ;
     test [|1;2;6;5;4;3|]
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -284,12 +303,12 @@ TEST_MODULE = struct
     let typerep = M.typerep_of_t typerep_of_int in
     let trusted_reader = M.bin_reader_t bin_reader_int in
     let trusted_writer = M.bin_writer_t bin_writer_int in
-
     test_sequence
       ~value
       ~typerep
       ~trusted_reader
       ~trusted_writer
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -314,12 +333,12 @@ TEST_MODULE = struct
     let typerep = M.typerep_of_t typerep_of_int typerep_of_float in
     let trusted_reader = M.bin_reader_t bin_reader_int bin_reader_float in
     let trusted_writer = M.bin_writer_t bin_writer_int bin_writer_float in
-
     test_sequence
       ~value
       ~typerep
       ~trusted_reader
       ~trusted_writer
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -339,13 +358,12 @@ TEST_MODULE = struct
         bin_writer_int
         bin_writer_float
     in
-
     test_sequence
       ~value
       ~typerep
       ~trusted_reader
       ~trusted_writer
-
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -373,13 +391,12 @@ TEST_MODULE = struct
         bin_writer_float
         bin_writer_float
     in
-
     test_sequence
       ~value
       ~typerep
       ~trusted_reader
       ~trusted_writer
-
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -410,14 +427,14 @@ TEST_MODULE = struct
         bin_writer_float
         bin_writer_string
     in
-
     test_sequence
       ~value
       ~typerep
       ~trusted_reader
       ~trusted_writer
+  ;;
 
-
+  TEST_UNIT =
     let module M = struct
       type t =
         | Foo
@@ -433,10 +450,11 @@ TEST_MODULE = struct
         ~trusted_reader:M.bin_reader_t
         ~trusted_writer:M.bin_writer_t
     in
-    test M.Foo ;
-    test (M.Bar  651) ;
-    test (M.Baz (651,54)) ;
+    test M.Foo;
+    test (M.Bar  651);
+    test (M.Baz (651,54));
     test (M.Bax (651,54))
+  ;;
 
   TEST_UNIT =
     test_sequence
@@ -444,6 +462,7 @@ TEST_MODULE = struct
       ~typerep:TreeTest.typerep_of_t
       ~trusted_reader:TreeTest.bin_reader_t
       ~trusted_writer:TreeTest.bin_writer_t
+  ;;
 
   TEST_UNIT =
     let module M = struct
@@ -456,7 +475,7 @@ TEST_MODULE = struct
         ~trusted_reader:M.bin_reader_t
         ~trusted_writer:M.bin_writer_t
     in
-    test (`Foo) ;
+    test (`Foo);
     test (`Bar 13);
     test (`Other "FOOBAR");
   ;;

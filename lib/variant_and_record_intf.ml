@@ -90,7 +90,7 @@ end) = struct
         | A of int  (* 0 *)
         | B         (* 1 *)
         | C of int  (* 2 *)
-        | D of      (* 3 *)
+        | D of char (* 3 *)
     *)
     val index : (_, _) t -> int
 
