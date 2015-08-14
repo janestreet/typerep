@@ -1,4 +1,39 @@
 # OASIS_START
+# DO NOT EDIT (digest: 443b5dc74eb95bbb0466f9fba564a86a)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library typerep_lib
+"lib/typerep_lib.cmxs": use_typerep_lib
+"lib/make_typename.cmx": for-pack(Typerep_lib)
+"lib/named_intf.cmx": for-pack(Typerep_lib)
+"lib/std.cmx": for-pack(Typerep_lib)
+"lib/std_internal.cmx": for-pack(Typerep_lib)
+"lib/type_abstract.cmx": for-pack(Typerep_lib)
+"lib/type_equal.cmx": for-pack(Typerep_lib)
+"lib/type_generic_intf.cmx": for-pack(Typerep_lib)
+"lib/type_generic.cmx": for-pack(Typerep_lib)
+"lib/typename.cmx": for-pack(Typerep_lib)
+"lib/typerepable.cmx": for-pack(Typerep_lib)
+"lib/typerep_obj.cmx": for-pack(Typerep_lib)
+"lib/variant_and_record_intf.cmx": for-pack(Typerep_lib)
+# Library typerep_syntax
+"syntax/typerep_syntax.cmxs": use_typerep_syntax
+<syntax/*.ml{,i,y}>: package(camlp4.extend)
+<syntax/*.ml{,i,y}>: package(camlp4.lib)
+<syntax/*.ml{,i,y}>: package(camlp4.quotations)
+<syntax/*.ml{,i,y}>: package(type_conv)
 # OASIS_STOP
 <syntax/*.ml{,i}>: syntax_camlp4o, locfix
 <{extended,generics}/**/*.ml{,i}>: syntax_camlp4o, pa_typerep
