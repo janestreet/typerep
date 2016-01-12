@@ -1,3 +1,7 @@
+## 113.24.00
+
+- Add whether record fields are mutable.
+
 ## 112.24.00
 
 - Remove unused "bin_proj" rewriter.

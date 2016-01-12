@@ -253,6 +253,7 @@ end) = struct
       tyid : 'field Typename.t;
       get : ('record -> 'field);
       (* set : ('record -> 'field -> unit) option; (\* mutable field *\) *)
+      is_mutable : bool;
     }
   end
 
@@ -299,6 +300,10 @@ end) = struct
     *)
     val get : ('record, 'field) t -> 'record -> 'field
 
+    (** return whether the field is mutable, i.e. whether its declaration is prefixed with
+        the keyword [mutable] *)
+    val is_mutable : (_, _) t -> bool
+
     (** return the type_name of the arguments.  Might be used to perform some lookup based
         on it *)
     val tyid : (_, 'field) t -> 'field Typename.t
@@ -314,6 +319,7 @@ end) = struct
     let label t = t.label
     let index t = t.index
     let get t = t.get
+    let is_mutable t = t.is_mutable
     let tyid t = t.tyid
     let traverse t = t.rep
 

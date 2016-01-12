@@ -1,0 +1,7 @@
+version = "$(pkg_version)"
+description = "typerep is a library for runtime types."
+requires = ""
+archive(byte          ) = "typerep_lib.cma"
+archive(native        ) = "typerep_lib.cmxa"
+archive(native, plugin) = "typerep_lib.cmxs"
+exists_if = "typerep_lib.cma"

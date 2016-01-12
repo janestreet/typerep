@@ -55,10 +55,11 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
         let label = A.Field.label field in
         let rep = map (A.Field.traverse field) in
         let index = A.Field.index field in
+        let is_mutable = A.Field.is_mutable field in
         let tyid = A.Field.tyid field in
         let get = A.Field.get field in
         B.Record_internal.Field (B.Field.internal_use_only {
-          B.Field_internal.label; rep; index; tyid; get;
+          B.Field_internal.label; rep; index; is_mutable; tyid; get;
         })
     in
     let typename = A.Record.typename_of_t record in
@@ -328,7 +329,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
   module Uid_table = struct
     include Hashtbl.Make(Typename.Uid)
     let find table key =
-      if Lazy.lazy_is_val table then
+      if Lazy.is_val table then
         let table = Lazy.force table in
         try Some (find table key) with Not_found -> None
       else None
@@ -337,7 +338,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
       check_dependencies key;
       replace (Lazy.force table) key value
     let mem table key =
-      if Lazy.lazy_is_val table then
+      if Lazy.is_val table then
         let table = Lazy.force table in
         mem table key
       else false
