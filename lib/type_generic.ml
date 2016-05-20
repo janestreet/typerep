@@ -299,7 +299,7 @@ module type S_implementation = sig
   val _using_extended_implementation :
     implementation
     -> 'a Typerep.Named.t
-    -> 'a Typerep.t Lazy.t option
+    -> 'a Typerep.t lazy_t option
     -> 'a computation
 
   (*

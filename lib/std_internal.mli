@@ -16,7 +16,7 @@ module rec Typerep : sig
   | Option     : 'a t -> 'a option t
   | List       : 'a t -> 'a list t
   | Array      : 'a t -> 'a array t
-  | Lazy       : 'a t -> 'a Lazy.t t
+  | Lazy       : 'a t -> 'a lazy_t t
   | Ref        : 'a t -> 'a ref t
   | Function   : ('dom t * 'rng t) -> ('dom -> 'rng) t
   | Tuple      : 'a Typerep.Tuple.t -> 'a t
@@ -25,7 +25,7 @@ module rec Typerep : sig
     (** The [Named] constructor both allows for custom implementations of generics
         based on name and provides a way to represent recursive types, the lazy
         part dealing with cycles *)
-  | Named      : ('a Typerep.Named.t * 'a t Lazy.t option) -> 'a t
+  | Named      : ('a Typerep.Named.t * 'a t lazy_t option) -> 'a t
 
   type packed = T : 'a t -> packed
 
