@@ -1,3 +1,11 @@
+## 113.43.00
+
+- Change `typerep_lib` to use the type `lazy_t` rather than `Lazy.t`.  The
+  ocaml_plugin library's `Ocaml_compiler` compiles modules in an
+  environment where the compiler cannot determine that `Lazy.t` and `lazy_t`
+  are the same - thus with the current version of typerep_lib plugins
+  effectively cannot use `@@deriving typerep`.
+
 ## 113.24.00
 
 - Add whether record fields are mutable.
