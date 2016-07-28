@@ -30,15 +30,16 @@ end) = struct
 
   module Tag_internal = struct
     type ('variant, 'args) create = Args of ('args -> 'variant) | Const of 'variant
-    type ('variant, 'args) t = {
-      label : string;
-      rep : 'args X.t;
-      arity : int;
-      index : int;
-      ocaml_repr : int;
-      tyid : 'args Typename.t;
-      create : ('variant, 'args) create;
-    }
+    type ('variant, 'args) t =
+      { label : string
+      ; rep : 'args X.t
+      ; arity : int
+      ; args_labels: string list
+      ; index : int
+      ; ocaml_repr : int
+      ; tyid : 'args Typename.t
+      ; create : ('variant, 'args) create
+      }
   end
 
   (**
@@ -48,14 +49,25 @@ end) = struct
      The first parameter is the variant type, the second is the type of the tag
      parameters.  Example:
 
-     type t =
-       | A of (int * string)
-       | B of string
+     {[
+       type t =
+         | A of (int * string)
+         | B of string
+         | C of { x : int; y : string }
+     ]}
 
      this type has two constructors. for each of them we'll have a corresponding [Tag.t]
-     val tag_A : (t, (int * string)) Tag.t
-     val tag_B : (t, string) Tag.t
-  *)
+
+     {[
+       val tag_A : (t, (int * string)) Tag.t
+       val tag_B : (t, string        ) Tag.t
+       val tag_C : (t, (int * string)) Tag.t
+     ]}
+
+     Inline record in variant are typed as if their definition was using tuples, without
+     the parenthesis.  This is consistent with their runtime representation.  But the
+     distinction is carried and available for introspection as part of the [Tag.t].  See
+     [args_labels]. *)
   module Tag : sig
     type ('variant, 'args) create = Args of ('args -> 'variant) | Const of 'variant
     type ('variant, 'args) t
@@ -63,9 +75,15 @@ end) = struct
     (**
        The name of the constructor as it is given in the concrete syntax
        Examples:
-       | A of int      "A"
-       | `a of int     "a"
-       | `A of int     "A"
+
+       {v
+         Constructor        | label
+         -------------------------
+         | A of int         |  "A"
+         | `a of int        |  "a"
+         | `A of int        |  "A"
+         | A of { x : int } |  "A"
+       v}
 
        for standard variant, the ocaml syntax implies that this label will always starts
        with a capital letter. For polymorphic variants, this might be a lowercase char.
@@ -75,22 +93,53 @@ end) = struct
 
     (**
        The size of the ocaml heap block containing the arguments
+
        Examples:
-       0: | A | 'A
-       1: | A of int | `A of int | A of (int * int) | `A of (int * int) | `A of int * int
-       2: | A of int * float
-       etc.
+       {v
+          0: | A | 'A
+          1: | A of int | `A of int | A of (int * int) | `A of (int * int)
+             | `A of int * int
+             | A of { x : int}
+          2: | A of int * float
+             | A of { x : int; y : string }
+          etc.
+       v}
     *)
     val arity : (_, _) t -> int
+
+    (** The label of the fields for inline records.  For other forms of tags, this is the
+        empty list.  When this returns a non empty list, the length of the returned list
+        is equal to the arity.
+
+       Example:
+
+       {v
+         (1) Empty:
+
+           | A | 'A
+           | A of int | `A of int | A of (int * int) | `A of (int * int)
+           | `A of int * int
+           | A of int * float
+
+         (2) Non empty:
+
+           | A of { x : int }               -> [ "x" ]
+           | A of { x : int; y : string }   -> [ "x" ; "y" ]
+       v}
+    *)
+    val args_labels : (_, _) t -> string list
 
     (**
        The index of the constructor in the list of all the variant type's constructors
        Examples:
-       type t =
-        | A of int  (* 0 *)
-        | B         (* 1 *)
-        | C of int  (* 2 *)
-        | D of char (* 3 *)
+       {[
+         type t =
+           | A of int          (* 0 *)
+           | B                 (* 1 *)
+           | C of int          (* 2 *)
+           | D of char         (* 3 *)
+           | E of { x : int }  (* 4 *)
+       ]}
     *)
     val index : (_, _) t -> int
 
@@ -115,29 +164,38 @@ end) = struct
        index withing each partition.
        Example:
 
-       type t =                  (* no arg *)  (* args *)
-         | A                       (* 0 *)
-         | B of int                              (* 0 *)
-         | C                       (* 1 *)
-         | D of (float * string)                 (* 1 *)
-         | E                       (* 2 *)
-         | F                       (* 3 *)
-         | G of string                           (* 2 *)
+       {[
+         type t =                  (* no arg *)  (* args *)
+           | A                       (* 0 *)
+           | B of int                              (* 0 *)
+           | C                       (* 1 *)
+           | D of (float * string)                 (* 1 *)
+           | E                       (* 2 *)
+           | F                       (* 3 *)
+           | G of string                           (* 2 *)
+           | H of { x : int }                      (* 3 *)
+       ]}
     *)
     val ocaml_repr : (_, _) t -> int
 
     (**
        Give back a way of constructing a value of that constructor from its arguments.
+
        Examples:
-       type t =
-         | A of (int * string)
-         | B of int * float
-         | C
+
+       {[
+         type t =
+           | A of (int * string)
+           | B of int * float
+           | C
+           | D of { x : int; y : string }
+       ]}
 
        [create] will return something equivalent to:
        tag_A : [Args (fun (d : (int * string) -> A d)]
        tag_B : [Args (fun (i, f) -> B (i, f))]
        tag_C : [Const C]
+       tag_D : [Args (fun (x, y) -> D { x; y })]
     *)
     val create : ('variant, 'args) t -> ('variant, 'args) create
 
@@ -155,6 +213,7 @@ end) = struct
     include Tag_internal
     let label t = t.label
     let arity t = t.arity
+    let args_labels t = t.args_labels
     let index t = t.index
     let ocaml_repr t = t.ocaml_repr
     let create t = t.create

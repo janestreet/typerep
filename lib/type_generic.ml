@@ -17,12 +17,13 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
         let label = A.Tag.label tag in
         let rep = map (A.Tag.traverse tag) in
         let arity = A.Tag.arity tag in
+        let args_labels = A.Tag.args_labels tag in
         let index = A.Tag.index tag in
         let ocaml_repr = A.Tag.ocaml_repr tag in
         let tyid = A.Tag.tyid tag in
         let create = map_create (A.Tag.create tag) in
         B.Variant_internal.Tag (B.Tag.internal_use_only {
-          B.Tag_internal.label; rep; arity; index; ocaml_repr; tyid; create;
+          B.Tag_internal.label; rep; arity; args_labels; index; ocaml_repr; tyid; create;
         })
     in
     let typename = A.Variant.typename_of_t variant in
