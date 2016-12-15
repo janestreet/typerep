@@ -3,6 +3,6 @@
   (public_name typerep)
   ;; Do not put core in libraries, core depends on this library.  Do not
   ;; put anything actually, this library should remain standalone.
-  (preprocess ((no_preprocessing All)))
+  (preprocess no_preprocessing)
   (js_of_ocaml ())
 ))

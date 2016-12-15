@@ -6,14 +6,12 @@ bug-reports: "https://github.com/janestreet/typerep/issues"
 dev-repo: "https://github.com/janestreet/typerep.git"
 license: "Apache-2.0"
 build: [
-  ["./configure" "--prefix" prefix]
-  [make]
+  ["jbuilder" "build-package" "typerep" "-j" jobs]
 ]
 depends: [
-  "ocamlbuild"     {build}
-  "oasis"          {build & >= "0.4"}
-  "ocamlfind"      {build & >= "1.3.2"}
-  "js-build-tools" {build}
+  "jbuilder"
 ]
 available: [ ocaml-version >= "4.03.0" ]
-conflicts: [ "oasis" {= "0.4.7"} ]
+descr: "
+typerep is a library for runtime types.
+"
