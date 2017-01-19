@@ -1,4 +1,4 @@
-type (_, _) t = T : ('a, 'a) t
+type ('a, 'b) t = ('a,'b) Base.Type_equal.t = T : ('a, 'a) t
 type ('a, 'b) equal = ('a, 'b) t
 
 let refl = T
