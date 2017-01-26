@@ -1,5 +1,5 @@
 (** runtime witnes of type equality
-    this is a reduced version of [Core.Std.Type_equal]. *)
+    this is a reduced version of [Core.Type_equal]. *)
 type ('a, 'b) t = ('a,'b) Base.Type_equal.t = T : ('a, 'a) t
 type ('a, 'b) equal = ('a, 'b) t
 
