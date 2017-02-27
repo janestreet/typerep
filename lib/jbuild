@@ -6,3 +6,5 @@
   (libraries (base))
   (js_of_ocaml ())
 ))
+
+(jbuild_version jane_street)
