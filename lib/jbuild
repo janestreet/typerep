@@ -4,7 +4,6 @@
   (preprocess no_preprocessing)
   ;; This library shouldn't depend on anything beyond Base
   (libraries (base))
-  (js_of_ocaml ())
 ))
 
 (jbuild_version jane_street)
