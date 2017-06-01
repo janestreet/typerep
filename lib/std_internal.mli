@@ -140,7 +140,7 @@ module rec Typerep : sig
       example put in a list together.
       It is worth noting that this function *does not* operate compatiblity diffs between
       two different types with the same structure. Example:
-      {|
+      {[
         module M1 = struct
           type t = {
             a : int;
@@ -158,7 +158,7 @@ module rec Typerep : sig
         type a = int with typerep
         type b = int with typerep
         TEST = same typerep_of_a typerep_of_b
-      |}
+      ]}
       This is meant to recover type equality hidden by existential constructors.
       For a deeper introspection of the structure, [see Type_struct].
 

@@ -320,9 +320,9 @@ end) = struct
      Witness of a field, that is an item in a record type.
      The first parameter is the record type, the second is the type of the field.
      Example:
-
+     {[
      type t = { x : int ; y : string }
-
+     ]}
      This type has two fields. for each of them we'll have a corresponding [Field.t]
 
      val field_x : (t, int) Field.t
@@ -334,21 +334,25 @@ end) = struct
     (**
        The name of the field as it is given in the concrete syntax
        Examples:
+       {[
        { x   : int;     (* "x" *)
          foo : string;  (* "foo" *)
          bar : float;   (* "bar" *)
        }
+       ]}
     *)
     val label : (_, _) t -> string
 
     (**
        The 0-based index of the field in the list of all fields for this record type.
        Example:
+       {[
        type t = {
          x   : int;     (* 0 *)
          foo : string;  (* 1 *)
          bar : string;  (* 2 *)
        }
+       ]}
     *)
     val index : (_, _) t -> int
 
