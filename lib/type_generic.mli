@@ -8,7 +8,6 @@ open Std_internal
     Examples of computation:
 
     type sexp_of_t = ('a -> Sexp.t) computation
-    type type_struct = Type_struct.t computation
 
     The term [generic] is used to refer to a specific implementation of a computation
     whose concrete implementation is programmed using the type representation of values.
@@ -122,7 +121,6 @@ end
 (**
    Not all computations are arrow types. For example:
 
-     ['a computation = Type_struct.t]
      ['a computation = Type_hash.t]
 
    However, arrow types computation such as [of_sexp], [sexp_of], [json_of], etc.  are

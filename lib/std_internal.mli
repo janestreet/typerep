@@ -160,7 +160,6 @@ module rec Typerep : sig
         TEST = same typerep_of_a typerep_of_b
       ]}
       This is meant to recover type equality hidden by existential constructors.
-      For a deeper introspection of the structure, [see Type_struct].
 
       Basically this function does structural equality for everything except variant
       types, record types, and named types with no lazy definition exposed. This last case
