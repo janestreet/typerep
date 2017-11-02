@@ -30,6 +30,10 @@ module Name_of = struct
     let module M = Typename.Make0(struct type t = string let name = "string" end) in
     M.typename_of_t
 
+  let typename_of_bytes =
+    let module M = Typename.Make0(struct type t = bytes let name = "bytes" end) in
+    M.typename_of_t
+
   let typename_of_bool =
     let module M = Typename.Make0(struct type t = bool let name = "bool" end) in
     M.typename_of_t
@@ -98,6 +102,7 @@ module rec Typerep : sig
     | Char       : char t
     | Float      : float t
     | String     : string t
+    | Bytes      : bytes t
     | Bool       : bool t
     | Unit       : unit t
     | Option     : 'a t -> 'a option t
@@ -239,6 +244,7 @@ end = struct
     | Char : char t
     | Float : float t
     | String : string t
+    | Bytes : bytes t
     | Bool : bool t
     | Unit : unit t
     | Option : 'a t -> 'a option t
@@ -427,6 +433,7 @@ end = struct
     | Char       -> Name_of.typename_of_char
     | Float      -> Name_of.typename_of_float
     | String     -> Name_of.typename_of_string
+    | Bytes      -> Name_of.typename_of_bytes
     | Bool       -> Name_of.typename_of_bool
     | Unit       -> Name_of.typename_of_unit
 
@@ -479,6 +486,7 @@ end = struct
     | Char      , Char       -> Some E.T
     | Float     , Float      -> Some E.T
     | String    , String     -> Some E.T
+    | Bytes     , Bytes      -> Some E.T
     | Bool      , Bool       -> Some E.T
     | Unit      , Unit       -> Some E.T
     | Option r1, Option r2 -> begin
@@ -581,6 +589,7 @@ end = struct
     | Char, _        -> None
     | Float, _       -> None
     | String, _      -> None
+    | Bytes, _       -> None
     | Bool, _        -> None
     | Unit, _        -> None
     | Option _, _    -> None
@@ -612,6 +621,7 @@ let typerep_of_nativeint  = Typerep.Nativeint
 let typerep_of_char       = Typerep.Char
 let typerep_of_float      = Typerep.Float
 let typerep_of_string     = Typerep.String
+let typerep_of_bytes      = Typerep.Bytes
 let typerep_of_bool       = Typerep.Bool
 let typerep_of_unit       = Typerep.Unit
 

@@ -112,6 +112,7 @@ module type Computation = sig
   val char : char t
   val float : float t
   val string : string t
+  val bytes : bytes t
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
@@ -687,6 +688,7 @@ end) = struct
       | Typerep.Char        -> X.char
       | Typerep.Float       -> X.float
       | Typerep.String      -> X.string
+      | Typerep.Bytes       -> X.bytes
       | Typerep.Bool        -> X.bool
       | Typerep.Unit        -> X.unit
       | Typerep.Option rep  -> X.option (of_typerep rep)

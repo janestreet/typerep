@@ -11,6 +11,7 @@ module rec Typerep : sig
   | Char       : char t
   | Float      : float t
   | String     : string t
+  | Bytes      : bytes t
   | Bool       : bool t
   | Unit       : unit t
   | Option     : 'a t -> 'a option t
@@ -184,6 +185,7 @@ val typerep_of_nativeint  : nativeint Typerep.t
 val typerep_of_char       : char      Typerep.t
 val typerep_of_float      : float     Typerep.t
 val typerep_of_string     : string    Typerep.t
+val typerep_of_bytes      : bytes     Typerep.t
 val typerep_of_bool       : bool      Typerep.t
 val typerep_of_unit       : unit      Typerep.t
 
@@ -219,6 +221,7 @@ val typename_of_nativeint  : nativeint Typename.t
 val typename_of_char       : char      Typename.t
 val typename_of_float      : float     Typename.t
 val typename_of_string     : string    Typename.t
+val typename_of_bytes      : bytes     Typename.t
 val typename_of_bool       : bool      Typename.t
 val typename_of_unit       : unit      Typename.t
 

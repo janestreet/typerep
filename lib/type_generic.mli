@@ -100,6 +100,7 @@ module type Computation = sig
   val char : char t
   val float : float t
   val string : string t
+  val bytes : bytes t
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
