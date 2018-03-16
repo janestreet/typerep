@@ -333,7 +333,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
     let find table key =
       if Lazy.is_val table then
         let table = Lazy.force table in
-        try Some (find table key) with Not_found -> None
+        try Some (find table key) with Base.Not_found_s _ | Caml.Not_found -> None
       else None
     let check_dependencies = Ident.check_dependencies X.name X.required
     let replace table key value =
