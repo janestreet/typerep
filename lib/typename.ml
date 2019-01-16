@@ -28,8 +28,8 @@ end = struct
     code : int;
     name : string;
   }
-  let compare a b = Pervasives.compare (a.code : int) b.code
-  let equal a b = Pervasives.(=) (a.code : int) b.code
+  let compare a b = compare (a.code : int) b.code
+  let equal a b = (a.code : int) = b.code
   let uid = ref 0
   let next name = let code = !uid in incr uid; {code; name}
   let hash a = Hashtbl.hash a.code

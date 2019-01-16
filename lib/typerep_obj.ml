@@ -25,7 +25,7 @@ let () = assert (repr_of_poly_variant `Latency_stats = hash_variant "Latency_sta
 let () = assert (repr_of_poly_variant `zero = hash_variant "zero")
 
 let double_array_value = Obj.magic 0.
-let has_double_array_tag a = Pervasives.(=) Obj.double_array_tag (Obj.tag (Obj.repr a))
+let has_double_array_tag a = Obj.double_array_tag = (Obj.tag (Obj.repr a))
 let () =
   let module M = struct
     type double = { a : float ; b : float }

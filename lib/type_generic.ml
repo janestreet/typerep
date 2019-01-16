@@ -170,7 +170,7 @@ end) = struct
     match compiletime_dereference.contents with
     | Some _ -> assert false
     | None ->
-      if Pervasives.(==) shared.runtime_dereference computation then assert false;
+      if Base.phys_equal shared.runtime_dereference computation then assert false;
       compiletime_dereference := Some computation;
       shared.runtime_reference := computation;
       computation

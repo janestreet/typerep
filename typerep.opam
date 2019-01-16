@@ -1,18 +1,19 @@
-opam-version: "1.2"
+opam-version: "2.0"
 maintainer: "opensource@janestreet.com"
 authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
 homepage: "https://github.com/janestreet/typerep"
 bug-reports: "https://github.com/janestreet/typerep/issues"
 dev-repo: "git+https://github.com/janestreet/typerep.git"
+doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/typerep/index.html"
 license: "MIT"
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
+  "ocaml" {>= "4.04.2"}
   "base"
-  "jbuilder" {build & >= "1.0+beta18.1"}
+  "dune" {build & >= "1.5.1"}
 ]
-available: [ ocaml-version >= "4.04.2" ]
-descr: "
-typerep is a library for runtime types.
+synopsis: "Typerep is a library for runtime types"
+description: "
 "
