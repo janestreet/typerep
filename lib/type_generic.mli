@@ -172,7 +172,7 @@ module type S = sig
      val register1 : 'a 't Typerep.t -> ('a computation -> 'a 't computation) -> unit
      ...
   *)
-  val register0 : (module S0) -> unit
+  val register0 : (module S) -> unit
   val register1 : (module S1) -> unit
   val register2 : (module S2) -> unit
   val register3 : (module S3) -> unit

@@ -1,7 +1,7 @@
 module M (X : sig type 'a t end) = struct
-  module type S0 = sig
+  module type S = sig
     type t
-    include Typerepable.S0 with type t := t
+    include Typerepable.S with type t := t
     val compute : t X.t
   end
 

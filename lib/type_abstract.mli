@@ -14,7 +14,7 @@
    also be useful while writing low level typerep code manually.
 *)
 
-module Make0 (X : Named_intf.S0) : Typerepable.S0
+module Make0 (X : Named_intf.S0) : Typerepable.S
   with type t := X.t
 
 module Make1 (X : Named_intf.S1) : Typerepable.S1

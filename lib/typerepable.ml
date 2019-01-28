@@ -1,6 +1,6 @@
 open Std_internal
 
-module type S0 = sig
+module type S = sig
   type t
 
   val typerep_of_t  : t Typerep.t

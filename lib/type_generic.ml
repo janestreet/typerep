@@ -215,9 +215,9 @@ module type Extending = sig
   (* generic_ident * typename or info *)
   exception Not_implemented of string * string
 
-  module type S0 = sig
+  module type S = sig
     type t
-    include Typerepable.S0 with type t := t
+    include Typerepable.S with type t := t
     val compute : t computation
   end
 
@@ -266,7 +266,7 @@ module type Extending = sig
       -> ('a, 'b, 'c, 'd, 'e) t computation
   end
 
-  val register0 : (module S0) -> unit
+  val register0 : (module S) -> unit
   val register1 : (module S1) -> unit
   val register2 : (module S2) -> unit
   val register3 : (module S3) -> unit
@@ -374,12 +374,12 @@ end) : S_implementation with type 'a t = 'a X.t = struct
       match Uid_table.find table0 (Typename.uid T.typename_of_t) with
       | None -> None
       | Some rep ->
-        let module S0 = (val rep : S0) in
-        let witness = Typename.same_witness_exn S0.typename_of_t T.typename_of_named in
+        let module S = (val rep : S) in
+        let witness = Typename.same_witness_exn S.typename_of_t T.typename_of_named in
         let module L = Type_equal.Lift(struct
           type 'a t = 'a computation
         end) in
-        Some (Type_equal.conv (L.lift witness) S0.compute)
+        Some (Type_equal.conv (L.lift witness) S.compute)
   end
 
   module Find1(T : Typerep.Named.T1) : sig
@@ -511,8 +511,8 @@ end) : S_implementation with type 'a t = 'a X.t = struct
   let unit = Typename.static
 
   let register0 compute =
-    let module S0 = (val compute : S0) in
-    let uid = Typename.uid S0.typename_of_t in
+    let module S = (val compute : S) in
+    let uid = Typename.uid S.typename_of_t in
     Uid_table.replace table0 uid compute
 
   let register1 compute =
@@ -541,13 +541,13 @@ end) : S_implementation with type 'a t = 'a X.t = struct
     Uid_table.replace table5 uid compute
 
   let register (type a) typerep_of_a compute =
-    let module S0 = struct
+    let module S = struct
       type t = a
       let typename_of_t = Typerep.typename_of_t typerep_of_a
       let typerep_of_t = typerep_of_a
       let compute = compute
     end in
-    register0 (module S0 : S0)
+    register0 (module S : S)
 
   (* IMPLEMENTATION *)
 

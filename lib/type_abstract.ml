@@ -1,6 +1,6 @@
 open Std_internal
 
-module Make0 (X : Named_intf.S0) : Typerepable.S0
+module Make0 (X : Named_intf.S0) : Typerepable.S
   with type t := X.t
 = struct
   module M = Make_typename.Make0(X)
