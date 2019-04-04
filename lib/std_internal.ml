@@ -641,3 +641,12 @@ let typerep_of_tuple5 a b c d e = Typerep.Tuple (Typerep.Tuple.T5 (a, b, c, d, e
 
 include Name_of
 let value_tuple0 = ()
+
+let typerep_of_int63, typename_of_int63 =
+  let typerep_and_typename_of_int63_repr
+    : type a b . (a, b) Base.Int63.Private.Repr.t -> a Typerep.t * a Typename.t
+    = function
+      | Base.Int63.Private.Repr.Int -> typerep_of_int, typename_of_int
+      | Base.Int63.Private.Repr.Int64 -> typerep_of_int64, typename_of_int64
+  in
+  typerep_and_typename_of_int63_repr Base.Int63.Private.repr

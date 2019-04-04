@@ -178,16 +178,17 @@ module rec Typerep : sig
 end
 
 (* basic *)
-val typerep_of_int        : int       Typerep.t
-val typerep_of_int32      : int32     Typerep.t
-val typerep_of_int64      : int64     Typerep.t
-val typerep_of_nativeint  : nativeint Typerep.t
-val typerep_of_char       : char      Typerep.t
-val typerep_of_float      : float     Typerep.t
-val typerep_of_string     : string    Typerep.t
-val typerep_of_bytes      : bytes     Typerep.t
-val typerep_of_bool       : bool      Typerep.t
-val typerep_of_unit       : unit      Typerep.t
+val typerep_of_int       : int          Typerep.t
+val typerep_of_int32     : int32        Typerep.t
+val typerep_of_int64     : int64        Typerep.t
+val typerep_of_nativeint : nativeint    Typerep.t
+val typerep_of_int63     : Base.Int63.t Typerep.t
+val typerep_of_char      : char         Typerep.t
+val typerep_of_float     : float        Typerep.t
+val typerep_of_string    : string       Typerep.t
+val typerep_of_bytes     : bytes        Typerep.t
+val typerep_of_bool      : bool         Typerep.t
+val typerep_of_unit      : unit         Typerep.t
 
 (* variant with no argument *)
 type tuple0
@@ -214,16 +215,17 @@ val typerep_of_tuple5 :
   'a Typerep.t -> 'b Typerep.t -> 'c Typerep.t -> 'd Typerep.t -> 'e Typerep.t
   -> ('a * 'b * 'c * 'd * 'e) Typerep.t
 
-val typename_of_int        : int       Typename.t
-val typename_of_int32      : int32     Typename.t
-val typename_of_int64      : int64     Typename.t
-val typename_of_nativeint  : nativeint Typename.t
-val typename_of_char       : char      Typename.t
-val typename_of_float      : float     Typename.t
-val typename_of_string     : string    Typename.t
-val typename_of_bytes      : bytes     Typename.t
-val typename_of_bool       : bool      Typename.t
-val typename_of_unit       : unit      Typename.t
+val typename_of_int       : int          Typename.t
+val typename_of_int32     : int32        Typename.t
+val typename_of_int64     : int64        Typename.t
+val typename_of_nativeint : nativeint    Typename.t
+val typename_of_int63     : Base.Int63.t Typename.t
+val typename_of_char      : char         Typename.t
+val typename_of_float     : float        Typename.t
+val typename_of_string    : string       Typename.t
+val typename_of_bytes     : bytes        Typename.t
+val typename_of_bool      : bool         Typename.t
+val typename_of_unit      : unit         Typename.t
 
 val typename_of_option   : 'a Typename.t -> 'a option Typename.t
 val typename_of_list     : 'a Typename.t -> 'a list Typename.t
