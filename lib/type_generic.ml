@@ -779,32 +779,32 @@ struct
       | Typerep.Ref rep -> X.ref_ (of_typerep rep)
       | Typerep.Function (dom, rng) -> X.function_ (of_typerep dom) (of_typerep rng)
       | Typerep.Tuple tuple ->
-        ((* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)]
-            because of_typerep can contain a side effect and [a] should be executed
-            before [b] *)
-          match tuple with
-          | Typerep.Tuple.T2 (a, b) ->
-            let ra = of_typerep a in
-            let rb = of_typerep b in
-            X.tuple2 ra rb
-          | Typerep.Tuple.T3 (a, b, c) ->
-            let ra = of_typerep a in
-            let rb = of_typerep b in
-            let rc = of_typerep c in
-            X.tuple3 ra rb rc
-          | Typerep.Tuple.T4 (a, b, c, d) ->
-            let ra = of_typerep a in
-            let rb = of_typerep b in
-            let rc = of_typerep c in
-            let rd = of_typerep d in
-            X.tuple4 ra rb rc rd
-          | Typerep.Tuple.T5 (a, b, c, d, e) ->
-            let ra = of_typerep a in
-            let rb = of_typerep b in
-            let rc = of_typerep c in
-            let rd = of_typerep d in
-            let re = of_typerep e in
-            X.tuple5 ra rb rc rd re)
+        (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)]
+           because of_typerep can contain a side effect and [a] should be executed
+           before [b] *)
+        (match tuple with
+         | Typerep.Tuple.T2 (a, b) ->
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           X.tuple2 ra rb
+         | Typerep.Tuple.T3 (a, b, c) ->
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           X.tuple3 ra rb rc
+         | Typerep.Tuple.T4 (a, b, c, d) ->
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           let rd = of_typerep d in
+           X.tuple4 ra rb rc rd
+         | Typerep.Tuple.T5 (a, b, c, d, e) ->
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           let rd = of_typerep d in
+           let re = of_typerep e in
+           X.tuple5 ra rb rc rd re)
       | Typerep.Record record ->
         X.record (Helper.map_record { Helper.map = of_typerep } record)
       | Typerep.Variant variant ->

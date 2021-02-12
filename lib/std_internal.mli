@@ -211,17 +211,18 @@ module rec Typerep : sig
           } [@@deriving typerep]
         end
 
-          [%test_result:bool] ~expect:false (same M1.typerep_of_t M2.typerep_of_t)
+        let _ = [%test_result:bool] ~expect:false (same M1.typerep_of_t M2.typerep_of_t)
 
-        type a = int with typerep
-        type b = int with typerep
-                            [%test_result:bool] ~expect:true (same typerep_of_a typerep_of_b)
+        type a = int [@@deriving typerep]
+        type b = int [@@deriving typerep]
+
+        let _ = [%test_result:bool] ~expect:true (same typerep_of_a typerep_of_b)
       ]}
       This is meant to recover type equality hidden by existential constructors.
 
       Basically this function does structural equality for everything except variant
       types, record types, and named types with no lazy definition exposed. This last case
-      is about types that are defined [with typerep(abstract)]
+      is about types that are defined [[@@deriving typerep ~abstract]].
   *)
   val same : _ t -> _ t -> bool
 
