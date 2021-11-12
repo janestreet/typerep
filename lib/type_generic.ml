@@ -738,7 +738,7 @@ module Make_S_implementation (X : sig
   ;;
 end
 
-module Key_table = Hashtbl.Make (Typename.Key)
+module _ = Hashtbl.Make (Typename.Key)
 
 module Make (X : sig
     type 'a t
