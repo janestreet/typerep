@@ -27,7 +27,7 @@ let hash_variant s =
    lib *)
 let () = assert (repr_of_poly_variant `Latency_stats = hash_variant "Latency_stats")
 let () = assert (repr_of_poly_variant `zero = hash_variant "zero")
-let double_array_value = Obj.magic 0.
+let[@inline never] double_array_value () = Sys.opaque_identity (Obj.magic 0.)
 let has_double_array_tag a = Obj.double_array_tag = Obj.tag (Obj.repr a)
 
 let () =
@@ -42,8 +42,8 @@ let () =
       ; d : int
       }
 
-    let double = { a = double_array_value; b = double_array_value }
-    let simple = { c = double_array_value; d = double_array_value }
+    let double = { a = double_array_value (); b = double_array_value () }
+    let simple = { c = double_array_value (); d = double_array_value () }
   end
   in
   assert (has_double_array_tag M.double);
