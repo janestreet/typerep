@@ -373,7 +373,7 @@ module Make_S_implementation (X : sig
       then (
         let table = Lazy.force table in
         try Some (find table key) with
-        | Base.Not_found_s _ | Caml.Not_found -> None)
+        | Base.Not_found_s _ | Stdlib.Not_found -> None)
       else None
     ;;
 

@@ -185,7 +185,7 @@ struct
   let find (type a) table (name : a typename) =
     let data =
       try Some (Key_table.find table (key name)) with
-      | Base.Not_found_s _ | Caml.Not_found -> None
+      | Base.Not_found_s _ | Stdlib.Not_found -> None
     in
     match data with
     | None -> None
