@@ -1,3 +1,12 @@
+## Release v0.16.0
+
+Fix some places in typerep where unsafe code causes runtime "invalid"
+errors with flambda2, meaning that the optimiser thought such code was
+unreachable.  This was missed before as it requires a low optimisation
+level which we don't usually use for flambda2 builds.
+
+## Old pre-v0.15 changelogs (very likely stale and incomplete)
+
 ## 113.43.00
 
 - Change `typerep_lib` to use the type `lazy_t` rather than `Lazy.t`.  The
