@@ -675,123 +675,123 @@ end = struct
 
   let rec same_witness : type a b. a t -> b t -> (a, b) Type_equal.t option =
     fun t1 t2 ->
-      let module E = Type_equal in
-      match t1, t2 with
-      | Named (name1, r1), Named (name2, r2) ->
-        (match
-           Typename.same_witness (Named.typename_of_t name1) (Named.typename_of_t name2)
-         with
-         | Some E.T as x -> x
-         | None ->
-           (match r1, r2 with
-            | Some (lazy t1), Some (lazy t2) -> same_witness t1 t2
-            | Some (lazy t1), None -> same_witness t1 t2
-            | None, Some (lazy t2) -> same_witness t1 t2
-            | None, None -> None))
-      | Named (_, r1), t2 ->
-        (match r1 with
-         | Some (lazy t1) -> same_witness t1 t2
-         | None -> None)
-      | t1, Named (_, r2) ->
-        (match r2 with
-         | Some (lazy t2) -> same_witness t1 t2
-         | None -> None)
-      | Int, Int -> Some E.T
-      | Int32, Int32 -> Some E.T
-      | Int64, Int64 -> Some E.T
-      | Nativeint, Nativeint -> Some E.T
-      | Char, Char -> Some E.T
-      | Float, Float -> Some E.T
-      | String, String -> Some E.T
-      | Bytes, Bytes -> Some E.T
-      | Bool, Bool -> Some E.T
-      | Unit, Unit -> Some E.T
-      | Option r1, Option r2 ->
-        (match same_witness r1 r2 with
-         | None as x -> x
-         | Some E.T as x -> x)
-      | List r1, List r2 ->
-        (match same_witness r1 r2 with
-         | None as x -> x
-         | Some E.T as x -> x)
-      | Array r1, Array r2 ->
-        (match same_witness r1 r2 with
-         | None as x -> x
-         | Some E.T as x -> x)
-      | Lazy r1, Lazy r2 ->
-        (match same_witness r1 r2 with
-         | None as x -> x
-         | Some E.T as x -> x)
-      | Ref r1, Ref r2 ->
-        (match same_witness r1 r2 with
-         | None as x -> x
-         | Some E.T as x -> x)
-      | Function (dom1, rng1), Function (dom2, rng2) ->
-        (match same_witness dom1 dom2, same_witness rng1 rng2 with
-         | Some E.T, Some E.T -> Some E.T
-         | None, _ | _, None -> None)
-      | Tuple t1, Tuple t2 ->
-        let module T = Typerep.Tuple in
-        (match t1, t2 with
-         | T.T2 (a1, b1), T.T2 (a2, b2) ->
-           (match same_witness a1 a2, same_witness b1 b2 with
-            | Some E.T, Some E.T -> Some E.T
-            | None, _ | _, None -> None)
-         | T.T3 (a1, b1, c1), T.T3 (a2, b2, c2) ->
-           (match same_witness a1 a2, same_witness b1 b2, same_witness c1 c2 with
-            | Some E.T, Some E.T, Some E.T -> Some E.T
-            | None, _, _ | _, None, _ | _, _, None -> None)
-         | T.T4 (a1, b1, c1, d1), T.T4 (a2, b2, c2, d2) ->
-           (match
-              same_witness a1 a2, same_witness b1 b2, same_witness c1 c2, same_witness d1 d2
-            with
-            | Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
-            | None, _, _, _ | _, None, _, _ | _, _, None, _ | _, _, _, None -> None)
-         | T.T5 (a1, b1, c1, d1, e1), T.T5 (a2, b2, c2, d2, e2) ->
-           (match
-              ( same_witness a1 a2
-              , same_witness b1 b2
-              , same_witness c1 c2
-              , same_witness d1 d2
-              , same_witness e1 e2 )
-            with
-            | Some E.T, Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
-            | None, _, _, _, _
-            | _, None, _, _, _
-            | _, _, None, _, _
-            | _, _, _, None, _
-            | _, _, _, _, None -> None)
-         | T.T2 _, _ -> None
-         | T.T3 _, _ -> None
-         | T.T4 _, _ -> None
-         | T.T5 _, _ -> None)
-      | Record r1, Record r2 ->
-        Typename.same_witness
-          (Typerep.Record.typename_of_t r1)
-          (Typerep.Record.typename_of_t r2)
-      | Variant r1, Variant r2 ->
-        Typename.same_witness
-          (Typerep.Variant.typename_of_t r1)
-          (Typerep.Variant.typename_of_t r2)
-      | Int, _ -> None
-      | Int32, _ -> None
-      | Int64, _ -> None
-      | Nativeint, _ -> None
-      | Char, _ -> None
-      | Float, _ -> None
-      | String, _ -> None
-      | Bytes, _ -> None
-      | Bool, _ -> None
-      | Unit, _ -> None
-      | Option _, _ -> None
-      | List _, _ -> None
-      | Array _, _ -> None
-      | Lazy _, _ -> None
-      | Ref _, _ -> None
-      | Function _, _ -> None
-      | Tuple _, _ -> None
-      | Record _, _ -> None
-      | Variant _, _ -> None
+    let module E = Type_equal in
+    match t1, t2 with
+    | Named (name1, r1), Named (name2, r2) ->
+      (match
+         Typename.same_witness (Named.typename_of_t name1) (Named.typename_of_t name2)
+       with
+       | Some E.T as x -> x
+       | None ->
+         (match r1, r2 with
+          | Some (lazy t1), Some (lazy t2) -> same_witness t1 t2
+          | Some (lazy t1), None -> same_witness t1 t2
+          | None, Some (lazy t2) -> same_witness t1 t2
+          | None, None -> None))
+    | Named (_, r1), t2 ->
+      (match r1 with
+       | Some (lazy t1) -> same_witness t1 t2
+       | None -> None)
+    | t1, Named (_, r2) ->
+      (match r2 with
+       | Some (lazy t2) -> same_witness t1 t2
+       | None -> None)
+    | Int, Int -> Some E.T
+    | Int32, Int32 -> Some E.T
+    | Int64, Int64 -> Some E.T
+    | Nativeint, Nativeint -> Some E.T
+    | Char, Char -> Some E.T
+    | Float, Float -> Some E.T
+    | String, String -> Some E.T
+    | Bytes, Bytes -> Some E.T
+    | Bool, Bool -> Some E.T
+    | Unit, Unit -> Some E.T
+    | Option r1, Option r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | List r1, List r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | Array r1, Array r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | Lazy r1, Lazy r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | Ref r1, Ref r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | Function (dom1, rng1), Function (dom2, rng2) ->
+      (match same_witness dom1 dom2, same_witness rng1 rng2 with
+       | Some E.T, Some E.T -> Some E.T
+       | None, _ | _, None -> None)
+    | Tuple t1, Tuple t2 ->
+      let module T = Typerep.Tuple in
+      (match t1, t2 with
+       | T.T2 (a1, b1), T.T2 (a2, b2) ->
+         (match same_witness a1 a2, same_witness b1 b2 with
+          | Some E.T, Some E.T -> Some E.T
+          | None, _ | _, None -> None)
+       | T.T3 (a1, b1, c1), T.T3 (a2, b2, c2) ->
+         (match same_witness a1 a2, same_witness b1 b2, same_witness c1 c2 with
+          | Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _ | _, None, _ | _, _, None -> None)
+       | T.T4 (a1, b1, c1, d1), T.T4 (a2, b2, c2, d2) ->
+         (match
+            same_witness a1 a2, same_witness b1 b2, same_witness c1 c2, same_witness d1 d2
+          with
+          | Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _, _ | _, None, _, _ | _, _, None, _ | _, _, _, None -> None)
+       | T.T5 (a1, b1, c1, d1, e1), T.T5 (a2, b2, c2, d2, e2) ->
+         (match
+            ( same_witness a1 a2
+            , same_witness b1 b2
+            , same_witness c1 c2
+            , same_witness d1 d2
+            , same_witness e1 e2 )
+          with
+          | Some E.T, Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _, _, _
+          | _, None, _, _, _
+          | _, _, None, _, _
+          | _, _, _, None, _
+          | _, _, _, _, None -> None)
+       | T.T2 _, _ -> None
+       | T.T3 _, _ -> None
+       | T.T4 _, _ -> None
+       | T.T5 _, _ -> None)
+    | Record r1, Record r2 ->
+      Typename.same_witness
+        (Typerep.Record.typename_of_t r1)
+        (Typerep.Record.typename_of_t r2)
+    | Variant r1, Variant r2 ->
+      Typename.same_witness
+        (Typerep.Variant.typename_of_t r1)
+        (Typerep.Variant.typename_of_t r2)
+    | Int, _ -> None
+    | Int32, _ -> None
+    | Int64, _ -> None
+    | Nativeint, _ -> None
+    | Char, _ -> None
+    | Float, _ -> None
+    | String, _ -> None
+    | Bytes, _ -> None
+    | Bool, _ -> None
+    | Unit, _ -> None
+    | Option _, _ -> None
+    | List _, _ -> None
+    | Array _, _ -> None
+    | Lazy _, _ -> None
+    | Ref _, _ -> None
+    | Function _, _ -> None
+    | Tuple _, _ -> None
+    | Record _, _ -> None
+    | Variant _, _ -> None
   ;;
 
   let same a b = same_witness a b <> None
