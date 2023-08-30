@@ -1,6 +1,6 @@
 module M (X : sig
-    type 'a t
-  end) =
+  type 'a t
+end) =
 struct
   module type S = sig
     type t
@@ -61,7 +61,7 @@ module type S = sig
   type 'a t
 
   include module type of M (struct
-      type 'a computation = 'a t
-      type 'a t = 'a computation
-    end)
+    type 'a computation = 'a t
+    type 'a t = 'a computation
+  end)
 end

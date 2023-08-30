@@ -133,10 +133,10 @@ end
    it to build the [Named] module.
 *)
 module Make_named_for_closure (X : sig
-    type 'a input
-    type 'a output
-    type 'a t = 'a input -> 'a output
-  end) : Named with type 'a computation := 'a X.t
+  type 'a input
+  type 'a output
+  type 'a t = 'a input -> 'a output
+end) : Named with type 'a computation := 'a X.t
 
 module Ident : sig
   (**
@@ -204,10 +204,10 @@ end
    other computation [A,B,C] then X.required shall be [ A.ident ; B.ident ; C.ident ]
 *)
 module Make (X : sig
-    type 'a t
+  type 'a t
 
-    val name : string
-    val required : Ident.t list
+  val name : string
+  val required : Ident.t list
 
-    include Computation with type 'a t := 'a t
-  end) : S with type 'a t = 'a X.t
+  include Computation with type 'a t := 'a t
+end) : S with type 'a t = 'a X.t

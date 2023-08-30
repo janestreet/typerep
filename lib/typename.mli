@@ -94,8 +94,8 @@ module Make5 (X : Named_intf.S5) :
   S5 with type ('a, 'b, 'c, 'd, 'e) t := ('a, 'b, 'c, 'd, 'e) X.t
 
 module Table (X : sig
-    type 'a t
-  end) : sig
+  type 'a t
+end) : sig
   type t
 
   val create : int -> t

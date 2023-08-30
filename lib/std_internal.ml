@@ -110,92 +110,92 @@ module Name_of = struct
   ;;
 
   module M_option = Typename.Make1 (struct
-      type 'a t = 'a option
+    type 'a t = 'a option
 
-      let name = "option"
-    end)
+    let name = "option"
+  end)
 
   let typename_of_option = M_option.typename_of_t
 
   module M_list = Typename.Make1 (struct
-      type 'a t = 'a list
+    type 'a t = 'a list
 
-      let name = "list"
-    end)
+    let name = "list"
+  end)
 
   let typename_of_list = M_list.typename_of_t
 
   module M_array = Typename.Make1 (struct
-      type 'a t = 'a array
+    type 'a t = 'a array
 
-      let name = "array"
-    end)
+    let name = "array"
+  end)
 
   let typename_of_array = M_array.typename_of_t
 
   module M_lazy_t = Typename.Make1 (struct
-      type 'a t = 'a lazy_t
+    type 'a t = 'a lazy_t
 
-      let name = "lazy_t"
-    end)
+    let name = "lazy_t"
+  end)
 
   let typename_of_lazy_t = M_lazy_t.typename_of_t
 
   module M_ref = Typename.Make1 (struct
-      type 'a t = 'a ref
+    type 'a t = 'a ref
 
-      let name = "ref"
-    end)
+    let name = "ref"
+  end)
 
   let typename_of_ref = M_ref.typename_of_t
 
   module M_function = Typename.Make2 (struct
-      type ('a, 'b) t = 'a -> 'b
+    type ('a, 'b) t = 'a -> 'b
 
-      let name = "function"
-    end)
+    let name = "function"
+  end)
 
   let typename_of_function = M_function.typename_of_t
 
   type tuple0 = unit
 
   module M_tuple0 = Typename.Make0 (struct
-      type t = tuple0
+    type t = tuple0
 
-      let name = "tuple0"
-    end)
+    let name = "tuple0"
+  end)
 
   let typename_of_tuple0 = M_tuple0.typename_of_t
 
   module M_tuple2 = Typename.Make2 (struct
-      type ('a, 'b) t = 'a * 'b
+    type ('a, 'b) t = 'a * 'b
 
-      let name = "tuple2"
-    end)
+    let name = "tuple2"
+  end)
 
   let typename_of_tuple2 = M_tuple2.typename_of_t
 
   module M_tuple3 = Typename.Make3 (struct
-      type ('a, 'b, 'c) t = 'a * 'b * 'c
+    type ('a, 'b, 'c) t = 'a * 'b * 'c
 
-      let name = "tuple3"
-    end)
+    let name = "tuple3"
+  end)
 
   let typename_of_tuple3 = M_tuple3.typename_of_t
 
   module M_tuple4 = Typename.Make4 (struct
-      type ('a, 'b, 'c, 'd) t = 'a * 'b * 'c * 'd
+    type ('a, 'b, 'c, 'd) t = 'a * 'b * 'c * 'd
 
-      let name = "tuple4"
-    end)
+    let name = "tuple4"
+  end)
 
   let typename_of_tuple4 = M_tuple4.typename_of_t
 
   module M_tuple5 = Typename.Make5 (struct
-      type ('a, 'b, 'c, 'd, 'e) t = 'a * 'b * 'c * 'd * 'e
+    type ('a, 'b, 'c, 'd, 'e) t = 'a * 'b * 'c * 'd * 'e
 
-      let name = "tuple5"
-    end)
+    let name = "tuple5"
+  end)
 
   let typename_of_tuple5 = M_tuple5.typename_of_t
 end
@@ -645,9 +645,9 @@ end = struct
   end
 
   include Variant_and_record_intf.M (struct
-      type 'a rep = 'a t
-      type 'a t = 'a rep
-    end)
+    type 'a rep = 'a t
+    type 'a t = 'a rep
+  end)
 
   let rec typename_of_t : type a. a t -> a Typename.t = function
     | Int -> Name_of.typename_of_int
@@ -838,8 +838,8 @@ let typerep_of_int63, typename_of_int63 =
   let typerep_and_typename_of_int63_repr
     : type a b. (a, b) Base.Int63.Private.Repr.t -> a Typerep.t * a Typename.t
     = function
-      | Base.Int63.Private.Repr.Int -> typerep_of_int, typename_of_int
-      | Base.Int63.Private.Repr.Int64 -> typerep_of_int64, typename_of_int64
+    | Base.Int63.Private.Repr.Int -> typerep_of_int, typename_of_int
+    | Base.Int63.Private.Repr.Int64 -> typerep_of_int64, typename_of_int64
   in
   typerep_and_typename_of_int63_repr Base.Int63.Private.repr
 ;;

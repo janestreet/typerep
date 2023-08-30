@@ -172,8 +172,8 @@ end
 module Key_table = Hashtbl.Make (Key)
 
 module Table (X : sig
-    type 'a t
-  end) =
+  type 'a t
+end) =
 struct
   type data = Data : 'a t * 'a X.t -> data
   type t = data Key_table.t
@@ -191,8 +191,8 @@ struct
     | None -> None
     | Some (Data (name', data)) ->
       (fun (type b) (name' : b typename) (data : b X.t) ->
-         let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
-         Some (data : a X.t))
+        let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
+        Some (data : a X.t))
         name'
         data
   ;;

@@ -22,7 +22,7 @@ module rec Typerep : sig
     | Tuple : 'a Typerep.Tuple.t -> 'a t
     | Record : 'a Typerep.Record.t -> 'a t
     | Variant : 'a Typerep.Variant.t -> 'a t
-    (** The [Named] constructor both allows for custom implementations of generics
+        (** The [Named] constructor both allows for custom implementations of generics
         based on name and provides a way to represent recursive types, the lazy
         part dealing with cycles *)
     | Named : ('a Typerep.Named.t * 'a t lazy_t option) -> 'a t

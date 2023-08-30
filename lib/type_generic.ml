@@ -42,14 +42,14 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
       match A.Variant.value variant a with
       | A.Variant.Value (atag, a) ->
         (fun (type args) (atag : (variant, args) A.Tag.t) (a : args) ->
-           let (B.Variant_internal.Tag btag) = tags.(A.Tag.index atag) in
-           (fun (type ex) (btag : (variant, ex) B.Tag.t) ->
-              let Type_equal.T =
-                Typename.same_witness_exn (A.Tag.tyid atag) (B.Tag.tyid btag)
-              in
-              let btag = (btag : (variant, args) B.Tag.t) in
-              B.Variant_internal.Value (btag, a))
-             btag)
+          let (B.Variant_internal.Tag btag) = tags.(A.Tag.index atag) in
+          (fun (type ex) (btag : (variant, ex) B.Tag.t) ->
+            let Type_equal.T =
+              Typename.same_witness_exn (A.Tag.tyid atag) (B.Tag.tyid btag)
+            in
+            let btag = (btag : (variant, args) B.Tag.t) in
+            B.Variant_internal.Value (btag, a))
+            btag)
           atag
           a
     in
@@ -81,11 +81,11 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
         match fields.(A.Field.index afield) with
         | B.Record_internal.Field bfield ->
           (fun (type ex) (bfield : (record, ex) B.Field.t) ->
-             let Type_equal.T =
-               Typename.same_witness_exn (A.Field.tyid afield) (B.Field.tyid bfield)
-             in
-             let bfield = (bfield : (record, a) B.Field.t) in
-             get bfield)
+            let Type_equal.T =
+              Typename.same_witness_exn (A.Field.tyid afield) (B.Field.tyid bfield)
+            in
+            let bfield = (bfield : (record, a) B.Field.t) in
+            get bfield)
             bfield
       in
       A.Record.create record { A.Record.get }
@@ -145,10 +145,10 @@ end
 
 (* special functor application for computation as closure of the form [a -> b] *)
 module Make_named_for_closure (X : sig
-    type 'a input
-    type 'a output
-    type 'a t = 'a input -> 'a output
-  end) =
+  type 'a input
+  type 'a output
+  type 'a t = 'a input -> 'a output
+end) =
 struct
   module Context = struct
     type t = unit
@@ -208,20 +208,20 @@ module Ident = struct
       fun uid ->
         List.iter
           (fun { name = name'; implements } ->
-             if not (implements uid)
-             then (
-               (* something is wrong with the set up, this is an error during the
+            if not (implements uid)
+            then (
+              (* something is wrong with the set up, this is an error during the
                   initialization of the program, we rather fail with a human
                   readable output *)
-               let message =
-                 Printf.sprintf
-                   "Type_generic %S requires %S for uid %S\n"
-                   name
-                   name'
-                   (Typename.Uid.name uid)
-               in
-               prerr_endline message;
-               raise (Broken_dependency message)))
+              let message =
+                Printf.sprintf
+                  "Type_generic %S requires %S for uid %S\n"
+                  name
+                  name'
+                  (Typename.Uid.name uid)
+              in
+              prerr_endline message;
+              raise (Broken_dependency message)))
           required
   ;;
 end
@@ -352,17 +352,17 @@ module type S = sig
 end
 
 module Make_S_implementation (X : sig
-    type 'a t
+  type 'a t
 
-    val name : string
-    val required : Ident.t list
-  end) : S_implementation with type 'a t = 'a X.t = struct
+  val name : string
+  val required : Ident.t list
+end) : S_implementation with type 'a t = 'a X.t = struct
   type 'a t = 'a X.t
   type 'a computation = 'a t
 
   include Type_generic_intf.M (struct
-      type 'a t = 'a computation
-    end)
+    type 'a t = 'a computation
+  end)
 
   (* we do not use core since we are earlier in the dependencies graph *)
   module Uid_table = struct
@@ -491,7 +491,7 @@ module Make_S_implementation (X : sig
           -> T.b computation
           -> T.c computation
           -> (T.a, T.b, T.c) T.named computation)
-           option
+         option
   end = struct
     let compute () =
       match Uid_table.find table3 (Typename.uid T.typename_of_t) with
@@ -525,7 +525,7 @@ module Make_S_implementation (X : sig
           -> T.c computation
           -> T.d computation
           -> (T.a, T.b, T.c, T.d) T.named computation)
-           option
+         option
   end = struct
     let compute () =
       match Uid_table.find table4 (Typename.uid T.typename_of_t) with
@@ -564,7 +564,7 @@ module Make_S_implementation (X : sig
           -> T.d computation
           -> T.e computation
           -> (T.a, T.b, T.c, T.d, T.e) T.named computation)
-           option
+         option
   end = struct
     let compute () =
       match Uid_table.find table5 (Typename.uid T.typename_of_t) with
@@ -685,7 +685,7 @@ module Make_S_implementation (X : sig
        | Some custom ->
          let custom =
            (custom (aux.generic T.a) (aux.generic T.b) (aux.generic T.c)
-            : (T.a, T.b, T.c) T.named computation)
+             : (T.a, T.b, T.c) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -697,7 +697,7 @@ module Make_S_implementation (X : sig
        | Some custom ->
          let custom =
            (custom (aux.generic T.a) (aux.generic T.b) (aux.generic T.c) (aux.generic T.d)
-            : (T.a, T.b, T.c, T.d) T.named computation)
+             : (T.a, T.b, T.c, T.d) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -714,7 +714,7 @@ module Make_S_implementation (X : sig
               (aux.generic T.c)
               (aux.generic T.d)
               (aux.generic T.e)
-            : (T.a, T.b, T.c, T.d, T.e) T.named computation)
+             : (T.a, T.b, T.c, T.d, T.e) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -741,20 +741,20 @@ end
 module _ = Hashtbl.Make (Typename.Key)
 
 module Make (X : sig
-    type 'a t
+  type 'a t
 
-    val name : string
-    val required : Ident.t list
+  val name : string
+  val required : Ident.t list
 
-    include Computation with type 'a t := 'a t
-  end) =
+  include Computation with type 'a t := 'a t
+end) =
 struct
   module Computation = X
   include Make_S_implementation (X)
 
   module Memo = Typename.Table (struct
-      type 'a t = 'a X.Named.t
-    end)
+    type 'a t = 'a X.Named.t
+  end)
 
   module Helper = Helper (Typerep) (Computation)
 

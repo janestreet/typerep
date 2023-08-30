@@ -12,7 +12,7 @@ val refl : ('a, 'a) t
 
 (** needed in some cases even though t is exported and is a gadt *)
 module Lift (X : sig
-    type 'a t
-  end) : sig
+  type 'a t
+end) : sig
   val lift : ('a, 'b) t -> ('a X.t, 'b X.t) t
 end
