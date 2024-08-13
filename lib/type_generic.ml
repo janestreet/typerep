@@ -119,10 +119,14 @@ module type Computation = sig
 
   val int : int t
   val int32 : int32 t
+  val int32_u : (unit -> int32) t
   val int64 : int64 t
+  val int64_u : (unit -> int64) t
   val nativeint : nativeint t
+  val nativeint_u : (unit -> nativeint) t
   val char : char t
   val float : float t
+  val float_u : (unit -> float) t
   val string : string t
   val bytes : bytes t
   val bool : bool t
@@ -145,10 +149,10 @@ end
 
 (* special functor application for computation as closure of the form [a -> b] *)
 module Make_named_for_closure (X : sig
-  type 'a input
-  type 'a output
-  type 'a t = 'a input -> 'a output
-end) =
+    type 'a input
+    type 'a output
+    type 'a t = 'a input -> 'a output
+  end) =
 struct
   module Context = struct
     type t = unit
@@ -346,23 +350,23 @@ end
 module type S = sig
   include Extending
 
-  val of_typerep : 'a Typerep.t -> [ `generic of 'a computation ]
+  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a computation ]
 
   module Computation : Computation with type 'a t = 'a t
 end
 
 module Make_S_implementation (X : sig
-  type 'a t
+    type 'a t
 
-  val name : string
-  val required : Ident.t list
-end) : S_implementation with type 'a t = 'a X.t = struct
+    val name : string
+    val required : Ident.t list
+  end) : S_implementation with type 'a t = 'a X.t = struct
   type 'a t = 'a X.t
   type 'a computation = 'a t
 
   include Type_generic_intf.M (struct
-    type 'a t = 'a computation
-  end)
+      type 'a t = 'a computation
+    end)
 
   (* we do not use core since we are earlier in the dependencies graph *)
   module Uid_table = struct
@@ -491,7 +495,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
           -> T.b computation
           -> T.c computation
           -> (T.a, T.b, T.c) T.named computation)
-         option
+           option
   end = struct
     let compute () =
       match Uid_table.find table3 (Typename.uid T.typename_of_t) with
@@ -525,7 +529,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
           -> T.c computation
           -> T.d computation
           -> (T.a, T.b, T.c, T.d) T.named computation)
-         option
+           option
   end = struct
     let compute () =
       match Uid_table.find table4 (Typename.uid T.typename_of_t) with
@@ -564,7 +568,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
           -> T.d computation
           -> T.e computation
           -> (T.a, T.b, T.c, T.d, T.e) T.named computation)
-         option
+           option
   end = struct
     let compute () =
       match Uid_table.find table5 (Typename.uid T.typename_of_t) with
@@ -685,7 +689,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
        | Some custom ->
          let custom =
            (custom (aux.generic T.a) (aux.generic T.b) (aux.generic T.c)
-             : (T.a, T.b, T.c) T.named computation)
+            : (T.a, T.b, T.c) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -697,7 +701,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
        | Some custom ->
          let custom =
            (custom (aux.generic T.a) (aux.generic T.b) (aux.generic T.c) (aux.generic T.d)
-             : (T.a, T.b, T.c, T.d) T.named computation)
+            : (T.a, T.b, T.c, T.d) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -714,7 +718,7 @@ end) : S_implementation with type 'a t = 'a X.t = struct
               (aux.generic T.c)
               (aux.generic T.d)
               (aux.generic T.e)
-             : (T.a, T.b, T.c, T.d, T.e) T.named computation)
+            : (T.a, T.b, T.c, T.d, T.e) T.named computation)
          in
          let Type_equal.T = T.witness in
          Some (custom : a computation)
@@ -741,33 +745,43 @@ end
 module _ = Hashtbl.Make (Typename.Key)
 
 module Make (X : sig
-  type 'a t
+    type 'a t
 
-  val name : string
-  val required : Ident.t list
+    val name : string
+    val required : Ident.t list
 
-  include Computation with type 'a t := 'a t
-end) =
+    include Computation with type 'a t := 'a t
+  end) =
 struct
   module Computation = X
   include Make_S_implementation (X)
 
   module Memo = Typename.Table (struct
-    type 'a t = 'a X.Named.t
-  end)
+      type 'a t = 'a X.Named.t
+    end)
 
-  module Helper = Helper (Typerep) (Computation)
+  module Typerep_any = struct
+    include Typerep
+
+    type 'a t = 'a Typerep.any_packed
+  end
+
+  module Helper = Helper (Typerep_any) (Computation)
 
   let of_typerep rep =
     let context = X.Named.Context.create () in
     let memo_table = Memo.create 32 in
-    let rec of_typerep : type a. a Typerep.t -> a t = function
+    let rec of_typerep : type a index. (a, index) Typerep.t_any -> a t = function
       | Typerep.Int -> X.int
       | Typerep.Int32 -> X.int32
+      | Typerep.Int32_u -> X.int32_u
       | Typerep.Int64 -> X.int64
+      | Typerep.Int64_u -> X.int64_u
       | Typerep.Nativeint -> X.nativeint
+      | Typerep.Nativeint_u -> X.nativeint_u
       | Typerep.Char -> X.char
       | Typerep.Float -> X.float
+      | Typerep.Float_u -> X.float_u
       | Typerep.String -> X.string
       | Typerep.Bytes -> X.bytes
       | Typerep.Bool -> X.bool
@@ -806,9 +820,11 @@ struct
            let re = of_typerep e in
            X.tuple5 ra rb rc rd re)
       | Typerep.Record record ->
-        X.record (Helper.map_record { Helper.map = of_typerep } record)
+        X.record
+          (Helper.map_record { Helper.map = (fun (T rep) -> of_typerep rep) } record)
       | Typerep.Variant variant ->
-        X.variant (Helper.map_variant { Helper.map = of_typerep } variant)
+        X.variant
+          (Helper.map_variant { Helper.map = (fun (T rep) -> of_typerep rep) } variant)
       | Typerep.Named (named, content) ->
         let typename = Typerep.Named.typename_of_t named in
         (match Memo.find memo_table typename with

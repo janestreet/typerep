@@ -1,3 +1,5 @@
+open Std_internal
+
 (* using the hash_variant of pa_type_conv at compile time *)
 let repr_of_poly_variant : [> ] -> int =
   fun variant ->
@@ -28,6 +30,15 @@ let hash_variant s =
 let () = assert (repr_of_poly_variant `Latency_stats = hash_variant "Latency_stats")
 let () = assert (repr_of_poly_variant `zero = hash_variant "zero")
 let[@inline never] double_array_value () = Sys.opaque_identity (Obj.magic 0.)
+
+let double_array_non_value (type any) (typerep : any Typerep.t_non_value) : unit -> any =
+  match Typerep.head typerep with
+  | Float_u -> fun () -> 4.0
+  | Int32_u -> fun () -> 4l
+  | Int64_u -> fun () -> 4L
+  | Nativeint_u -> fun () -> 4n
+;;
+
 let has_double_array_tag a = Obj.double_array_tag = Obj.tag (Obj.repr a)
 
 let () =

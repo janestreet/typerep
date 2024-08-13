@@ -2,31 +2,53 @@
 
 (** runtime type representations *)
 module rec Typerep : sig
-  type _ t =
-    | Int : int t
-    | Int32 : int32 t
-    | Int64 : int64 t
-    | Nativeint : nativeint t
-    | Char : char t
-    | Float : float t
-    | String : string t
-    | Bytes : bytes t
-    | Bool : bool t
-    | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | List : 'a t -> 'a list t
-    | Array : 'a t -> 'a array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
-    | Function : ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
-        (** The [Named] constructor both allows for custom implementations of generics
+  type value := [ `value ]
+  type non_value := [ `non_value ]
+
+  (** A typerep for a type of layout value or an unboxed number. *)
+  type (_, _) t_any =
+    | Int : (int, value) t_any
+    | Int32 : (int32, value) t_any
+    | Int64 : (int64, value) t_any
+    | Nativeint : (nativeint, value) t_any
+    | Char : (char, value) t_any
+    | Float : (float, value) t_any
+    | String : (string, value) t_any
+    | Bytes : (bytes, value) t_any
+    | Bool : (bool, value) t_any
+    | Unit : (unit, value) t_any
+    | Option : ('a, value) t_any -> ('a option, value) t_any
+    | List : ('a, value) t_any -> ('a list, value) t_any
+    | Array : ('a, value) t_any -> ('a array, value) t_any
+    | Lazy : ('a, value) t_any -> ('a lazy_t, value) t_any
+    | Ref : ('a, value) t_any -> ('a ref, value) t_any
+    | Function :
+        (('dom, value) t_any * ('rng, value) t_any)
+        -> ('dom -> 'rng, value) t_any
+    | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
+    | Record : 'a Typerep.Record.t -> ('a, value) t_any
+    | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
+    (** The [Named] constructor both allows for custom implementations of generics
         based on name and provides a way to represent recursive types, the lazy
         part dealing with cycles *)
-    | Named : ('a Typerep.Named.t * 'a t lazy_t option) -> 'a t
+    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    (* The constructors [Int32_u], [Int64_u], [Nativeint_u], and [Float_u] below look
+       pretty weird. It's necessary because the type parameter has layout [value], and
+       [unit -> int32#] has layout [value] while [int32#] does not. Making the type
+       parameter have layout [any] is not feasible at this point, so this hack will remain
+       until it becomes feasible *)
+    | Int32_u : (unit -> int32, non_value) t_any
+    | Int64_u : (unit -> int64, non_value) t_any
+    | Nativeint_u : (unit -> nativeint, non_value) t_any
+    | Float_u : (unit -> float, non_value) t_any
 
+  (** A typerep for a type of layout value. *)
+  type 'a t = ('a, value) t_any
+
+  (** A typerep for an unboxed number. *)
+  type 'a t_non_value = (unit -> 'a, non_value) t_any
+
+  type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
 
   module Named : sig
@@ -177,20 +199,29 @@ module rec Typerep : sig
 
   module Tuple : sig
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 : (('a, _) Typerep.t_any * ('b, _) Typerep.t_any) -> ('a * 'b) t
+      | T3 :
+          (('a, _) Typerep.t_any * ('b, _) Typerep.t_any * ('c, _) Typerep.t_any)
+          -> ('a * 'b * 'c) t
       | T4 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any
+          * ('e, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd * 'e) t
 
     val arity : _ t -> int
     val typename_of_t : 'a t -> 'a Typename.t
   end
 
-  include Variant_and_record_intf.S with type 'a t := 'a t
+  include Variant_and_record_intf.S with type 'a t := 'a any_packed
 
   (** [same t t'] will return a proof a equality if [t] and [t'] are the same type.
       One can think of two types being the [same] as two types whose values could be for
@@ -224,16 +255,16 @@ module rec Typerep : sig
       types, record types, and named types with no lazy definition exposed. This last case
       is about types that are defined [[@@deriving typerep ~abstract]].
   *)
-  val same : _ t -> _ t -> bool
+  val same : _ t_any -> _ t_any -> bool
 
-  val same_witness : 'a t -> 'b t -> ('a, 'b) Type_equal.t option
-  val same_witness_exn : 'a t -> 'b t -> ('a, 'b) Type_equal.t
-  val typename_of_t : 'a t -> 'a Typename.t
+  val same_witness : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t option
+  val same_witness_exn : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t
+  val typename_of_t : ('a, _) t_any -> 'a Typename.t
 
   (** [head ty] is used to traverse the [Named] constructor. It might be used when one
       care to pattern match directly on the representation in a low level way rather than
       going through a full generic. [head t] is [t] if [t] is not of the form [Named _] *)
-  val head : 'a t -> 'a t
+  val head : ('a, 'index) t_any -> ('a, 'index) t_any
 end
 
 (* basic *)
@@ -248,6 +279,10 @@ val typerep_of_string : string Typerep.t
 val typerep_of_bytes : bytes Typerep.t
 val typerep_of_bool : bool Typerep.t
 val typerep_of_unit : unit Typerep.t
+val typerep_of_int32_u : int32 Typerep.t_non_value
+val typerep_of_int64_u : int64 Typerep.t_non_value
+val typerep_of_nativeint_u : nativeint Typerep.t_non_value
+val typerep_of_float_u : float Typerep.t_non_value
 
 (* variant with no argument *)
 type tuple0
@@ -262,36 +297,44 @@ val typerep_of_lazy_t : 'a Typerep.t -> 'a lazy_t Typerep.t
 val typerep_of_ref : 'a Typerep.t -> 'a ref Typerep.t
 val typerep_of_function : 'a Typerep.t -> 'b Typerep.t -> ('a -> 'b) Typerep.t
 val typerep_of_tuple0 : tuple0 Typerep.t
-val typerep_of_tuple2 : 'a Typerep.t -> 'b Typerep.t -> ('a * 'b) Typerep.t
+
+val typerep_of_tuple2
+  :  ('a, _) Typerep.t_any
+  -> ('b, _) Typerep.t_any
+  -> ('a * 'b) Typerep.t
 
 val typerep_of_tuple3
-  :  'a Typerep.t
-  -> 'b Typerep.t
-  -> 'c Typerep.t
+  :  ('a, _) Typerep.t_any
+  -> ('b, _) Typerep.t_any
+  -> ('c, _) Typerep.t_any
   -> ('a * 'b * 'c) Typerep.t
 
 val typerep_of_tuple4
-  :  'a Typerep.t
-  -> 'b Typerep.t
-  -> 'c Typerep.t
-  -> 'd Typerep.t
+  :  ('a, _) Typerep.t_any
+  -> ('b, _) Typerep.t_any
+  -> ('c, _) Typerep.t_any
+  -> ('d, _) Typerep.t_any
   -> ('a * 'b * 'c * 'd) Typerep.t
 
 val typerep_of_tuple5
-  :  'a Typerep.t
-  -> 'b Typerep.t
-  -> 'c Typerep.t
-  -> 'd Typerep.t
-  -> 'e Typerep.t
+  :  ('a, _) Typerep.t_any
+  -> ('b, _) Typerep.t_any
+  -> ('c, _) Typerep.t_any
+  -> ('d, _) Typerep.t_any
+  -> ('e, _) Typerep.t_any
   -> ('a * 'b * 'c * 'd * 'e) Typerep.t
 
 val typename_of_int : int Typename.t
 val typename_of_int32 : int32 Typename.t
+val typename_of_int32_u : (unit -> int32) Typename.t
 val typename_of_int64 : int64 Typename.t
+val typename_of_int64_u : (unit -> int64) Typename.t
 val typename_of_nativeint : nativeint Typename.t
+val typename_of_nativeint_u : (unit -> nativeint) Typename.t
 val typename_of_int63 : Base.Int63.t Typename.t
 val typename_of_char : char Typename.t
 val typename_of_float : float Typename.t
+val typename_of_float_u : (unit -> float) Typename.t
 val typename_of_string : string Typename.t
 val typename_of_bytes : bytes Typename.t
 val typename_of_bool : bool Typename.t

@@ -172,8 +172,8 @@ end
 module Key_table = Hashtbl.Make (Key)
 
 module Table (X : sig
-  type 'a t
-end) =
+    type 'a t
+  end) =
 struct
   type data = Data : 'a t * 'a X.t -> data
   type t = data Key_table.t

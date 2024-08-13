@@ -21,6 +21,17 @@ module Name_of = struct
     M.typename_of_t
   ;;
 
+  let typename_of_int32_u =
+    let module M =
+      Typename.Make0 (struct
+        type t = unit -> int32
+
+        let name = "int32#"
+      end)
+    in
+    M.typename_of_t
+  ;;
+
   let typename_of_int64 =
     let module M =
       Typename.Make0 (struct
@@ -32,12 +43,34 @@ module Name_of = struct
     M.typename_of_t
   ;;
 
+  let typename_of_int64_u =
+    let module M =
+      Typename.Make0 (struct
+        type t = unit -> int64
+
+        let name = "int64#"
+      end)
+    in
+    M.typename_of_t
+  ;;
+
   let typename_of_nativeint =
     let module M =
       Typename.Make0 (struct
         type t = nativeint
 
         let name = "nativeint"
+      end)
+    in
+    M.typename_of_t
+  ;;
+
+  let typename_of_nativeint_u =
+    let module M =
+      Typename.Make0 (struct
+        type t = unit -> nativeint
+
+        let name = "nativeint#"
       end)
     in
     M.typename_of_t
@@ -60,6 +93,17 @@ module Name_of = struct
         type t = float
 
         let name = "float"
+      end)
+    in
+    M.typename_of_t
+  ;;
+
+  let typename_of_float_u =
+    let module M =
+      Typename.Make0 (struct
+        type t = unit -> float
+
+        let name = "float#"
       end)
     in
     M.typename_of_t
@@ -110,119 +154,131 @@ module Name_of = struct
   ;;
 
   module M_option = Typename.Make1 (struct
-    type 'a t = 'a option
+      type 'a t = 'a option
 
-    let name = "option"
-  end)
+      let name = "option"
+    end)
 
   let typename_of_option = M_option.typename_of_t
 
   module M_list = Typename.Make1 (struct
-    type 'a t = 'a list
+      type 'a t = 'a list
 
-    let name = "list"
-  end)
+      let name = "list"
+    end)
 
   let typename_of_list = M_list.typename_of_t
 
   module M_array = Typename.Make1 (struct
-    type 'a t = 'a array
+      type 'a t = 'a array
 
-    let name = "array"
-  end)
+      let name = "array"
+    end)
 
   let typename_of_array = M_array.typename_of_t
 
   module M_lazy_t = Typename.Make1 (struct
-    type 'a t = 'a lazy_t
+      type 'a t = 'a lazy_t
 
-    let name = "lazy_t"
-  end)
+      let name = "lazy_t"
+    end)
 
   let typename_of_lazy_t = M_lazy_t.typename_of_t
 
   module M_ref = Typename.Make1 (struct
-    type 'a t = 'a ref
+      type 'a t = 'a ref
 
-    let name = "ref"
-  end)
+      let name = "ref"
+    end)
 
   let typename_of_ref = M_ref.typename_of_t
 
   module M_function = Typename.Make2 (struct
-    type ('a, 'b) t = 'a -> 'b
+      type ('a, 'b) t = 'a -> 'b
 
-    let name = "function"
-  end)
+      let name = "function"
+    end)
 
   let typename_of_function = M_function.typename_of_t
 
   type tuple0 = unit
 
   module M_tuple0 = Typename.Make0 (struct
-    type t = tuple0
+      type t = tuple0
 
-    let name = "tuple0"
-  end)
+      let name = "tuple0"
+    end)
 
   let typename_of_tuple0 = M_tuple0.typename_of_t
 
   module M_tuple2 = Typename.Make2 (struct
-    type ('a, 'b) t = 'a * 'b
+      type ('a, 'b) t = 'a * 'b
 
-    let name = "tuple2"
-  end)
+      let name = "tuple2"
+    end)
 
   let typename_of_tuple2 = M_tuple2.typename_of_t
 
   module M_tuple3 = Typename.Make3 (struct
-    type ('a, 'b, 'c) t = 'a * 'b * 'c
+      type ('a, 'b, 'c) t = 'a * 'b * 'c
 
-    let name = "tuple3"
-  end)
+      let name = "tuple3"
+    end)
 
   let typename_of_tuple3 = M_tuple3.typename_of_t
 
   module M_tuple4 = Typename.Make4 (struct
-    type ('a, 'b, 'c, 'd) t = 'a * 'b * 'c * 'd
+      type ('a, 'b, 'c, 'd) t = 'a * 'b * 'c * 'd
 
-    let name = "tuple4"
-  end)
+      let name = "tuple4"
+    end)
 
   let typename_of_tuple4 = M_tuple4.typename_of_t
 
   module M_tuple5 = Typename.Make5 (struct
-    type ('a, 'b, 'c, 'd, 'e) t = 'a * 'b * 'c * 'd * 'e
+      type ('a, 'b, 'c, 'd, 'e) t = 'a * 'b * 'c * 'd * 'e
 
-    let name = "tuple5"
-  end)
+      let name = "tuple5"
+    end)
 
   let typename_of_tuple5 = M_tuple5.typename_of_t
 end
 
 module rec Typerep : sig
-  type _ t =
-    | Int : int t
-    | Int32 : int32 t
-    | Int64 : int64 t
-    | Nativeint : nativeint t
-    | Char : char t
-    | Float : float t
-    | String : string t
-    | Bytes : bytes t
-    | Bool : bool t
-    | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | List : 'a t -> 'a list t
-    | Array : 'a t -> 'a array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
-    | Function : ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
-    | Named : ('a Typerep.Named.t * 'a t lazy_t option) -> 'a t
+  type value := [ `value ]
+  type non_value := [ `non_value ]
 
+  type (_, _) t_any =
+    | Int : (int, value) t_any
+    | Int32 : (int32, value) t_any
+    | Int64 : (int64, value) t_any
+    | Nativeint : (nativeint, value) t_any
+    | Char : (char, value) t_any
+    | Float : (float, value) t_any
+    | String : (string, value) t_any
+    | Bytes : (bytes, value) t_any
+    | Bool : (bool, value) t_any
+    | Unit : (unit, value) t_any
+    | Option : ('a, value) t_any -> ('a option, value) t_any
+    | List : ('a, value) t_any -> ('a list, value) t_any
+    | Array : ('a, value) t_any -> ('a array, value) t_any
+    | Lazy : ('a, value) t_any -> ('a lazy_t, value) t_any
+    | Ref : ('a, value) t_any -> ('a ref, value) t_any
+    | Function :
+        (('dom, value) t_any * ('rng, value) t_any)
+        -> ('dom -> 'rng, value) t_any
+    | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
+    | Record : 'a Typerep.Record.t -> ('a, value) t_any
+    | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
+    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    | Int32_u : (unit -> int32, non_value) t_any
+    | Int64_u : (unit -> int64, non_value) t_any
+    | Nativeint_u : (unit -> nativeint, non_value) t_any
+    | Float_u : (unit -> float, non_value) t_any
+
+  type 'a t = ('a, value) t_any
+  type 'a t_non_value = (unit -> 'a, non_value) t_any
+  type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
 
   module Named : sig
@@ -378,49 +434,70 @@ module rec Typerep : sig
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose that way *)
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 : (('a, _) Typerep.t_any * ('b, _) Typerep.t_any) -> ('a * 'b) t
+      | T3 :
+          (('a, _) Typerep.t_any * ('b, _) Typerep.t_any * ('c, _) Typerep.t_any)
+          -> ('a * 'b * 'c) t
       | T4 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any
+          * ('e, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd * 'e) t
 
     val arity : _ t -> int
     val typename_of_t : 'a t -> 'a Typename.t
   end
 
-  include Variant_and_record_intf.S with type 'a t := 'a Typerep.t
+  include Variant_and_record_intf.S with type 'a t := 'a any_packed
 
-  val same : _ t -> _ t -> bool
-  val same_witness : 'a t -> 'b t -> ('a, 'b) Type_equal.t option
-  val same_witness_exn : 'a t -> 'b t -> ('a, 'b) Type_equal.t
-  val typename_of_t : 'a t -> 'a Typename.t
-  val head : 'a t -> 'a t
+  val same : _ t_any -> _ t_any -> bool
+  val same_witness : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t option
+  val same_witness_exn : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t
+  val typename_of_t : ('a, _) t_any -> 'a Typename.t
+  val head : ('a, 'index) t_any -> ('a, 'index) t_any
 end = struct
-  type _ t =
-    | Int : int t
-    | Int32 : int32 t
-    | Int64 : int64 t
-    | Nativeint : nativeint t
-    | Char : char t
-    | Float : float t
-    | String : string t
-    | Bytes : bytes t
-    | Bool : bool t
-    | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | List : 'a t -> 'a list t
-    | Array : 'a t -> 'a array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
-    | Function : ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
-    | Named : ('a Typerep.Named.t * 'a t lazy_t option) -> 'a t
+  type value = [ `value ]
+  type non_value = [ `non_value ]
 
+  type (_, _) t_any =
+    | Int : (int, value) t_any
+    | Int32 : (int32, value) t_any
+    | Int64 : (int64, value) t_any
+    | Nativeint : (nativeint, value) t_any
+    | Char : (char, value) t_any
+    | Float : (float, value) t_any
+    | String : (string, value) t_any
+    | Bytes : (bytes, value) t_any
+    | Bool : (bool, value) t_any
+    | Unit : (unit, value) t_any
+    | Option : ('a, value) t_any -> ('a option, value) t_any
+    | List : ('a, value) t_any -> ('a list, value) t_any
+    | Array : ('a, value) t_any -> ('a array, value) t_any
+    | Lazy : ('a, value) t_any -> ('a lazy_t, value) t_any
+    | Ref : ('a, value) t_any -> ('a ref, value) t_any
+    | Function :
+        (('dom, value) t_any * ('rng, value) t_any)
+        -> ('dom -> 'rng, value) t_any
+    | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
+    | Record : 'a Typerep.Record.t -> ('a, value) t_any
+    | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
+    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    | Int32_u : (unit -> int32, non_value) t_any
+    | Int64_u : (unit -> int64, non_value) t_any
+    | Nativeint_u : (unit -> nativeint, non_value) t_any
+    | Float_u : (unit -> float, non_value) t_any
+
+  type 'a t = ('a, value) t_any
+  type 'a t_non_value = (unit -> 'a, non_value) t_any
+  type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
 
   module Named = struct
@@ -604,13 +681,22 @@ end = struct
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose this way *)
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 : (('a, _) Typerep.t_any * ('b, _) Typerep.t_any) -> ('a * 'b) t
+      | T3 :
+          (('a, _) Typerep.t_any * ('b, _) Typerep.t_any * ('c, _) Typerep.t_any)
+          -> ('a * 'b * 'c) t
       | T4 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
-          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
+          (('a, _) Typerep.t_any
+          * ('b, _) Typerep.t_any
+          * ('c, _) Typerep.t_any
+          * ('d, _) Typerep.t_any
+          * ('e, _) Typerep.t_any)
           -> ('a * 'b * 'c * 'd * 'e) t
 
     let arity : type a. a t -> int = function
@@ -645,17 +731,20 @@ end = struct
   end
 
   include Variant_and_record_intf.M (struct
-    type 'a rep = 'a t
-    type 'a t = 'a rep
-  end)
+      type 'a t = 'a any_packed
+    end)
 
-  let rec typename_of_t : type a. a t -> a Typename.t = function
+  let rec typename_of_t : type a index. (a, index) t_any -> a Typename.t = function
     | Int -> Name_of.typename_of_int
     | Int32 -> Name_of.typename_of_int32
+    | Int32_u -> Name_of.typename_of_int32_u
     | Int64 -> Name_of.typename_of_int64
+    | Int64_u -> Name_of.typename_of_int64_u
     | Nativeint -> Name_of.typename_of_nativeint
+    | Nativeint_u -> Name_of.typename_of_nativeint_u
     | Char -> Name_of.typename_of_char
     | Float -> Name_of.typename_of_float
+    | Float_u -> Name_of.typename_of_float_u
     | String -> Name_of.typename_of_string
     | Bytes -> Name_of.typename_of_bytes
     | Bool -> Name_of.typename_of_bool
@@ -673,7 +762,10 @@ end = struct
     | Named (name, _) -> Named.typename_of_t name
   ;;
 
-  let rec same_witness : type a b. a t -> b t -> (a, b) Type_equal.t option =
+  let rec same_witness
+    : type a b index1 index2.
+      (a, index1) t_any -> (b, index2) t_any -> (a, b) Type_equal.t option
+    =
     fun t1 t2 ->
     let module E = Type_equal in
     match t1, t2 with
@@ -698,10 +790,14 @@ end = struct
        | None -> None)
     | Int, Int -> Some E.T
     | Int32, Int32 -> Some E.T
+    | Int32_u, Int32_u -> Some E.T
     | Int64, Int64 -> Some E.T
+    | Int64_u, Int64_u -> Some E.T
     | Nativeint, Nativeint -> Some E.T
+    | Nativeint_u, Nativeint_u -> Some E.T
     | Char, Char -> Some E.T
     | Float, Float -> Some E.T
+    | Float_u, Float_u -> Some E.T
     | String, String -> Some E.T
     | Bytes, Bytes -> Some E.T
     | Bool, Bool -> Some E.T
@@ -775,10 +871,14 @@ end = struct
         (Typerep.Variant.typename_of_t r2)
     | Int, _ -> None
     | Int32, _ -> None
+    | Int32_u, _ -> None
     | Int64, _ -> None
+    | Int64_u, _ -> None
     | Nativeint, _ -> None
+    | Nativeint_u, _ -> None
     | Char, _ -> None
     | Float, _ -> None
+    | Float_u, _ -> None
     | String, _ -> None
     | Bytes, _ -> None
     | Bool, _ -> None
@@ -802,7 +902,7 @@ end = struct
     | None -> assert false
   ;;
 
-  let rec head = function
+  let rec head : type a index. (a, index) t_any -> (a, index) t_any = function
     | Typerep.Named (_, Some (lazy t)) -> head t
     | t -> t
   ;;
@@ -810,10 +910,14 @@ end
 
 let typerep_of_int = Typerep.Int
 let typerep_of_int32 = Typerep.Int32
+let typerep_of_int32_u = Typerep.Int32_u
 let typerep_of_int64 = Typerep.Int64
+let typerep_of_int64_u = Typerep.Int64_u
 let typerep_of_nativeint = Typerep.Nativeint
+let typerep_of_nativeint_u = Typerep.Nativeint_u
 let typerep_of_char = Typerep.Char
 let typerep_of_float = Typerep.Float
+let typerep_of_float_u = Typerep.Float_u
 let typerep_of_string = Typerep.String
 let typerep_of_bytes = Typerep.Bytes
 let typerep_of_bool = Typerep.Bool

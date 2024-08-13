@@ -99,10 +99,14 @@ module type Computation = sig
 
   val int : int t
   val int32 : int32 t
+  val int32_u : (unit -> int32) t
   val int64 : int64 t
+  val int64_u : (unit -> int64) t
   val nativeint : nativeint t
+  val nativeint_u : (unit -> nativeint) t
   val char : char t
   val float : float t
+  val float_u : (unit -> float) t
   val string : string t
   val bytes : bytes t
   val bool : bool t
@@ -133,10 +137,10 @@ end
    it to build the [Named] module.
 *)
 module Make_named_for_closure (X : sig
-  type 'a input
-  type 'a output
-  type 'a t = 'a input -> 'a output
-end) : Named with type 'a computation := 'a X.t
+    type 'a input
+    type 'a output
+    type 'a t = 'a input -> 'a output
+  end) : Named with type 'a computation := 'a X.t
 
 module Ident : sig
   (**
@@ -190,7 +194,7 @@ module type S = sig
   val register : 'a Typerep.t -> 'a computation -> unit
 
   (** main function : compute the generic computation from the typerep *)
-  val of_typerep : 'a Typerep.t -> [ `generic of 'a computation ]
+  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a computation ]
 
   (** exported to build a computation on top of a previous one *)
   module Computation : Computation with type 'a t = 'a t
@@ -204,10 +208,10 @@ end
    other computation [A,B,C] then X.required shall be [ A.ident ; B.ident ; C.ident ]
 *)
 module Make (X : sig
-  type 'a t
+    type 'a t
 
-  val name : string
-  val required : Ident.t list
+    val name : string
+    val required : Ident.t list
 
-  include Computation with type 'a t := 'a t
-end) : S with type 'a t = 'a X.t
+    include Computation with type 'a t := 'a t
+  end) : S with type 'a t = 'a X.t
