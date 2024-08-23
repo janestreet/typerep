@@ -37,16 +37,16 @@ module rec Typerep : sig
        [unit -> int32#] has layout [value] while [int32#] does not. Making the type
        parameter have layout [any] is not feasible at this point, so this hack will remain
        until it becomes feasible *)
-    | Int32_u : (unit -> int32, non_value) t_any
-    | Int64_u : (unit -> int64, non_value) t_any
-    | Nativeint_u : (unit -> nativeint, non_value) t_any
-    | Float_u : (unit -> float, non_value) t_any
+    | Int32_u : (unit -> int32#, non_value) t_any
+    | Int64_u : (unit -> int64#, non_value) t_any
+    | Nativeint_u : (unit -> nativeint#, non_value) t_any
+    | Float_u : (unit -> float#, non_value) t_any
 
   (** A typerep for a type of layout value. *)
   type 'a t = ('a, value) t_any
 
   (** A typerep for an unboxed number. *)
-  type 'a t_non_value = (unit -> 'a, non_value) t_any
+  type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
 
   type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
@@ -279,10 +279,10 @@ val typerep_of_string : string Typerep.t
 val typerep_of_bytes : bytes Typerep.t
 val typerep_of_bool : bool Typerep.t
 val typerep_of_unit : unit Typerep.t
-val typerep_of_int32_u : int32 Typerep.t_non_value
-val typerep_of_int64_u : int64 Typerep.t_non_value
-val typerep_of_nativeint_u : nativeint Typerep.t_non_value
-val typerep_of_float_u : float Typerep.t_non_value
+val typerep_of_int32_u : int32# Typerep.t_non_value
+val typerep_of_int64_u : int64# Typerep.t_non_value
+val typerep_of_nativeint_u : nativeint# Typerep.t_non_value
+val typerep_of_float_u : float# Typerep.t_non_value
 
 (* variant with no argument *)
 type tuple0
@@ -326,15 +326,15 @@ val typerep_of_tuple5
 
 val typename_of_int : int Typename.t
 val typename_of_int32 : int32 Typename.t
-val typename_of_int32_u : (unit -> int32) Typename.t
+val typename_of_int32_u : (unit -> int32#) Typename.t
 val typename_of_int64 : int64 Typename.t
-val typename_of_int64_u : (unit -> int64) Typename.t
+val typename_of_int64_u : (unit -> int64#) Typename.t
 val typename_of_nativeint : nativeint Typename.t
-val typename_of_nativeint_u : (unit -> nativeint) Typename.t
+val typename_of_nativeint_u : (unit -> nativeint#) Typename.t
 val typename_of_int63 : Base.Int63.t Typename.t
 val typename_of_char : char Typename.t
 val typename_of_float : float Typename.t
-val typename_of_float_u : (unit -> float) Typename.t
+val typename_of_float_u : (unit -> float#) Typename.t
 val typename_of_string : string Typename.t
 val typename_of_bytes : bytes Typename.t
 val typename_of_bool : bool Typename.t

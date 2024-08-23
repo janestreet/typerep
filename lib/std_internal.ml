@@ -24,7 +24,7 @@ module Name_of = struct
   let typename_of_int32_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> int32
+        type t = unit -> int32#
 
         let name = "int32#"
       end)
@@ -46,7 +46,7 @@ module Name_of = struct
   let typename_of_int64_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> int64
+        type t = unit -> int64#
 
         let name = "int64#"
       end)
@@ -68,7 +68,7 @@ module Name_of = struct
   let typename_of_nativeint_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> nativeint
+        type t = unit -> nativeint#
 
         let name = "nativeint#"
       end)
@@ -101,7 +101,7 @@ module Name_of = struct
   let typename_of_float_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> float
+        type t = unit -> float#
 
         let name = "float#"
       end)
@@ -271,13 +271,13 @@ module rec Typerep : sig
     | Record : 'a Typerep.Record.t -> ('a, value) t_any
     | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
     | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
-    | Int32_u : (unit -> int32, non_value) t_any
-    | Int64_u : (unit -> int64, non_value) t_any
-    | Nativeint_u : (unit -> nativeint, non_value) t_any
-    | Float_u : (unit -> float, non_value) t_any
+    | Int32_u : (unit -> int32#, non_value) t_any
+    | Int64_u : (unit -> int64#, non_value) t_any
+    | Nativeint_u : (unit -> nativeint#, non_value) t_any
+    | Float_u : (unit -> float#, non_value) t_any
 
   type 'a t = ('a, value) t_any
-  type 'a t_non_value = (unit -> 'a, non_value) t_any
+  type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
   type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
 
@@ -490,13 +490,13 @@ end = struct
     | Record : 'a Typerep.Record.t -> ('a, value) t_any
     | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
     | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
-    | Int32_u : (unit -> int32, non_value) t_any
-    | Int64_u : (unit -> int64, non_value) t_any
-    | Nativeint_u : (unit -> nativeint, non_value) t_any
-    | Float_u : (unit -> float, non_value) t_any
+    | Int32_u : (unit -> int32#, non_value) t_any
+    | Int64_u : (unit -> int64#, non_value) t_any
+    | Nativeint_u : (unit -> nativeint#, non_value) t_any
+    | Float_u : (unit -> float#, non_value) t_any
 
   type 'a t = ('a, value) t_any
-  type 'a t_non_value = (unit -> 'a, non_value) t_any
+  type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
   type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
   type packed = T : 'a t -> packed
 
