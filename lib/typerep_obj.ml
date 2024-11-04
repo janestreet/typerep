@@ -43,6 +43,8 @@ let has_double_array_tag a = Obj.double_array_tag = Obj.tag (Obj.repr a)
 
 let () =
   let module M = struct
+    [@@@warning "-69"]
+
     type double =
       { a : float
       ; b : float
