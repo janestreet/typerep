@@ -191,8 +191,8 @@ struct
     | None -> None
     | Some (Data (name', data)) ->
       (fun (type b) (name' : b typename) (data : b X.t) ->
-         let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
-         Some (data : a X.t))
+        let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
+        Some (data : a X.t))
         name'
         data
   ;;
@@ -211,8 +211,7 @@ module Same_witness_exn_1 (A : S1) (B : S1) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static) in
     let uid_b = uid (B.typename_of_t static) in
-    let eq = Obj.magic Type_equal.refl in
-    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
+    if Uid.equal uid_a uid_b then { eq = Obj.magic Type_equal.refl } else fail uid_a uid_b
   ;;
 end
 
@@ -222,8 +221,7 @@ module Same_witness_exn_2 (A : S2) (B : S2) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static) in
     let uid_b = uid (B.typename_of_t static static) in
-    let eq = Obj.magic Type_equal.refl in
-    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
+    if Uid.equal uid_a uid_b then { eq = Obj.magic Type_equal.refl } else fail uid_a uid_b
   ;;
 end
 
@@ -233,8 +231,7 @@ module Same_witness_exn_3 (A : S3) (B : S3) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static) in
     let uid_b = uid (B.typename_of_t static static static) in
-    let eq = Obj.magic Type_equal.refl in
-    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
+    if Uid.equal uid_a uid_b then { eq = Obj.magic Type_equal.refl } else fail uid_a uid_b
   ;;
 end
 
@@ -244,8 +241,7 @@ module Same_witness_exn_4 (A : S4) (B : S4) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static static) in
     let uid_b = uid (B.typename_of_t static static static static) in
-    let eq = Obj.magic Type_equal.refl in
-    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
+    if Uid.equal uid_a uid_b then { eq = Obj.magic Type_equal.refl } else fail uid_a uid_b
   ;;
 end
 
@@ -258,7 +254,6 @@ module Same_witness_exn_5 (A : S5) (B : S5) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static static static) in
     let uid_b = uid (B.typename_of_t static static static static static) in
-    let eq = Obj.magic Type_equal.refl in
-    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
+    if Uid.equal uid_a uid_b then { eq = Obj.magic Type_equal.refl } else fail uid_a uid_b
   ;;
 end
