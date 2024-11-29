@@ -189,12 +189,9 @@ struct
     in
     match data with
     | None -> None
-    | Some (Data (name', data)) ->
-      (fun (type b) (name' : b typename) (data : b X.t) ->
-        let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
-        Some (data : a X.t))
-        name'
-        data
+    | Some (Data (type b) ((name', data) : b typename * b X.t)) ->
+      let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
+      Some (data : a X.t)
   ;;
 end
 
