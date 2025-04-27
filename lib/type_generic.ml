@@ -1,13 +1,18 @@
+open! Base
 open Std_internal
 module Variant_and_record_intf = Variant_and_record_intf
 
-module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = struct
+module%template Helper
+    (A : Variant_and_record_intf.S
+  [@modality portable])
+    (B : Variant_and_record_intf.S) =
+struct
   type map = { map : 'a. 'a A.t -> 'a B.t }
 
   let map_variant (type variant) { map } (variant : variant A.Variant.t) =
     let map_create = function
       | A.Tag.Args fct -> B.Tag_internal.Args fct
-      | A.Tag.Const k -> B.Tag_internal.Const k
+      | A.Tag.Const k -> B.Tag_internal.Const (k ())
     in
     let map_tag tag =
       match tag with
@@ -35,14 +40,14 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
     let typename = A.Variant.typename_of_t variant in
     let polymorphic = A.Variant.is_polymorphic variant in
     let tags =
-      Array.init (A.Variant.length variant) (fun index ->
+      Iarray.init (A.Variant.length variant) ~f:(fun index ->
         map_tag (A.Variant.tag variant index))
     in
     let value (a : variant) =
       match A.Variant.value variant a with
       | A.Variant.Value (atag, a) ->
         (fun (type args) (atag : (variant, args) A.Tag.t) (a : args) ->
-          let (B.Variant_internal.Tag btag) = tags.(A.Tag.index atag) in
+          let (B.Variant_internal.Tag btag) = tags.:(A.Tag.index atag) in
           (fun (type ex) (btag : (variant, ex) B.Tag.t) ->
             let Type_equal.T =
               Typename.same_witness_exn (A.Tag.tyid atag) (B.Tag.tyid btag)
@@ -73,12 +78,12 @@ module Helper (A : Variant_and_record_intf.S) (B : Variant_and_record_intf.S) = 
     let typename = A.Record.typename_of_t record in
     let has_double_array_tag = A.Record.has_double_array_tag record in
     let fields =
-      Array.init (A.Record.length record) (fun index ->
+      Iarray.init (A.Record.length record) ~f:(fun index ->
         map_field (A.Record.field record index))
     in
     let create { B.Record_internal.get } =
       let get (type a) (afield : (_, a) A.Field.t) =
-        match fields.(A.Field.index afield) with
+        match fields.:(A.Field.index afield) with
         | B.Record_internal.Field bfield ->
           (fun (type ex) (bfield : (record, ex) B.Field.t) ->
             let Type_equal.T =
@@ -211,7 +216,7 @@ module Ident = struct
     | _ ->
       fun uid ->
         List.iter
-          (fun { name = name'; implements } ->
+          ~f:(fun { name = name'; implements } ->
             if not (implements uid)
             then (
               (* something is wrong with the set up, this is an error during the
@@ -224,7 +229,7 @@ module Ident = struct
                   name'
                   (Typename.Uid.name uid)
               in
-              prerr_endline message;
+              Stdlib.prerr_endline message;
               raise (Broken_dependency message)))
           required
   ;;
@@ -233,75 +238,13 @@ end
 (* Extending an existing generic *)
 module type Extending = sig
   type 'a t
-  type 'a computation = 'a t
 
   val ident : Ident.t
 
   (* generic_ident * typename or info *)
   exception Not_implemented of string * string
 
-  module type S = sig
-    type t
-
-    include Typerepable.S with type t := t
-
-    val compute : t computation
-  end
-
-  module type S1 = sig
-    type 'a t
-
-    include Typerepable.S1 with type 'a t := 'a t
-
-    val compute : 'a computation -> 'a t computation
-  end
-
-  module type S2 = sig
-    type ('a, 'b) t
-
-    include Typerepable.S2 with type ('a, 'b) t := ('a, 'b) t
-
-    val compute : 'a computation -> 'b computation -> ('a, 'b) t computation
-  end
-
-  module type S3 = sig
-    type ('a, 'b, 'c) t
-
-    include Typerepable.S3 with type ('a, 'b, 'c) t := ('a, 'b, 'c) t
-
-    val compute
-      :  'a computation
-      -> 'b computation
-      -> 'c computation
-      -> ('a, 'b, 'c) t computation
-  end
-
-  module type S4 = sig
-    type ('a, 'b, 'c, 'd) t
-
-    include Typerepable.S4 with type ('a, 'b, 'c, 'd) t := ('a, 'b, 'c, 'd) t
-
-    val compute
-      :  'a computation
-      -> 'b computation
-      -> 'c computation
-      -> 'd computation
-      -> ('a, 'b, 'c, 'd) t computation
-  end
-
-  module type S5 = sig
-    type ('a, 'b, 'c, 'd, 'e) t
-
-    include Typerepable.S5 with type ('a, 'b, 'c, 'd, 'e) t := ('a, 'b, 'c, 'd, 'e) t
-
-    val compute
-      :  'a computation
-      -> 'b computation
-      -> 'c computation
-      -> 'd computation
-      -> 'e computation
-      -> ('a, 'b, 'c, 'd, 'e) t computation
-  end
+  include Type_generic_intf.S with type 'a t := 'a t
 
   val register0 : (module S) -> unit
   val register1 : (module S1) -> unit
@@ -311,7 +254,7 @@ module type Extending = sig
   val register5 : (module S5) -> unit
 
   (* special less scary type when the type has no parameters *)
-  val register : 'a Typerep.t -> 'a computation -> unit
+  val register : 'a Typerep.t -> 'a t -> unit
 
   (*
      Essentially because we cannot talk about a variable of kind * -> k
@@ -327,30 +270,18 @@ module type S_implementation = sig
   (* raise using the current ident *)
   val raise_not_implemented : string -> 'a
 
-  type implementation = { generic : 'a. 'a Typerep.t -> 'a computation }
-
-  (*
-     Standard case, find a extended_implementation, or look in the content
-  *)
-  val _using_extended_implementation
-    :  implementation
-    -> 'a Typerep.Named.t
-    -> 'a Typerep.t lazy_t option
-    -> 'a computation
+  type implementation = { generic : 'a. 'a Typerep.t -> 'a t }
 
   (*
      This function allows you more control on what you want to do
   *)
-  val find_extended_implementation
-    :  implementation
-    -> 'a Typerep.Named.t
-    -> 'a computation option
+  val find_extended_implementation : implementation -> 'a Typerep.Named.t -> 'a t option
 end
 
 module type S = sig
   include Extending
 
-  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a computation ]
+  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a t ]
 
   module Computation : Computation with type 'a t = 'a t
 end
@@ -370,14 +301,13 @@ module Make_S_implementation (X : sig
 
   (* we do not use core since we are earlier in the dependencies graph *)
   module Uid_table = struct
-    include Hashtbl.Make (Typename.Uid)
+    let create size = Hashtbl.create (module Typename.Uid) ~size
 
     let find table key =
       if Lazy.is_val table
       then (
         let table = Lazy.force table in
-        try Some (find table key) with
-        | Base.Not_found_s _ | Stdlib.Not_found -> None)
+        Hashtbl.find table key)
       else None
     ;;
 
@@ -385,14 +315,14 @@ module Make_S_implementation (X : sig
 
     let replace table key value =
       check_dependencies key;
-      replace (Lazy.force table) key value
+      Hashtbl.set (Lazy.force table) ~key ~data:value
     ;;
 
     let mem table key =
       if Lazy.is_val table
       then (
         let table = Lazy.force table in
-        mem table key)
+        Hashtbl.mem table key)
       else false
     ;;
   end
@@ -728,21 +658,7 @@ module Make_S_implementation (X : sig
   exception Not_implemented of string * string
 
   let raise_not_implemented string = raise (Not_implemented (X.name, string))
-
-  let _using_extended_implementation aux rep content =
-    match find_extended_implementation aux rep with
-    | Some computation -> computation
-    | None ->
-      (match content with
-       | Some (lazy content) -> aux.generic content
-       | None ->
-         let typename = Typerep.Named.typename_of_t rep in
-         let name = Typename.Uid.name (Typename.uid typename) in
-         raise_not_implemented name)
-  ;;
 end
-
-module _ = Hashtbl.Make (Typename.Key)
 
 module Make (X : sig
     type 'a t
@@ -837,7 +753,8 @@ struct
                | None ->
                  let name = Typename.Uid.name (Typename.uid typename) in
                  raise_not_implemented name
-               | Some (lazy content) ->
+               | Some content ->
+                 let content = Portable_lazy.force content in
                  if X.Named.share content
                  then (
                    let shared = X.Named.init context typename in

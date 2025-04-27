@@ -1,18 +1,20 @@
-(**
-   Abstract types helpers.
+@@ portable
 
-   An abstract type in the sense of the typerep library is a type whose representation is
-   unknown. Such a type has only a name that can be used to provide and register custom
-   implementation of generics. This is typically a type obtained with the following syntax
-   extension:
+open! Base
 
-   {[
-     type t with typerep(abstract)
-   ]}
+(** Abstract types helpers.
 
-   The following functors are meant to be used by the code generator, however they could
-   also be useful while writing low level typerep code manually.
-*)
+    An abstract type in the sense of the typerep library is a type whose representation is
+    unknown. Such a type has only a name that can be used to provide and register custom
+    implementation of generics. This is typically a type obtained with the following
+    syntax extension:
+
+    {[
+      type t with typerep(abstract)
+    ]}
+
+    The following functors are meant to be used by the code generator, however they could
+    also be useful while writing low level typerep code manually. *)
 
 module Make0 (X : Named_intf.S0) : Typerepable.S with type t := X.t
 module Make1 (X : Named_intf.S1) : Typerepable.S1 with type 'a t := 'a X.t

@@ -1,7 +1,11 @@
-(** runtime representation of the name of type ['a].
-    Useful for representing types with a nominal notion of equality *)
+@@ portable
 
-type 'a t
+open! Base
+
+(** runtime representation of the name of type ['a]. Useful for representing types with a
+    nominal notion of equality *)
+
+type 'a t : value mod contended portable
 type 'a typename = 'a t
 
 val create : ?name:string -> unit -> 'a t
@@ -15,7 +19,7 @@ val same_witness_exn : 'a t -> 'b t -> ('a, 'b) Type_equal.t
 
 (** a runtime representation of fully applied type ['a] *)
 module Key : sig
-  type t
+  type t : value mod contended portable
 
   val compare : t -> t -> int
   val equal : t -> t -> bool
@@ -26,42 +30,43 @@ val key : 'a t -> Key.t
 
 (** an untyped runtime representation of non applied type *)
 module Uid : sig
-  type t
+  type t : value mod contended portable
 
   val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int
   val name : t -> string
+  val sexp_of_t : t -> Sexp.t
 end
 
 val uid : 'a t -> Uid.t
 val name : 'a t -> string
 
-module type S0 = sig
+module type S0 = sig @@ portable
   type t
 
   val typename_of_t : t typename
 end
 
-module type S1 = sig
+module type S1 = sig @@ portable
   type 'a t
 
   val typename_of_t : 'a typename -> 'a t typename
 end
 
-module type S2 = sig
+module type S2 = sig @@ portable
   type ('a, 'b) t
 
   val typename_of_t : 'a typename -> 'b typename -> ('a, 'b) t typename
 end
 
-module type S3 = sig
+module type S3 = sig @@ portable
   type ('a, 'b, 'c) t
 
   val typename_of_t : 'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
 end
 
-module type S4 = sig
+module type S4 = sig @@ portable
   type ('a, 'b, 'c, 'd) t
 
   val typename_of_t
@@ -72,7 +77,7 @@ module type S4 = sig
     -> ('a, 'b, 'c, 'd) t typename
 end
 
-module type S5 = sig
+module type S5 = sig @@ portable
   type ('a, 'b, 'c, 'd, 'e) t
 
   val typename_of_t

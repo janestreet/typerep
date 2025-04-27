@@ -1,27 +1,28 @@
+open! Base
 open Std_internal
 
-module type S = sig
+module type S = sig @@ portable
   type t
 
   val typerep_of_t : t Typerep.t
   val typename_of_t : t Typename.t
 end
 
-module type S1 = sig
+module type S1 = sig @@ portable
   type 'a t
 
   val typerep_of_t : 'a Typerep.t -> 'a t Typerep.t
   val typename_of_t : 'a Typename.t -> 'a t Typename.t
 end
 
-module type S2 = sig
+module type S2 = sig @@ portable
   type ('a, 'b) t
 
   val typerep_of_t : 'a Typerep.t -> 'b Typerep.t -> ('a, 'b) t Typerep.t
   val typename_of_t : 'a Typename.t -> 'b Typename.t -> ('a, 'b) t Typename.t
 end
 
-module type S3 = sig
+module type S3 = sig @@ portable
   type ('a, 'b, 'c) t
 
   val typerep_of_t
@@ -37,7 +38,7 @@ module type S3 = sig
     -> ('a, 'b, 'c) t Typename.t
 end
 
-module type S4 = sig
+module type S4 = sig @@ portable
   type ('a, 'b, 'c, 'd) t
 
   val typerep_of_t
@@ -55,7 +56,7 @@ module type S4 = sig
     -> ('a, 'b, 'c, 'd) t Typename.t
 end
 
-module type S5 = sig
+module type S5 = sig @@ portable
   type ('a, 'b, 'c, 'd, 'e) t
 
   val typerep_of_t

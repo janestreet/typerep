@@ -1,25 +1,28 @@
+@@ portable
+
+open! Base
 open Std_internal
 
 (*
    Typerep.Named generation helpers
 *)
 
-module Make0 (X : Named_intf.S0) : sig
+module Make0 (X : Named_intf.S0) : sig @@ portable
   val named : X.t Typerep.Named.t
   val typename_of_t : X.t Typename.t
 end
 
-module Make1 (X : Named_intf.S1) : sig
+module Make1 (X : Named_intf.S1) : sig @@ portable
   val named : 'a Typerep.t -> 'a X.t Typerep.Named.t
   val typename_of_t : 'a Typename.t -> 'a X.t Typename.t
 end
 
-module Make2 (X : Named_intf.S2) : sig
+module Make2 (X : Named_intf.S2) : sig @@ portable
   val named : 'a Typerep.t -> 'b Typerep.t -> ('a, 'b) X.t Typerep.Named.t
   val typename_of_t : 'a Typename.t -> 'b Typename.t -> ('a, 'b) X.t Typename.t
 end
 
-module Make3 (X : Named_intf.S3) : sig
+module Make3 (X : Named_intf.S3) : sig @@ portable
   val named
     :  'a Typerep.t
     -> 'b Typerep.t
@@ -33,7 +36,7 @@ module Make3 (X : Named_intf.S3) : sig
     -> ('a, 'b, 'c) X.t Typename.t
 end
 
-module Make4 (X : Named_intf.S4) : sig
+module Make4 (X : Named_intf.S4) : sig @@ portable
   val named
     :  'a Typerep.t
     -> 'b Typerep.t
@@ -49,7 +52,7 @@ module Make4 (X : Named_intf.S4) : sig
     -> ('a, 'b, 'c, 'd) X.t Typename.t
 end
 
-module Make5 (X : Named_intf.S5) : sig
+module Make5 (X : Named_intf.S5) : sig @@ portable
   val named
     :  'a Typerep.t
     -> 'b Typerep.t

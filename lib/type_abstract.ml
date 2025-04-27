@@ -1,3 +1,4 @@
+open! Base
 open Std_internal
 
 module Make0 (X : Named_intf.S0) : Typerepable.S with type t := X.t = struct

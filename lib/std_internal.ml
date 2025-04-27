@@ -1,3 +1,5 @@
+open! Base
+
 module Name_of = struct
   let typename_of_int =
     let module M =
@@ -244,11 +246,11 @@ module Name_of = struct
   let typename_of_tuple5 = M_tuple5.typename_of_t
 end
 
-module rec Typerep : sig
+module rec Typerep : sig @@ portable
   type value := [ `value ]
   type non_value := [ `non_value ]
 
-  type (_, _) t_any =
+  type (_, _) t_any : value mod contended portable =
     | Int : (int, value) t_any
     | Int32 : (int32, value) t_any
     | Int64 : (int64, value) t_any
@@ -270,19 +272,26 @@ module rec Typerep : sig
     | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
     | Record : 'a Typerep.Record.t -> ('a, value) t_any
     | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
-    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    | Named :
+        ('a Typerep.Named.t * ('a, value) t_any Portable_lazy.t option)
+        -> ('a, value) t_any
     | Int32_u : (unit -> int32#, non_value) t_any
     | Int64_u : (unit -> int64#, non_value) t_any
     | Nativeint_u : (unit -> nativeint#, non_value) t_any
     | Float_u : (unit -> float#, non_value) t_any
+  [@@unsafe_allow_any_mode_crossing]
 
   type 'a t = ('a, value) t_any
   type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
-  type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
-  type packed = T : 'a t -> packed
+
+  type 'a any_packed : value mod contended portable = T : ('a, _) t_any -> 'a any_packed
+  [@@unsafe_allow_any_mode_crossing]
+
+  type packed : value mod contended portable = T : 'a t -> packed
+  [@@unsafe_allow_any_mode_crossing]
 
   module Named : sig
-    module type T0 = sig
+    module type T0 = sig @@ portable
       type named
       type t
 
@@ -291,7 +300,7 @@ module rec Typerep : sig
       val witness : (t, named) Type_equal.t
     end
 
-    module type T1 = sig
+    module type T1 = sig @@ portable
       type 'a named
       type a
 
@@ -304,7 +313,7 @@ module rec Typerep : sig
       val witness : (t, a named) Type_equal.t
     end
 
-    module type T2 = sig
+    module type T2 = sig @@ portable
       type ('a, 'b) named
       type a
 
@@ -321,7 +330,7 @@ module rec Typerep : sig
       val witness : (t, (a, b) named) Type_equal.t
     end
 
-    module type T3 = sig
+    module type T3 = sig @@ portable
       type ('a, 'b, 'c) named
       type a
 
@@ -347,7 +356,7 @@ module rec Typerep : sig
       val witness : (t, (a, b, c) named) Type_equal.t
     end
 
-    module type T4 = sig
+    module type T4 = sig @@ portable
       type ('a, 'b, 'c, 'd) named
       type a
 
@@ -378,7 +387,7 @@ module rec Typerep : sig
       val witness : (t, (a, b, c, d) named) Type_equal.t
     end
 
-    module type T5 = sig
+    module type T5 = sig @@ portable
       type ('a, 'b, 'c, 'd, 'e) named
       type a
 
@@ -417,13 +426,14 @@ module rec Typerep : sig
     (* there the module is necessary because we need to deal with a type [t] with
        parameters whose kind is not representable as a type variable: ['a 't], even with
        a gadt. *)
-    type 'a t =
+    type 'a t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
       | T2 of (module T2 with type t = 'a)
       | T3 of (module T3 with type t = 'a)
       | T4 of (module T4 with type t = 'a)
       | T5 of (module T5 with type t = 'a)
+    [@@unsafe_allow_any_mode_crossing]
 
     val arity : _ t -> int
     val typename_of_t : 'a t -> 'a Typename.t
@@ -456,7 +466,8 @@ module rec Typerep : sig
     val typename_of_t : 'a t -> 'a Typename.t
   end
 
-  include Variant_and_record_intf.S with type 'a t := 'a any_packed
+  include%template
+    Variant_and_record_intf.S [@modality portable] with type 'a t := 'a any_packed
 
   val same : _ t_any -> _ t_any -> bool
   val same_witness : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t option
@@ -467,7 +478,7 @@ end = struct
   type value = [ `value ]
   type non_value = [ `non_value ]
 
-  type (_, _) t_any =
+  type (_, _) t_any : value mod contended portable =
     | Int : (int, value) t_any
     | Int32 : (int32, value) t_any
     | Int64 : (int64, value) t_any
@@ -489,19 +500,26 @@ end = struct
     | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
     | Record : 'a Typerep.Record.t -> ('a, value) t_any
     | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
-    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    | Named :
+        ('a Typerep.Named.t * ('a, value) t_any Portable_lazy.t option)
+        -> ('a, value) t_any
     | Int32_u : (unit -> int32#, non_value) t_any
     | Int64_u : (unit -> int64#, non_value) t_any
     | Nativeint_u : (unit -> nativeint#, non_value) t_any
     | Float_u : (unit -> float#, non_value) t_any
+  [@@unsafe_allow_any_mode_crossing]
 
   type 'a t = ('a, value) t_any
   type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
-  type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
-  type packed = T : 'a t -> packed
+
+  type 'a any_packed : value mod contended portable = T : ('a, _) t_any -> 'a any_packed
+  [@@unsafe_allow_any_mode_crossing]
+
+  type packed : value mod contended portable = T : 'a t -> packed
+  [@@unsafe_allow_any_mode_crossing]
 
   module Named = struct
-    module type T0 = sig
+    module type T0 = sig @@ portable
       type named
       type t
 
@@ -510,7 +528,7 @@ end = struct
       val witness : (t, named) Type_equal.t
     end
 
-    module type T1 = sig
+    module type T1 = sig @@ portable
       type 'a named
       type a
 
@@ -523,7 +541,7 @@ end = struct
       val witness : (t, a named) Type_equal.t
     end
 
-    module type T2 = sig
+    module type T2 = sig @@ portable
       type ('a, 'b) named
       type a
 
@@ -540,7 +558,7 @@ end = struct
       val witness : (t, (a, b) named) Type_equal.t
     end
 
-    module type T3 = sig
+    module type T3 = sig @@ portable
       type ('a, 'b, 'c) named
       type a
 
@@ -566,7 +584,7 @@ end = struct
       val witness : (t, (a, b, c) named) Type_equal.t
     end
 
-    module type T4 = sig
+    module type T4 = sig @@ portable
       type ('a, 'b, 'c, 'd) named
       type a
 
@@ -597,7 +615,7 @@ end = struct
       val witness : (t, (a, b, c, d) named) Type_equal.t
     end
 
-    module type T5 = sig
+    module type T5 = sig @@ portable
       type ('a, 'b, 'c, 'd, 'e) named
       type a
 
@@ -636,13 +654,14 @@ end = struct
     (* there the module is necessary because we need to deal with a type [t] with
        parameters whose kind is not representable as a type variable: ['a 't], even with
        a gadt. *)
-    type 'a t =
+    type 'a t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
       | T2 of (module T2 with type t = 'a)
       | T3 of (module T3 with type t = 'a)
       | T4 of (module T4 with type t = 'a)
       | T5 of (module T5 with type t = 'a)
+    [@@unsafe_allow_any_mode_crossing]
 
     let arity = function
       | T0 _ -> 0
@@ -730,7 +749,7 @@ end = struct
     ;;
   end
 
-  include Variant_and_record_intf.M (struct
+  include%template Variant_and_record_intf.M [@modality portable] (struct
       type 'a t = 'a any_packed
     end)
 
@@ -776,17 +795,18 @@ end = struct
        | Some E.T as x -> x
        | None ->
          (match r1, r2 with
-          | Some (lazy t1), Some (lazy t2) -> same_witness t1 t2
-          | Some (lazy t1), None -> same_witness t1 t2
-          | None, Some (lazy t2) -> same_witness t1 t2
+          | Some t1, Some t2 ->
+            same_witness (Portable_lazy.force t1) (Portable_lazy.force t2)
+          | Some t1, None -> same_witness (Portable_lazy.force t1) t2
+          | None, Some t2 -> same_witness t1 (Portable_lazy.force t2)
           | None, None -> None))
     | Named (_, r1), t2 ->
       (match r1 with
-       | Some (lazy t1) -> same_witness t1 t2
+       | Some t1 -> same_witness (Portable_lazy.force t1) t2
        | None -> None)
     | t1, Named (_, r2) ->
       (match r2 with
-       | Some (lazy t2) -> same_witness t1 t2
+       | Some t2 -> same_witness t1 (Portable_lazy.force t2)
        | None -> None)
     | Int, Int -> Some E.T
     | Int32, Int32 -> Some E.T
@@ -894,7 +914,7 @@ end = struct
     | Variant _, _ -> None
   ;;
 
-  let same a b = same_witness a b <> None
+  let same a b = Option.is_some (same_witness a b)
 
   let same_witness_exn a b =
     match same_witness a b with
@@ -903,7 +923,7 @@ end = struct
   ;;
 
   let rec head : type a index. (a, index) t_any -> (a, index) t_any = function
-    | Typerep.Named (_, Some (lazy t)) -> head t
+    | Typerep.Named (_, Some t) -> head (Portable_lazy.force t)
     | t -> t
   ;;
 end
