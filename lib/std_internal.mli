@@ -1,3 +1,5 @@
+open! Base
+
 (** type-safe runtime type introspection *)
 
 (** runtime type representations *)
@@ -28,10 +30,12 @@ module rec Typerep : sig
     | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
     | Record : 'a Typerep.Record.t -> ('a, value) t_any
     | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
-    (** The [Named] constructor both allows for custom implementations of generics
-        based on name and provides a way to represent recursive types, the lazy
-        part dealing with cycles *)
-    | Named : ('a Typerep.Named.t * ('a, value) t_any lazy_t option) -> ('a, value) t_any
+    (** The [Named] constructor both allows for custom implementations of generics based
+        on name and provides a way to represent recursive types, the lazy part dealing
+        with cycles *)
+    | Named :
+        ('a Typerep.Named.t * ('a, value) t_any Portable_lazy.t option)
+        -> ('a, value) t_any
     (* The constructors [Int32_u], [Int64_u], [Nativeint_u], and [Float_u] below look
        pretty weird. It's necessary because the type parameter has layout [value], and
        [unit -> int32#] has layout [value] while [int32#] does not. Making the type
@@ -41,6 +45,7 @@ module rec Typerep : sig
     | Int64_u : (unit -> int64, non_value) t_any
     | Nativeint_u : (unit -> nativeint, non_value) t_any
     | Float_u : (unit -> float, non_value) t_any
+  [@@unsafe_allow_any_mode_crossing]
 
   (** A typerep for a type of layout value. *)
   type 'a t = ('a, value) t_any
@@ -49,7 +54,9 @@ module rec Typerep : sig
   type 'a t_non_value = (unit -> 'a, non_value) t_any
 
   type 'a any_packed = T : ('a, _) t_any -> 'a any_packed
-  type packed = T : 'a t -> packed
+  [@@unsafe_allow_any_mode_crossing]
+
+  type packed = T : 'a t -> packed [@@unsafe_allow_any_mode_crossing]
 
   module Named : sig
     module type T0 = sig
@@ -191,6 +198,7 @@ module rec Typerep : sig
       | T3 of (module T3 with type t = 'a)
       | T4 of (module T4 with type t = 'a)
       | T5 of (module T5 with type t = 'a)
+    [@@unsafe_allow_any_mode_crossing]
 
     val arity : _ t -> int
     val typename_of_t : 'a t -> 'a Typename.t
@@ -221,40 +229,43 @@ module rec Typerep : sig
     val typename_of_t : 'a t -> 'a Typename.t
   end
 
-  include Variant_and_record_intf.S with type 'a t := 'a any_packed
+  include%template
+    Variant_and_record_intf.S [@modality portable] with type 'a t := 'a any_packed
 
-  (** [same t t'] will return a proof a equality if [t] and [t'] are the same type.
-      One can think of two types being the [same] as two types whose values could be for
-      example put in a list together.
-      It is worth noting that this function *does not* operate compatiblity diffs between
-      two different types with the same structure. Example:
+  (** [same t t'] will return a proof a equality if [t] and [t'] are the same type. One
+      can think of two types being the [same] as two types whose values could be for
+      example put in a list together. It is worth noting that this function *does not*
+      operate compatiblity diffs between two different types with the same structure.
+      Example:
       {[
         module M1 = struct
-          type t = {
-            a : int;
-            b : float;
-          } [@@deriving typerep]
-        end
-        module M2 = struct
-          type t = {
-            a : int;
-            b : float;
-          } [@@deriving typerep]
+          type t =
+            { a : int
+            ; b : float
+            }
+          [@@deriving typerep]
         end
 
-        let _ = [%test_result:bool] ~expect:false (same M1.typerep_of_t M2.typerep_of_t)
+        module M2 = struct
+          type t =
+            { a : int
+            ; b : float
+            }
+          [@@deriving typerep]
+        end
+
+        let _ = [%test_result: bool] ~expect:false (same M1.typerep_of_t M2.typerep_of_t)
 
         type a = int [@@deriving typerep]
         type b = int [@@deriving typerep]
 
-        let _ = [%test_result:bool] ~expect:true (same typerep_of_a typerep_of_b)
+        let _ = [%test_result: bool] ~expect:true (same typerep_of_a typerep_of_b)
       ]}
       This is meant to recover type equality hidden by existential constructors.
 
       Basically this function does structural equality for everything except variant
       types, record types, and named types with no lazy definition exposed. This last case
-      is about types that are defined [[@@deriving typerep ~abstract]].
-  *)
+      is about types that are defined [[@@deriving typerep ~abstract]]. *)
   val same : _ t_any -> _ t_any -> bool
 
   val same_witness : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t option

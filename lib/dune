@@ -1,5 +1,6 @@
 (library
  (name typerep_lib)
  (public_name typerep)
- (preprocess no_preprocessing)
+ (preprocess
+  (pps ppx_template))
  (libraries base))

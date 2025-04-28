@@ -12,7 +12,8 @@ build: [
 depends: [
   "ocaml" {>= "5.1.0"}
   "base"
-  "dune" {>= "3.11.0"}
+  "ppx_template"
+  "dune"         {>= "3.17.0"}
 ]
 available: arch != "arm32" & arch != "x86_32"
 synopsis: "Typerep is a library for runtime types"

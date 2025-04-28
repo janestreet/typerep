@@ -1,3 +1,4 @@
+open! Base
 module Type_abstract = Type_abstract
 module Type_equal = Type_equal
 module Type_generic = Type_generic

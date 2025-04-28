@@ -1,5 +1,7 @@
-(** runtime representation of the name of type ['a].
-    Useful for representing types with a nominal notion of equality *)
+open! Base
+
+(** runtime representation of the name of type ['a]. Useful for representing types with a
+    nominal notion of equality *)
 
 type 'a t
 type 'a typename = 'a t
@@ -32,6 +34,7 @@ module Uid : sig
   val equal : t -> t -> bool
   val hash : t -> int
   val name : t -> string
+  val sexp_of_t : t -> Sexp.t
 end
 
 val uid : 'a t -> Uid.t

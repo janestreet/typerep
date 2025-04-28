@@ -1,3 +1,5 @@
+open! Base
+
 module M (X : sig
     type 'a t
   end) =
@@ -61,7 +63,6 @@ module type S = sig
   type 'a t
 
   include module type of M (struct
-      type 'a computation = 'a t
-      type 'a t = 'a computation
+      type nonrec 'a t = 'a t
     end)
 end

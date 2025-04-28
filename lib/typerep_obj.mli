@@ -1,3 +1,4 @@
+open! Base
 open Std_internal
 
 (** some utils related to the runtime of ocaml, used both at compile time (camlp4) and
