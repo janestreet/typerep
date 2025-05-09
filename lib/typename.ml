@@ -89,29 +89,35 @@ module type S0 = sig
   val typename_of_t : t typename
 end
 
+[%%template
+[@@@kind.default k = (any, any_non_null, value)]
+
 module type S1 = sig
   type 'a t
 
-  val typename_of_t : 'a typename -> 'a t typename
+  val typename_of_t : 'a. 'a typename -> 'a t typename
 end
 
 module type S2 = sig
   type ('a, 'b) t
 
-  val typename_of_t : 'a typename -> 'b typename -> ('a, 'b) t typename
+  val typename_of_t : 'a 'b. 'a typename -> 'b typename -> ('a, 'b) t typename
 end
 
 module type S3 = sig
   type ('a, 'b, 'c) t
 
-  val typename_of_t : 'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
+  val typename_of_t
+    : 'a 'b 'c.
+    'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
 end
 
 module type S4 = sig
   type ('a, 'b, 'c, 'd) t
 
   val typename_of_t
-    :  'a typename
+    : 'a 'b 'c 'd.
+    'a typename
     -> 'b typename
     -> 'c typename
     -> 'd typename
@@ -122,49 +128,53 @@ module type S5 = sig
   type ('a, 'b, 'c, 'd, 'e) t
 
   val typename_of_t
-    :  'a typename
+    : 'a 'b 'c 'd 'e.
+    'a typename
     -> 'b typename
     -> 'c typename
     -> 'd typename
     -> 'e typename
     -> ('a, 'b, 'c, 'd, 'e) t typename
-end
+end]
 
 module Make0 (X : Named_intf.S0) = struct
   let uid = Uid.next X.name
   let typename_of_t = { Key.uid; params = [] }
 end
 
-module Make1 (X : Named_intf.S1) = struct
+[%%template
+[@@@kind.default k = (any, any_non_null, value)]
+
+module Make1 (X : Named_intf.S1 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a = { Key.uid; params = [ a ] }
 end
 
-module Make2 (X : Named_intf.S2) = struct
+module Make2 (X : Named_intf.S2 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b = { Key.uid; params = [ a; b ] }
 end
 
-module Make3 (X : Named_intf.S3) = struct
+module Make3 (X : Named_intf.S3 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c = { Key.uid; params = [ a; b; c ] }
 end
 
-module Make4 (X : Named_intf.S4) = struct
+module Make4 (X : Named_intf.S4 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c d = { Key.uid; params = [ a; b; c; d ] }
 end
 
-module Make5 (X : Named_intf.S5) = struct
+module Make5 (X : Named_intf.S5 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c d e = { Key.uid; params = [ a; b; c; d; e ] }
-end
+end]
 
 module Table (X : sig
     type 'a t
   end) =
 struct
-  type data = Data : 'a t * 'a X.t -> data
+  type data = Data : 'a. 'a t * 'a X.t -> data
   type t = data Hashtbl.M(Key).t
 
   let create int = Hashtbl.create (module Key) ~size:int

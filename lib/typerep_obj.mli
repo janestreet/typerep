@@ -6,9 +6,5 @@ open Std_internal
 val repr_of_poly_variant : [> ] -> int
 
 val hash_variant : string -> int
-val double_array_value : unit -> 'a
-
-(** creates a dummy value for typereps for unboxed types. *)
-val double_array_non_value : 'any. 'any Typerep.t_non_value -> unit -> 'any
-
+val double_array_value : 'a. 'a Typerep.t -> unit -> 'a
 val has_double_array_tag : 'a -> bool

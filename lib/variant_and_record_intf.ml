@@ -13,7 +13,7 @@ end
 module%template [@modality p = nonportable] Types = struct
   module type Tag = sig
     type ('variant, 'args) create =
-      | Args of ('args -> 'variant)
+      | Args of ((unit -> 'args) -> 'variant)
       | Const of 'variant
 
     type ('variant, 'args) t
@@ -25,14 +25,18 @@ module%template [@modality p = nonportable] Types = struct
           ['variant] parameter is the variant type, it is the same for all the
           constructors of that variant type. The type of the parameters might be different
           for each constructor and is thus existential *)
-      type _ tag = Tag : ('variant, 'args) Tag.t -> 'variant tag
+      type _ tag = Tag : 'variant 'args. ('variant, 'args) Tag.t -> 'variant tag
 
       (** A similar existential constructor to [_ tag] but this one holds a value whose
           type is the arguments of the tag constructor. A value of type ['a value] is a
           pair of
           (1) a value of variant type ['a] along with (2) some information about the
               constructor within the type ['a] *)
-      type _ value = Value : ('variant, 'args) Tag.t * 'args -> 'variant value
+      type _ value =
+        | Value :
+            'variant 'args.
+            ('variant, 'args) Tag.t * (unit -> 'args)
+            -> 'variant value
 
       (** Witness of a variant type. The parameter is the type of the variant type
           witnessed. *)
@@ -50,12 +54,12 @@ module%template [@modality p = nonportable] Types = struct
           ['record] parameter is the record type, it is the same for all the field of that
           record type. The type of the fields might be different for each field and is
           thus existential. *)
-      type _ field = Field : ('record, 'a) Field.t -> 'record field
+      type _ field = Field : 'record 'a. ('record, 'a) Field.t -> 'record field
 
       (** ['record fields] is a type isomorphic to ['record]. This gives a way to get the
           field value for each field of the record. The advantage of this representation
           is that it is convenient for writing generic computations. *)
-      type 'record fields = { get : 'field. ('record, 'field) Field.t -> 'field }
+      type 'record fields = { get : 'field. ('record, 'field) Field.t -> unit -> 'field }
 
       (** Witness of a record type. The parameter is the type of the record type
           witnessed. *)
@@ -65,7 +69,7 @@ module%template [@modality p = nonportable] Types = struct
 
   module Tag_internal (X : X [@modality p]) = struct
     type ('variant, 'args) create =
-      | Args of ('args -> 'variant)
+      | Args of ((unit -> 'args) -> 'variant)
       | Const of 'variant
 
     type ('variant, 'args) t =
@@ -81,8 +85,10 @@ module%template [@modality p = nonportable] Types = struct
   end
 
   module Variant_internal (Tag : Tag) = struct
-    type _ tag = Tag : ('variant, 'a) Tag.t -> 'variant tag
-    type _ value = Value : ('variant, 'a) Tag.t * 'a -> 'variant value
+    type _ tag = Tag : 'variant 'a. ('variant, 'a) Tag.t -> 'variant tag
+
+    type _ value =
+      | Value : 'variant 'a. ('variant, 'a) Tag.t * (unit -> 'a) -> 'variant value
 
     type 'a t =
       { typename : 'a Typename.t
@@ -98,19 +104,19 @@ module%template [@modality p = nonportable] Types = struct
       ; rep : 'field X.t
       ; index : int
       ; tyid : 'field Typename.t
-      ; get : 'record -> 'field
+      ; get : 'record -> unit -> 'field
       ; is_mutable : bool
       }
   end
 
   module Record_internal (Field : Field) = struct
-    type _ field = Field : ('record, 'a) Field.t -> 'record field
-    type 'record fields = { get : 'field. ('record, 'field) Field.t -> 'field }
+    type _ field = Field : 'record 'a. ('record, 'a) Field.t -> 'record field
+    type 'record fields = { get : 'field. ('record, 'field) Field.t -> unit -> 'field }
 
     type 'a t =
       { typename : 'a Typename.t
       ; fields : 'a field iarray
-      ; has_double_array_tag : bool
+      ; has_double_array_tag : bool Portable_lazy.t
       ; create : 'a fields -> 'a
       }
   end
@@ -121,7 +127,7 @@ end
 module%template [@modality p = portable] Types = struct
   module type Tag = sig
     type ('variant, 'args) create =
-      | Args of ('args -> 'variant)
+      | Args of ((unit -> 'args) -> 'variant)
       | Const of (unit -> 'variant)
     [@@unsafe_allow_any_mode_crossing]
 
@@ -130,10 +136,15 @@ module%template [@modality p = portable] Types = struct
 
   module Variant (Tag : Tag) = struct
     module type S = sig
-      type _ tag = Tag : ('variant, 'args) Tag.t -> 'variant tag
+      type _ tag = Tag : 'variant 'args. ('variant, 'args) Tag.t -> 'variant tag
       [@@unsafe_allow_any_mode_crossing]
 
-      type _ value = Value : ('variant, 'args) Tag.t * 'args -> 'variant value
+      type _ value =
+        | Value :
+            'variant 'args.
+            ('variant, 'args) Tag.t * (unit -> 'args)
+            -> 'variant value
+
       type 'a t
     end
   end
@@ -144,17 +155,17 @@ module%template [@modality p = portable] Types = struct
 
   module Record (Field : Field) = struct
     module type S = sig
-      type _ field = Field : ('record, 'a) Field.t -> 'record field
+      type _ field = Field : 'record 'a. ('record, 'a) Field.t -> 'record field
       [@@unsafe_allow_any_mode_crossing]
 
-      type 'record fields = { get : 'field. ('record, 'field) Field.t -> 'field }
+      type 'record fields = { get : 'field. ('record, 'field) Field.t -> unit -> 'field }
       type 'a t
     end
   end
 
   module Tag_internal (X : X [@modality p]) = struct
     type ('variant, 'args) create =
-      | Args of ('args -> 'variant)
+      | Args of ((unit -> 'args) -> 'variant)
       | Const of (unit -> 'variant)
     [@@unsafe_allow_any_mode_crossing]
 
@@ -171,10 +182,11 @@ module%template [@modality p = portable] Types = struct
   end
 
   module Variant_internal (Tag : Tag) = struct
-    type _ tag = Tag : ('variant, 'a) Tag.t -> 'variant tag
+    type _ tag = Tag : 'variant 'a. ('variant, 'a) Tag.t -> 'variant tag
     [@@unsafe_allow_any_mode_crossing]
 
-    type _ value = Value : ('variant, 'a) Tag.t * 'a -> 'variant value
+    type _ value =
+      | Value : 'variant 'a. ('variant, 'a) Tag.t * (unit -> 'a) -> 'variant value
 
     type 'a t =
       { typename : 'a Typename.t
@@ -191,22 +203,22 @@ module%template [@modality p = portable] Types = struct
       ; rep : 'field X.t
       ; index : int
       ; tyid : 'field Typename.t
-      ; get : 'record -> 'field
+      ; get : 'record -> unit -> 'field
       ; is_mutable : bool
       }
     [@@unsafe_allow_any_mode_crossing]
   end
 
   module Record_internal (Field : Field) = struct
-    type _ field = Field : ('record, 'a) Field.t -> 'record field
+    type _ field = Field : 'record 'a. ('record, 'a) Field.t -> 'record field
     [@@unsafe_allow_any_mode_crossing]
 
-    type 'record fields = { get : 'field. ('record, 'field) Field.t -> 'field }
+    type 'record fields = { get : 'field. ('record, 'field) Field.t -> unit -> 'field }
 
     type 'a t =
       { typename : 'a Typename.t
       ; fields : 'a field iarray
-      ; has_double_array_tag : bool
+      ; has_double_array_tag : bool Portable_lazy.t
       ; create : 'a fields -> 'a
       }
     [@@unsafe_allow_any_mode_crossing]
@@ -288,7 +300,7 @@ struct
         for standard variant, the ocaml syntax implies that this label will always starts
         with a capital letter. For polymorphic variants, this might be a lowercase char.
         For polymorphic variant, this label does not include the [`] character. *)
-    val label : (_, _) t -> string
+    val label : 'a 'b. ('a, 'b) t -> string
 
     (** The size of the ocaml heap block containing the arguments
 
@@ -302,7 +314,7 @@ struct
              | A of { x : int; y : string }
           etc.
         v} *)
-    val arity : (_, _) t -> int
+    val arity : 'a 'b. ('a, 'b) t -> int
 
     (** The label of the fields for inline records. For other forms of tags, this is the
         empty list. When this returns a non empty list, the length of the returned list is
@@ -323,7 +335,7 @@ struct
            | A of { x : int }               -> [ "x" ]
            | A of { x : int; y : string }   -> [ "x" ; "y" ]
         v} *)
-    val args_labels : (_, _) t -> string list
+    val args_labels : 'a 'b. ('a, 'b) t -> string list
 
     (** The index of the constructor in the list of all the variant type's constructors
         Examples:
@@ -336,7 +348,7 @@ struct
             | E of { x : int }
           (* 4 *)
         ]} *)
-    val index : (_, _) t -> int
+    val index : 'a 'b. ('a, 'b) t -> int
 
     (** {v
        ocaml_repr is related to the runtime of objects. this is essentially a way of
@@ -371,7 +383,7 @@ struct
            | H of { x : int }                      (* 3 *)
        ]}
         v} *)
-    val ocaml_repr : (_, _) t -> int
+    val ocaml_repr : 'a 'b. ('a, 'b) t -> int
 
     (** Give back a way of constructing a value of that constructor from its arguments.
 
@@ -388,21 +400,23 @@ struct
                 }
         ]}
 
-        [create] will return something equivalent to: tag_A :
-        [Args (fun (d : (int * string) -> A d)] tag_B : [Args (fun (i, f) -> B (i, f))]
-        tag_C : [Const C] tag_D : [Args (fun (x, y) -> D { x; y })] *)
-    val create : ('variant, 'args) t -> ('variant, 'args) create
+        [create] will return something equivalent to:
+        - tag_A : [Args (fun (d : (int * string) -> A d)]
+        - tag_B : [Args (fun #(i, f) -> B (i, f))]
+        - tag_C : [Const C]
+        - tag_D : [Args (fun #(x, y) -> D { x; y })] *)
+    val create : 'variant 'args. ('variant, 'args) t -> ('variant, 'args) create
 
     (** return the type_name of the arguments. might be used to perform some lookup based
         on it while building a computation for example *)
-    val tyid : (_, 'args) t -> 'args Typename.t
+    val tyid : 'variant 'args. ('variant, 'args) t -> 'args Typename.t
 
     (** get the representation/computation of the arguments *)
-    val traverse : (_, 'args) t -> 'args X.t
+    val traverse : 'variant 'args. ('variant, 'args) t -> 'args X.t
 
     (* used by the camlp4 extension to build type witnesses, or by some internal parts of
        typerep. you should feel bad if you need to use it in some user code *)
-    val internal_use_only : ('a, 'b) Tag_internal.t -> ('a, 'b) t
+    val internal_use_only : 'a 'b. ('a, 'b) Tag_internal.t -> ('a, 'b) t
   end = struct
     include Tag_internal
 
@@ -482,7 +496,7 @@ struct
                      foo : string; (* "foo" *)
                                    bar : float (* "bar" *) }
         ]} *)
-    val label : (_, _) t -> string
+    val label : 'a 'b. ('a, 'b) t -> string
 
     (** The 0-based index of the field in the list of all fields for this record type.
         Example:
@@ -493,26 +507,26 @@ struct
             ; bar : string (* 2 *)
             }
         ]} *)
-    val index : (_, _) t -> int
+    val index : 'a 'b. ('a, 'b) t -> int
 
     (** Field accessors. This corresponds to the dot operation. [Field.get bar_field t]
         returns the field [bar] of the record value [t], just the same as [t.bar] *)
-    val get : ('record, 'field) t -> 'record -> 'field
+    val get : 'record 'field. ('record, 'field) t -> 'record -> unit -> 'field
 
     (** return whether the field is mutable, i.e. whether its declaration is prefixed with
         the keyword [mutable] *)
-    val is_mutable : (_, _) t -> bool
+    val is_mutable : 'a 'b. ('a, 'b) t -> bool
 
     (** return the type_name of the arguments. Might be used to perform some lookup based
         on it *)
-    val tyid : (_, 'field) t -> 'field Typename.t
+    val tyid : 'record 'field. ('record, 'field) t -> 'field Typename.t
 
     (** get the computation of the arguments *)
-    val traverse : (_, 'field) t -> 'field X.t
+    val traverse : 'record 'field. ('record, 'field) t -> 'field X.t
 
     (* used by the camlp4 extension to build type witnesses, or by some internal parts of
        typerep. you should feel bad if you need to use it in some user code *)
-    val internal_use_only : ('a, 'b) Field_internal.t -> ('a, 'b) t
+    val internal_use_only : 'a 'b. ('a, 'b) Field_internal.t -> ('a, 'b) t
   end = struct
     include Field_internal
 
@@ -547,8 +561,11 @@ struct
 
         Note that you can't get this information dynamically by inspecting the typerep
         once it is applied, because there is at this point no way to tell whether one of
-        the field is polymorphic in the type definition. *)
-    val has_double_array_tag : _ t -> bool
+        the field is polymorphic in the type definition.
+
+        This is computed lazily so that a self-referential named record can inspect other
+        details of its own typerep during the process. *)
+    val has_double_array_tag : _ t -> bool Portable_lazy.t
 
     (** Expose one direction of the isomorphism between a value of type ['a] and a value
         of type ['a fields]. Basically, given an encoding way of accessing the value of

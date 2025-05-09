@@ -1,3 +1,5 @@
+type 'a builtin_array := 'a array
+
 open! Base
 open Std_internal
 
@@ -69,9 +71,9 @@ module type Named = sig
       type_name inside the typerep, going further on. *)
   type 'a t
 
-  val init : Context.t -> 'a Typename.t -> 'a t
-  val get_wip_computation : 'a t -> 'a computation
-  val set_final_computation : 'a t -> 'a computation -> 'a computation
+  val init : 'a. Context.t -> 'a Typename.t -> 'a t
+  val get_wip_computation : 'a. 'a t -> 'a computation
+  val set_final_computation : 'a. 'a t -> 'a computation -> 'a computation
 
   (** It might be interesting to inline some computation for a few typerep if they appear
       several times within a typerep. This parameters will allow one to tweak the sharing
@@ -85,7 +87,7 @@ module type Named = sig
       using the name to refere to it later within the typestruct does not lead to a
       shorter typestruct, and is in fact less readable. The benefit of the sharing depends
       on the computation, its memory and building costs. *)
-  val share : _ Typerep.t -> bool
+  val share : 'a. 'a Typerep.t -> bool
 end
 
 module type Computation = sig
@@ -95,28 +97,68 @@ module type Computation = sig
 
   val int : int t
   val int32 : int32 t
-  val int32_u : (unit -> int32) t
+  val int32_u : int32 t
   val int64 : int64 t
-  val int64_u : (unit -> int64) t
+  val int64_u : int64 t
   val nativeint : nativeint t
-  val nativeint_u : (unit -> nativeint) t
+  val nativeint_u : nativeint t
   val char : char t
   val float : float t
-  val float_u : (unit -> float) t
+  val float_u : float t
   val string : string t
   val bytes : bytes t
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
   val list : 'a t -> 'a list t
-  val array : 'a t -> 'a array t
+  val array : 'a. 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t
   val ref_ : 'a t -> 'a ref t
-  val function_ : 'a t -> 'b t -> ('a -> 'b) t
+
+  val function_
+    : 'a 'b.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t -> 'a t -> 'b t -> ('a -> 'b) t
+
   val tuple2 : 'a t -> 'b t -> ('a * 'b) t
   val tuple3 : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   val tuple4 : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
   val tuple5 : 'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
+
+  val tuple2_u
+    : 'a 'b.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t -> 'a t -> 'b t -> ('a * 'b) t
+
+  val tuple3_u
+    : 'a 'b 'c.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> ('a * 'b * 'c) t
+
+  val tuple4_u
+    : 'a 'b 'c 'd.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t * 'd Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> ('a * 'b * 'c * 'd) t
+
+  val tuple5_u
+    : 'a 'b 'c 'd 'e.
+    'a Typerep.Kind.t
+    * 'b Typerep.Kind.t
+    * 'c Typerep.Kind.t
+    * 'd Typerep.Kind.t
+    * 'e Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> 'e t
+    -> ('a * 'b * 'c * 'd * 'e) t
+
   val record : 'a Record.t -> 'a t
   val variant : 'a Variant.t -> 'a t
 
@@ -180,7 +222,7 @@ module type S = sig
   val register : 'a Typerep.t -> 'a t -> unit
 
   (** main function : compute the generic computation from the typerep *)
-  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a t ]
+  val of_typerep : 'a. 'a Typerep.t -> [ `generic of 'a t ]
 
   (** exported to build a computation on top of a previous one *)
   module Computation : Computation with type 'a t = 'a t

@@ -14,15 +14,38 @@ open! Base
     The following functors are meant to be used by the code generator, however they could
     also be useful while writing low level typerep code manually. *)
 
-module Make0 (X : Named_intf.S0) : Typerepable.S with type t := X.t
-module Make1 (X : Named_intf.S1) : Typerepable.S1 with type 'a t := 'a X.t
-module Make2 (X : Named_intf.S2) : Typerepable.S2 with type ('a, 'b) t := ('a, 'b) X.t
+module Make0 (X : sig
+    type t
 
-module Make3 (X : Named_intf.S3) :
-  Typerepable.S3 with type ('a, 'b, 'c) t := ('a, 'b, 'c) X.t
+    include Named_intf.S0 with type t := t
+  end) : Typerepable.S with type t := X.t
 
-module Make4 (X : Named_intf.S4) :
-  Typerepable.S4 with type ('a, 'b, 'c, 'd) t := ('a, 'b, 'c, 'd) X.t
+module Make1 (X : sig
+    type 'a t
 
-module Make5 (X : Named_intf.S5) :
-  Typerepable.S5 with type ('a, 'b, 'c, 'd, 'e) t := ('a, 'b, 'c, 'd, 'e) X.t
+    include Named_intf.S1 with type 'a t := 'a t
+  end) : Typerepable.S1 with type 'a t := 'a X.t
+
+module Make2 (X : sig
+    type ('a, 'b) t
+
+    include Named_intf.S2 with type ('a, 'b) t := ('a, 'b) t
+  end) : Typerepable.S2 with type ('a, 'b) t := ('a, 'b) X.t
+
+module Make3 (X : sig
+    type ('a, 'b, 'c) t
+
+    include Named_intf.S3 with type ('a, 'b, 'c) t := ('a, 'b, 'c) t
+  end) : Typerepable.S3 with type ('a, 'b, 'c) t := ('a, 'b, 'c) X.t
+
+module Make4 (X : sig
+    type ('a, 'b, 'c, 'd) t
+
+    include Named_intf.S4 with type ('a, 'b, 'c, 'd) t := ('a, 'b, 'c, 'd) t
+  end) : Typerepable.S4 with type ('a, 'b, 'c, 'd) t := ('a, 'b, 'c, 'd) X.t
+
+module Make5 (X : sig
+    type ('a, 'b, 'c, 'd, 'e) t
+
+    include Named_intf.S5 with type ('a, 'b, 'c, 'd, 'e) t := ('a, 'b, 'c, 'd, 'e) t
+  end) : Typerepable.S5 with type ('a, 'b, 'c, 'd, 'e) t := ('a, 'b, 'c, 'd, 'e) X.t

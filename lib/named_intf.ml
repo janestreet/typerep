@@ -6,6 +6,9 @@ module type S0 = sig
   val name : string
 end
 
+[%%template
+[@@@kind.default k = (any, any_non_null, value)]
+
 module type S1 = sig
   type 'a t
 
@@ -34,4 +37,4 @@ module type S5 = sig
   type ('a, 'b, 'c, 'd, 'e) t
 
   val name : string
-end
+end]

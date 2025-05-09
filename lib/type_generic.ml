@@ -1,3 +1,5 @@
+type 'a builtin_array = 'a array
+
 open! Base
 open Std_internal
 module Variant_and_record_intf = Variant_and_record_intf
@@ -46,7 +48,7 @@ struct
     let value (a : variant) =
       match A.Variant.value variant a with
       | A.Variant.Value (atag, a) ->
-        (fun (type args) (atag : (variant, args) A.Tag.t) (a : args) ->
+        (fun (type args) (atag : (variant, args) A.Tag.t) (a : unit -> args) ->
           let (B.Variant_internal.Tag btag) = tags.:(A.Tag.index atag) in
           (fun (type ex) (btag : (variant, ex) B.Tag.t) ->
             let Type_equal.T =
@@ -111,10 +113,10 @@ module type Named = sig
 
   type 'a t
 
-  val init : Context.t -> 'a Typename.t -> 'a t
-  val get_wip_computation : 'a t -> 'a computation
-  val set_final_computation : 'a t -> 'a computation -> 'a computation
-  val share : _ Typerep.t -> bool
+  val init : 'a. Context.t -> 'a Typename.t -> 'a t
+  val get_wip_computation : 'a. 'a t -> 'a computation
+  val set_final_computation : 'a. 'a t -> 'a computation -> 'a computation
+  val share : 'a. 'a Typerep.t -> bool
 end
 
 module type Computation = sig
@@ -124,28 +126,68 @@ module type Computation = sig
 
   val int : int t
   val int32 : int32 t
-  val int32_u : (unit -> int32) t
+  val int32_u : int32 t
   val int64 : int64 t
-  val int64_u : (unit -> int64) t
+  val int64_u : int64 t
   val nativeint : nativeint t
-  val nativeint_u : (unit -> nativeint) t
+  val nativeint_u : nativeint t
   val char : char t
   val float : float t
-  val float_u : (unit -> float) t
+  val float_u : float t
   val string : string t
   val bytes : bytes t
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
   val list : 'a t -> 'a list t
-  val array : 'a t -> 'a array t
+  val array : 'a. 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t
   val ref_ : 'a t -> 'a ref t
-  val function_ : 'a t -> 'b t -> ('a -> 'b) t
+
+  val function_
+    : 'a 'b.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t -> 'a t -> 'b t -> ('a -> 'b) t
+
   val tuple2 : 'a t -> 'b t -> ('a * 'b) t
   val tuple3 : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   val tuple4 : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
   val tuple5 : 'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
+
+  val tuple2_u
+    : 'a 'b.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t -> 'a t -> 'b t -> ('a * 'b) t
+
+  val tuple3_u
+    : 'a 'b 'c.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> ('a * 'b * 'c) t
+
+  val tuple4_u
+    : 'a 'b 'c 'd.
+    'a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t * 'd Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> ('a * 'b * 'c * 'd) t
+
+  val tuple5_u
+    : 'a 'b 'c 'd 'e.
+    'a Typerep.Kind.t
+    * 'b Typerep.Kind.t
+    * 'c Typerep.Kind.t
+    * 'd Typerep.Kind.t
+    * 'e Typerep.Kind.t
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> 'e t
+    -> ('a * 'b * 'c * 'd * 'e) t
+
   val record : 'a Record.t -> 'a t
   val variant : 'a Variant.t -> 'a t
 
@@ -275,13 +317,15 @@ module type S_implementation = sig
   (*
      This function allows you more control on what you want to do
   *)
-  val find_extended_implementation : implementation -> 'a Typerep.Named.t -> 'a t option
+  val find_extended_implementation
+    : 'a.
+    implementation -> 'a Typerep.Named.t -> 'a t option
 end
 
 module type S = sig
   include Extending
 
-  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a t ]
+  val of_typerep : 'a. 'a Typerep.t -> [ `generic of 'a t ]
 
   module Computation : Computation with type 'a t = 'a t
 end
@@ -355,8 +399,8 @@ module Make_S_implementation (X : sig
       | Some rep ->
         let module S = (val rep : S) in
         let witness = Typename.same_witness_exn S.typename_of_t T.typename_of_named in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t = 'a computation
           end)
         in
@@ -381,8 +425,8 @@ module Make_S_implementation (X : sig
               let typename_of_t = T.typename_of_named
             end)
         in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t = T.a computation -> 'a computation
           end)
         in
@@ -409,8 +453,8 @@ module Make_S_implementation (X : sig
               let typename_of_t = T.typename_of_named
             end)
         in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t = T.a computation -> T.b computation -> 'a computation
           end)
         in
@@ -441,8 +485,8 @@ module Make_S_implementation (X : sig
               let typename_of_t = T.typename_of_named
             end)
         in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t =
               T.a computation -> T.b computation -> T.c computation -> 'a computation
           end)
@@ -475,8 +519,8 @@ module Make_S_implementation (X : sig
               let typename_of_t = T.typename_of_named
             end)
         in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t =
               T.a computation
               -> T.b computation
@@ -514,8 +558,8 @@ module Make_S_implementation (X : sig
               let typename_of_t = T.typename_of_named
             end)
         in
-        let module L =
-          Type_equal.Lift (struct
+        let module%template L =
+          Type_equal.Lift [@kind any] (struct
             type 'a t =
               T.a computation
               -> T.b computation
@@ -676,18 +720,12 @@ struct
       type 'a t = 'a X.Named.t
     end)
 
-  module Typerep_any = struct
-    include Typerep
-
-    type 'a t = 'a Typerep.any_packed
-  end
-
-  module Helper = Helper (Typerep_any) (Computation)
+  module Helper = Helper (Typerep) (Computation)
 
   let of_typerep rep =
     let context = X.Named.Context.create () in
     let memo_table = Memo.create 32 in
-    let rec of_typerep : type a index. (a, index) Typerep.t_any -> a t = function
+    let rec of_typerep : type a. a Typerep.t -> a t = function
       | Typerep.Int -> X.int
       | Typerep.Int32 -> X.int32
       | Typerep.Int32_u -> X.int32_u
@@ -704,10 +742,11 @@ struct
       | Typerep.Unit -> X.unit
       | Typerep.Option rep -> X.option (of_typerep rep)
       | Typerep.List rep -> X.list (of_typerep rep)
-      | Typerep.Array rep -> X.array (of_typerep rep)
+      | Typerep.Array rep -> X.array (Typerep.kind rep) (of_typerep rep)
       | Typerep.Lazy rep -> X.lazy_t (of_typerep rep)
       | Typerep.Ref rep -> X.ref_ (of_typerep rep)
-      | Typerep.Function (dom, rng) -> X.function_ (of_typerep dom) (of_typerep rng)
+      | Typerep.Function (dom, rng) ->
+        X.function_ (Typerep.kind dom, Typerep.kind rng) (of_typerep dom) (of_typerep rng)
       | Typerep.Tuple tuple ->
         (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)]
            because of_typerep can contain a side effect and [a] should be executed
@@ -735,12 +774,48 @@ struct
            let rd = of_typerep d in
            let re = of_typerep e in
            X.tuple5 ra rb rc rd re)
+      | Typerep.Tuple_u tuple ->
+        (match tuple with
+         | Typerep.Tuple_u.T2 (a, b) ->
+           let ka = Typerep.kind a in
+           let kb = Typerep.kind b in
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           X.tuple2_u (ka, kb) ra rb
+         | Typerep.Tuple_u.T3 (a, b, c) ->
+           let ka = Typerep.kind a in
+           let kb = Typerep.kind b in
+           let kc = Typerep.kind c in
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           X.tuple3_u (ka, kb, kc) ra rb rc
+         | Typerep.Tuple_u.T4 (a, b, c, d) ->
+           let ka = Typerep.kind a in
+           let kb = Typerep.kind b in
+           let kc = Typerep.kind c in
+           let kd = Typerep.kind d in
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           let rd = of_typerep d in
+           X.tuple4_u (ka, kb, kc, kd) ra rb rc rd
+         | Typerep.Tuple_u.T5 (a, b, c, d, e) ->
+           let ka = Typerep.kind a in
+           let kb = Typerep.kind b in
+           let kc = Typerep.kind c in
+           let kd = Typerep.kind d in
+           let ke = Typerep.kind e in
+           let ra = of_typerep a in
+           let rb = of_typerep b in
+           let rc = of_typerep c in
+           let rd = of_typerep d in
+           let re = of_typerep e in
+           X.tuple5_u (ka, kb, kc, kd, ke) ra rb rc rd re)
       | Typerep.Record record ->
-        X.record
-          (Helper.map_record { Helper.map = (fun (T rep) -> of_typerep rep) } record)
+        X.record (Helper.map_record { Helper.map = of_typerep } record)
       | Typerep.Variant variant ->
-        X.variant
-          (Helper.map_variant { Helper.map = (fun (T rep) -> of_typerep rep) } variant)
+        X.variant (Helper.map_variant { Helper.map = of_typerep } variant)
       | Typerep.Named (named, content) ->
         let typename = Typerep.Named.typename_of_t named in
         (match Memo.find memo_table typename with
@@ -750,10 +825,10 @@ struct
             | Some computation -> computation
             | None ->
               (match content with
-               | None ->
+               | Second _ ->
                  let name = Typename.Uid.name (Typename.uid typename) in
                  raise_not_implemented name
-               | Some content ->
+               | First content ->
                  let content = Portable_lazy.force content in
                  if X.Named.share content
                  then (
