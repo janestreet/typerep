@@ -1,3 +1,5 @@
+type ('a : any_non_null) builtin_array = 'a array
+
 open! Base
 
 module Name_of = struct
@@ -26,7 +28,7 @@ module Name_of = struct
   let typename_of_int32_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> int32#
+        type t = int32#
 
         let name = "int32#"
       end)
@@ -48,7 +50,7 @@ module Name_of = struct
   let typename_of_int64_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> int64#
+        type t = int64#
 
         let name = "int64#"
       end)
@@ -70,7 +72,7 @@ module Name_of = struct
   let typename_of_nativeint_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> nativeint#
+        type t = nativeint#
 
         let name = "nativeint#"
       end)
@@ -103,7 +105,7 @@ module Name_of = struct
   let typename_of_float_u =
     let module M =
       Typename.Make0 (struct
-        type t = unit -> float#
+        type t = float#
 
         let name = "float#"
       end)
@@ -171,8 +173,8 @@ module Name_of = struct
 
   let typename_of_list = M_list.typename_of_t
 
-  module M_array = Typename.Make1 (struct
-      type 'a t = 'a array
+  module%template M_array = Typename.Make1 [@kind any_non_null] (struct
+      type ('a : any_non_null) t = 'a builtin_array
 
       let name = "array"
     end)
@@ -195,8 +197,8 @@ module Name_of = struct
 
   let typename_of_ref = M_ref.typename_of_t
 
-  module M_function = Typename.Make2 (struct
-      type ('a, 'b) t = 'a -> 'b
+  module%template M_function = Typename.Make2 [@kind any] (struct
+      type ('a : any, 'b : any) t = 'a -> 'b
 
       let name = "function"
     end)
@@ -244,47 +246,71 @@ module Name_of = struct
     end)
 
   let typename_of_tuple5 = M_tuple5.typename_of_t
+
+  module%template M_tuple2_u = Typename.Make2 [@kind any] (struct
+      type ('a : any, 'b : any) t = #('a * 'b)
+
+      let name = "tuple2_u"
+    end)
+
+  let typename_of_tuple2_u = M_tuple2_u.typename_of_t
+
+  module%template M_tuple3_u = Typename.Make3 [@kind any] (struct
+      type ('a : any, 'b : any, 'c : any) t = #('a * 'b * 'c)
+
+      let name = "tuple3_u"
+    end)
+
+  let typename_of_tuple3_u = M_tuple3_u.typename_of_t
+
+  module%template M_tuple4_u = Typename.Make4 [@kind any] (struct
+      type ('a : any, 'b : any, 'c : any, 'd : any) t = #('a * 'b * 'c * 'd)
+
+      let name = "tuple4_u"
+    end)
+
+  let typename_of_tuple4_u = M_tuple4_u.typename_of_t
+
+  module%template M_tuple5_u = Typename.Make5 [@kind any] (struct
+      type ('a : any, 'b : any, 'c : any, 'd : any, 'e : any) t =
+        #('a * 'b * 'c * 'd * 'e)
+
+      let name = "tuple5_u"
+    end)
+
+  let typename_of_tuple5_u = M_tuple5_u.typename_of_t
 end
 
 module rec Typerep : sig @@ portable
-  type value := [ `value ]
-  type non_value := [ `non_value ]
-
-  type (_, _) t_any : value mod contended portable =
-    | Int : (int, value) t_any
-    | Int32 : (int32, value) t_any
-    | Int64 : (int64, value) t_any
-    | Nativeint : (nativeint, value) t_any
-    | Char : (char, value) t_any
-    | Float : (float, value) t_any
-    | String : (string, value) t_any
-    | Bytes : (bytes, value) t_any
-    | Bool : (bool, value) t_any
-    | Unit : (unit, value) t_any
-    | Option : ('a, value) t_any -> ('a option, value) t_any
-    | List : ('a, value) t_any -> ('a list, value) t_any
-    | Array : ('a, value) t_any -> ('a array, value) t_any
-    | Lazy : ('a, value) t_any -> ('a lazy_t, value) t_any
-    | Ref : ('a, value) t_any -> ('a ref, value) t_any
-    | Function :
-        (('dom, value) t_any * ('rng, value) t_any)
-        -> ('dom -> 'rng, value) t_any
-    | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
-    | Record : 'a Typerep.Record.t -> ('a, value) t_any
-    | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
+  type (_ : any) t : value mod contended portable =
+    | Int : int t
+    | Int32 : int32 t
+    | Int64 : int64 t
+    | Nativeint : nativeint t
+    | Char : char t
+    | Float : float t
+    | String : string t
+    | Bytes : bytes t
+    | Bool : bool t
+    | Unit : unit t
+    | Option : 'a t -> 'a option t
+    | List : 'a t -> 'a list t
+    | Array : ('a : any_non_null). 'a t -> 'a builtin_array t
+    | Lazy : 'a t -> 'a lazy_t t
+    | Ref : 'a t -> 'a ref t
+    | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
+    | Tuple : 'a Typerep.Tuple.t -> 'a t
+    | Record : 'a Typerep.Record.t -> 'a t
+    | Variant : 'a Typerep.Variant.t -> 'a t
     | Named :
-        ('a Typerep.Named.t * ('a, value) t_any Portable_lazy.t option)
-        -> ('a, value) t_any
-    | Int32_u : (unit -> int32#, non_value) t_any
-    | Int64_u : (unit -> int64#, non_value) t_any
-    | Nativeint_u : (unit -> nativeint#, non_value) t_any
-    | Float_u : (unit -> float#, non_value) t_any
-  [@@unsafe_allow_any_mode_crossing]
-
-  type 'a t = ('a, value) t_any
-  type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
-
-  type 'a any_packed : value mod contended portable = T : ('a, _) t_any -> 'a any_packed
+        ('a : any).
+        ('a Typerep.Named.t * ('a t Portable_lazy.t, 'a Typerep.Kind.t) Either.t)
+        -> 'a t
+    | Int32_u : int32# t
+    | Int64_u : int64# t
+    | Nativeint_u : nativeint# t
+    | Float_u : float# t
+    | Tuple_u : ('a : any). 'a Typerep.Tuple_u.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed : value mod contended portable = T : 'a t -> packed
@@ -292,8 +318,8 @@ module rec Typerep : sig @@ portable
 
   module Named : sig
     module type T0 = sig @@ portable
-      type named
-      type t
+      type named : any
+      type t : any
 
       val typename_of_named : named Typename.t
       val typename_of_t : t Typename.t
@@ -301,12 +327,12 @@ module rec Typerep : sig @@ portable
     end
 
     module type T1 = sig @@ portable
-      type 'a named
+      type 'a named : any
       type a
 
       val a : a Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named : 'a Typename.t -> 'a named Typename.t
       val typename_of_t : t Typename.t
@@ -314,7 +340,7 @@ module rec Typerep : sig @@ portable
     end
 
     module type T2 = sig @@ portable
-      type ('a, 'b) named
+      type ('a, 'b) named : any
       type a
 
       val a : a Typerep.t
@@ -323,7 +349,7 @@ module rec Typerep : sig @@ portable
 
       val b : b Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named : 'a Typename.t -> 'b Typename.t -> ('a, 'b) named Typename.t
       val typename_of_t : t Typename.t
@@ -331,7 +357,7 @@ module rec Typerep : sig @@ portable
     end
 
     module type T3 = sig @@ portable
-      type ('a, 'b, 'c) named
+      type ('a, 'b, 'c) named : any
       type a
 
       val a : a Typerep.t
@@ -344,7 +370,7 @@ module rec Typerep : sig @@ portable
 
       val c : c Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -357,7 +383,7 @@ module rec Typerep : sig @@ portable
     end
 
     module type T4 = sig @@ portable
-      type ('a, 'b, 'c, 'd) named
+      type ('a, 'b, 'c, 'd) named : any
       type a
 
       val a : a Typerep.t
@@ -374,7 +400,7 @@ module rec Typerep : sig @@ portable
 
       val d : d Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -388,7 +414,7 @@ module rec Typerep : sig @@ portable
     end
 
     module type T5 = sig @@ portable
-      type ('a, 'b, 'c, 'd, 'e) named
+      type ('a, 'b, 'c, 'd, 'e) named : any
       type a
 
       val a : a Typerep.t
@@ -409,7 +435,7 @@ module rec Typerep : sig @@ portable
 
       val e : e Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -426,7 +452,7 @@ module rec Typerep : sig @@ portable
     (* there the module is necessary because we need to deal with a type [t] with
        parameters whose kind is not representable as a type variable: ['a 't], even with
        a gadt. *)
-    type 'a t : value mod contended portable =
+    type ('a : any) t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
       | T2 of (module T2 with type t = 'a)
@@ -435,84 +461,109 @@ module rec Typerep : sig @@ portable
       | T5 of (module T5 with type t = 'a)
     [@@unsafe_allow_any_mode_crossing]
 
-    val arity : _ t -> int
-    val typename_of_t : 'a t -> 'a Typename.t
-    val name : _ t -> string
+    val arity : ('a : any). 'a t -> int
+    val typename_of_t : ('a : any). 'a t -> 'a Typename.t
+    val name : ('a : any). 'a t -> string
   end
 
   module Tuple : sig
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose that way *)
     type _ t =
-      | T2 : (('a, _) Typerep.t_any * ('b, _) Typerep.t_any) -> ('a * 'b) t
-      | T3 :
-          (('a, _) Typerep.t_any * ('b, _) Typerep.t_any * ('c, _) Typerep.t_any)
-          -> ('a * 'b * 'c) t
+      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
+      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
       | T4 :
-          (('a, _) Typerep.t_any
-          * ('b, _) Typerep.t_any
-          * ('c, _) Typerep.t_any
-          * ('d, _) Typerep.t_any)
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
-          (('a, _) Typerep.t_any
-          * ('b, _) Typerep.t_any
-          * ('c, _) Typerep.t_any
-          * ('d, _) Typerep.t_any
-          * ('e, _) Typerep.t_any)
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
           -> ('a * 'b * 'c * 'd * 'e) t
 
     val arity : _ t -> int
     val typename_of_t : 'a t -> 'a Typename.t
   end
 
+  module Tuple_u : sig
+    type (_ : any) t =
+      | T2 : ('a : any) ('b : any). ('a Typerep.t * 'b Typerep.t) -> #('a * 'b) t
+      | T3 :
+          ('a : any) ('b : any) ('c : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t)
+          -> #('a * 'b * 'c) t
+      | T4 :
+          ('a : any) ('b : any) ('c : any) ('d : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
+          -> #('a * 'b * 'c * 'd) t
+      | T5 :
+          ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
+          -> #('a * 'b * 'c * 'd * 'e) t
+
+    val arity : ('a : any). 'a t -> int
+    val typename_of_t : ('a : any). 'a t -> 'a Typename.t
+  end
+
   include%template
-    Variant_and_record_intf.S [@modality portable] with type 'a t := 'a any_packed
+    Variant_and_record_intf.S [@modality portable] with type ('a : any) t := 'a t
 
-  val same : _ t_any -> _ t_any -> bool
-  val same_witness : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t option
-  val same_witness_exn : ('a, _) t_any -> ('b, _) t_any -> ('a, 'b) Type_equal.t
-  val typename_of_t : ('a, _) t_any -> 'a Typename.t
-  val head : ('a, 'index) t_any -> ('a, 'index) t_any
+  module Kind : sig
+    type ('a : any) t =
+      | Value : ('a : value). 'a t
+      | Bits32 : ('a : bits32). 'a t
+      | Bits64 : ('a : bits64). 'a t
+      | Word : ('a : word). 'a t
+      | Float64 : ('a : float64). 'a t
+      | Tuple2_u : ('a : any) ('b : any). 'a t * 'b t -> #('a * 'b) t
+      | Tuple3_u :
+          ('a : any) ('b : any) ('c : any).
+          'a t * 'b t * 'c t
+          -> #('a * 'b * 'c) t
+      | Tuple4_u :
+          ('a : any) ('b : any) ('c : any) ('d : any).
+          'a t * 'b t * 'c t * 'd t
+          -> #('a * 'b * 'c * 'd) t
+      | Tuple5_u :
+          ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          'a t * 'b t * 'c t * 'd t * 'e t
+          -> #('a * 'b * 'c * 'd * 'e) t
+  end
+
+  val same : ('a : any) ('b : any). 'a t -> 'b t -> bool
+  val same_witness : ('a : any) ('b : any). 'a t -> 'b t -> ('a, 'b) Type_equal.t option
+  val same_witness_exn : ('a : any) ('b : any). 'a t -> 'b t -> ('a, 'b) Type_equal.t
+  val typename_of_t : ('a : any). 'a t -> 'a Typename.t
+  val head : ('a : any). 'a t -> 'a t
+  val kind : ('a : any). 'a t -> 'a Kind.t
 end = struct
-  type value = [ `value ]
-  type non_value = [ `non_value ]
-
-  type (_, _) t_any : value mod contended portable =
-    | Int : (int, value) t_any
-    | Int32 : (int32, value) t_any
-    | Int64 : (int64, value) t_any
-    | Nativeint : (nativeint, value) t_any
-    | Char : (char, value) t_any
-    | Float : (float, value) t_any
-    | String : (string, value) t_any
-    | Bytes : (bytes, value) t_any
-    | Bool : (bool, value) t_any
-    | Unit : (unit, value) t_any
-    | Option : ('a, value) t_any -> ('a option, value) t_any
-    | List : ('a, value) t_any -> ('a list, value) t_any
-    | Array : ('a, value) t_any -> ('a array, value) t_any
-    | Lazy : ('a, value) t_any -> ('a lazy_t, value) t_any
-    | Ref : ('a, value) t_any -> ('a ref, value) t_any
-    | Function :
-        (('dom, value) t_any * ('rng, value) t_any)
-        -> ('dom -> 'rng, value) t_any
-    | Tuple : 'a Typerep.Tuple.t -> ('a, value) t_any
-    | Record : 'a Typerep.Record.t -> ('a, value) t_any
-    | Variant : 'a Typerep.Variant.t -> ('a, value) t_any
+  type (_ : any) t : value mod contended portable =
+    | Int : int t
+    | Int32 : int32 t
+    | Int64 : int64 t
+    | Nativeint : nativeint t
+    | Char : char t
+    | Float : float t
+    | String : string t
+    | Bytes : bytes t
+    | Bool : bool t
+    | Unit : unit t
+    | Option : 'a t -> 'a option t
+    | List : 'a t -> 'a list t
+    | Array : ('a : any_non_null). 'a t -> 'a builtin_array t
+    | Lazy : 'a t -> 'a lazy_t t
+    | Ref : 'a t -> 'a ref t
+    | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
+    | Tuple : 'a Typerep.Tuple.t -> 'a t
+    | Record : 'a Typerep.Record.t -> 'a t
+    | Variant : 'a Typerep.Variant.t -> 'a t
     | Named :
-        ('a Typerep.Named.t * ('a, value) t_any Portable_lazy.t option)
-        -> ('a, value) t_any
-    | Int32_u : (unit -> int32#, non_value) t_any
-    | Int64_u : (unit -> int64#, non_value) t_any
-    | Nativeint_u : (unit -> nativeint#, non_value) t_any
-    | Float_u : (unit -> float#, non_value) t_any
-  [@@unsafe_allow_any_mode_crossing]
-
-  type 'a t = ('a, value) t_any
-  type ('a : any) t_non_value = (unit -> 'a, non_value) t_any
-
-  type 'a any_packed : value mod contended portable = T : ('a, _) t_any -> 'a any_packed
+        ('a : any).
+        ('a Typerep.Named.t * ('a t Portable_lazy.t, 'a Typerep.Kind.t) Either.t)
+        -> 'a t
+    | Int32_u : int32# t
+    | Int64_u : int64# t
+    | Nativeint_u : nativeint# t
+    | Float_u : float# t
+    | Tuple_u : ('a : any). 'a Typerep.Tuple_u.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed : value mod contended portable = T : 'a t -> packed
@@ -520,8 +571,8 @@ end = struct
 
   module Named = struct
     module type T0 = sig @@ portable
-      type named
-      type t
+      type named : any
+      type t : any
 
       val typename_of_named : named Typename.t
       val typename_of_t : t Typename.t
@@ -529,12 +580,12 @@ end = struct
     end
 
     module type T1 = sig @@ portable
-      type 'a named
+      type 'a named : any
       type a
 
       val a : a Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named : 'a Typename.t -> 'a named Typename.t
       val typename_of_t : t Typename.t
@@ -542,7 +593,7 @@ end = struct
     end
 
     module type T2 = sig @@ portable
-      type ('a, 'b) named
+      type ('a, 'b) named : any
       type a
 
       val a : a Typerep.t
@@ -551,7 +602,7 @@ end = struct
 
       val b : b Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named : 'a Typename.t -> 'b Typename.t -> ('a, 'b) named Typename.t
       val typename_of_t : t Typename.t
@@ -559,7 +610,7 @@ end = struct
     end
 
     module type T3 = sig @@ portable
-      type ('a, 'b, 'c) named
+      type ('a, 'b, 'c) named : any
       type a
 
       val a : a Typerep.t
@@ -572,7 +623,7 @@ end = struct
 
       val c : c Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -585,7 +636,7 @@ end = struct
     end
 
     module type T4 = sig @@ portable
-      type ('a, 'b, 'c, 'd) named
+      type ('a, 'b, 'c, 'd) named : any
       type a
 
       val a : a Typerep.t
@@ -602,7 +653,7 @@ end = struct
 
       val d : d Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -616,7 +667,7 @@ end = struct
     end
 
     module type T5 = sig @@ portable
-      type ('a, 'b, 'c, 'd, 'e) named
+      type ('a, 'b, 'c, 'd, 'e) named : any
       type a
 
       val a : a Typerep.t
@@ -637,7 +688,7 @@ end = struct
 
       val e : e Typerep.t
 
-      type t
+      type t : any
 
       val typename_of_named
         :  'a Typename.t
@@ -654,7 +705,7 @@ end = struct
     (* there the module is necessary because we need to deal with a type [t] with
        parameters whose kind is not representable as a type variable: ['a 't], even with
        a gadt. *)
-    type 'a t : value mod contended portable =
+    type ('a : any) t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
       | T2 of (module T2 with type t = 'a)
@@ -672,7 +723,7 @@ end = struct
       | T5 _ -> 5
     ;;
 
-    let typename_of_t (type a) = function
+    let typename_of_t (type a : any) = function
       | T0 rep ->
         let module T = (val rep : T0 with type t = a) in
         T.typename_of_t
@@ -700,29 +751,20 @@ end = struct
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose this way *)
     type _ t =
-      | T2 : (('a, _) Typerep.t_any * ('b, _) Typerep.t_any) -> ('a * 'b) t
-      | T3 :
-          (('a, _) Typerep.t_any * ('b, _) Typerep.t_any * ('c, _) Typerep.t_any)
-          -> ('a * 'b * 'c) t
+      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
+      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
       | T4 :
-          (('a, _) Typerep.t_any
-          * ('b, _) Typerep.t_any
-          * ('c, _) Typerep.t_any
-          * ('d, _) Typerep.t_any)
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
-          (('a, _) Typerep.t_any
-          * ('b, _) Typerep.t_any
-          * ('c, _) Typerep.t_any
-          * ('d, _) Typerep.t_any
-          * ('e, _) Typerep.t_any)
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
           -> ('a * 'b * 'c * 'd * 'e) t
 
     let arity : type a. a t -> int = function
-      | Typerep.Tuple.T2 _ -> 2
-      | Typerep.Tuple.T3 _ -> 3
-      | Typerep.Tuple.T4 _ -> 4
-      | Typerep.Tuple.T5 _ -> 5
+      | T2 _ -> 2
+      | T3 _ -> 3
+      | T4 _ -> 4
+      | T5 _ -> 5
     ;;
 
     let typename_of_t : type a. a t -> a Typename.t = function
@@ -749,11 +791,82 @@ end = struct
     ;;
   end
 
+  module Tuple_u = struct
+    (* these constructors could be plunged at toplevel of Typerep.t, however it is less
+       verbose this way *)
+    type (_ : any) t =
+      | T2 : ('a : any) ('b : any). ('a Typerep.t * 'b Typerep.t) -> #('a * 'b) t
+      | T3 :
+          ('a : any) ('b : any) ('c : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t)
+          -> #('a * 'b * 'c) t
+      | T4 :
+          ('a : any) ('b : any) ('c : any) ('d : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
+          -> #('a * 'b * 'c * 'd) t
+      | T5 :
+          ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
+          -> #('a * 'b * 'c * 'd * 'e) t
+
+    let arity : type (a : any). a t -> int = function
+      | T2 _ -> 2
+      | T3 _ -> 3
+      | T4 _ -> 4
+      | T5 _ -> 5
+    ;;
+
+    let typename_of_t : type (a : any). a t -> a Typename.t = function
+      | T2 (a, b) ->
+        Name_of.typename_of_tuple2_u (Typerep.typename_of_t a) (Typerep.typename_of_t b)
+      | T3 (a, b, c) ->
+        Name_of.typename_of_tuple3_u
+          (Typerep.typename_of_t a)
+          (Typerep.typename_of_t b)
+          (Typerep.typename_of_t c)
+      | T4 (a, b, c, d) ->
+        Name_of.typename_of_tuple4_u
+          (Typerep.typename_of_t a)
+          (Typerep.typename_of_t b)
+          (Typerep.typename_of_t c)
+          (Typerep.typename_of_t d)
+      | T5 (a, b, c, d, e) ->
+        Name_of.typename_of_tuple5_u
+          (Typerep.typename_of_t a)
+          (Typerep.typename_of_t b)
+          (Typerep.typename_of_t c)
+          (Typerep.typename_of_t d)
+          (Typerep.typename_of_t e)
+    ;;
+  end
+
   include%template Variant_and_record_intf.M [@modality portable] (struct
-      type 'a t = 'a any_packed
+      type nonrec ('a : any) t = 'a t
     end)
 
-  let rec typename_of_t : type a index. (a, index) t_any -> a Typename.t = function
+  module Kind = struct
+    type ('a : any) t =
+      | Value : ('a : value). 'a t
+      | Bits32 : ('a : bits32). 'a t
+      | Bits64 : ('a : bits64). 'a t
+      | Word : ('a : word). 'a t
+      | Float64 : ('a : float64). 'a t
+      | Tuple2_u : ('a : any) ('b : any). 'a t * 'b t -> #('a * 'b) t
+      | Tuple3_u :
+          ('a : any) ('b : any) ('c : any).
+          'a t * 'b t * 'c t
+          -> #('a * 'b * 'c) t
+      | Tuple4_u :
+          ('a : any) ('b : any) ('c : any) ('d : any).
+          'a t * 'b t * 'c t * 'd t
+          -> #('a * 'b * 'c * 'd) t
+      | Tuple5_u :
+          ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          'a t * 'b t * 'c t * 'd t * 'e t
+          -> #('a * 'b * 'c * 'd * 'e) t
+  end
+
+  let rec typename_of_t : type (a : any). a t -> a Typename.t = function
     | Int -> Name_of.typename_of_int
     | Int32 -> Name_of.typename_of_int32
     | Int32_u -> Name_of.typename_of_int32_u
@@ -776,14 +889,14 @@ end = struct
     | Function (dom, rng) ->
       Name_of.typename_of_function (typename_of_t dom) (typename_of_t rng)
     | Tuple rep -> Typerep.Tuple.typename_of_t rep
+    | Tuple_u rep -> Typerep.Tuple_u.typename_of_t rep
     | Record rep -> Typerep.Record.typename_of_t rep
     | Variant rep -> Typerep.Variant.typename_of_t rep
     | Named (name, _) -> Named.typename_of_t name
   ;;
 
   let rec same_witness
-    : type a b index1 index2.
-      (a, index1) t_any -> (b, index2) t_any -> (a, b) Type_equal.t option
+    : type (a : any) (b : any). a t -> b t -> (a, b) Type_equal.t option
     =
     fun t1 t2 ->
     let module E = Type_equal in
@@ -795,19 +908,19 @@ end = struct
        | Some E.T as x -> x
        | None ->
          (match r1, r2 with
-          | Some t1, Some t2 ->
+          | First t1, First t2 ->
             same_witness (Portable_lazy.force t1) (Portable_lazy.force t2)
-          | Some t1, None -> same_witness (Portable_lazy.force t1) t2
-          | None, Some t2 -> same_witness t1 (Portable_lazy.force t2)
-          | None, None -> None))
+          | First t1, Second _ -> same_witness (Portable_lazy.force t1) t2
+          | Second _, First t2 -> same_witness t1 (Portable_lazy.force t2)
+          | Second _, Second _ -> None))
     | Named (_, r1), t2 ->
       (match r1 with
-       | Some t1 -> same_witness (Portable_lazy.force t1) t2
-       | None -> None)
+       | First t1 -> same_witness (Portable_lazy.force t1) t2
+       | Second _ -> None)
     | t1, Named (_, r2) ->
       (match r2 with
-       | Some t2 -> same_witness t1 (Portable_lazy.force t2)
-       | None -> None)
+       | First t2 -> same_witness t1 (Portable_lazy.force t2)
+       | Second _ -> None)
     | Int, Int -> Some E.T
     | Int32, Int32 -> Some E.T
     | Int32_u, Int32_u -> Some E.T
@@ -881,6 +994,41 @@ end = struct
        | T.T3 _, _ -> None
        | T.T4 _, _ -> None
        | T.T5 _, _ -> None)
+    | Tuple_u t1, Tuple_u t2 ->
+      let module T = Typerep.Tuple_u in
+      (match t1, t2 with
+       | T.T2 (a1, b1), T.T2 (a2, b2) ->
+         (match same_witness a1 a2, same_witness b1 b2 with
+          | Some E.T, Some E.T -> Some E.T
+          | None, _ | _, None -> None)
+       | T.T3 (a1, b1, c1), T.T3 (a2, b2, c2) ->
+         (match same_witness a1 a2, same_witness b1 b2, same_witness c1 c2 with
+          | Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _ | _, None, _ | _, _, None -> None)
+       | T.T4 (a1, b1, c1, d1), T.T4 (a2, b2, c2, d2) ->
+         (match
+            same_witness a1 a2, same_witness b1 b2, same_witness c1 c2, same_witness d1 d2
+          with
+          | Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _, _ | _, None, _, _ | _, _, None, _ | _, _, _, None -> None)
+       | T.T5 (a1, b1, c1, d1, e1), T.T5 (a2, b2, c2, d2, e2) ->
+         (match
+            ( same_witness a1 a2
+            , same_witness b1 b2
+            , same_witness c1 c2
+            , same_witness d1 d2
+            , same_witness e1 e2 )
+          with
+          | Some E.T, Some E.T, Some E.T, Some E.T, Some E.T -> Some E.T
+          | None, _, _, _, _
+          | _, None, _, _, _
+          | _, _, None, _, _
+          | _, _, _, None, _
+          | _, _, _, _, None -> None)
+       | T.T2 _, _ -> None
+       | T.T3 _, _ -> None
+       | T.T4 _, _ -> None
+       | T.T5 _, _ -> None)
     | Record r1, Record r2 ->
       Typename.same_witness
         (Typerep.Record.typename_of_t r1)
@@ -910,6 +1058,7 @@ end = struct
     | Ref _, _ -> None
     | Function _, _ -> None
     | Tuple _, _ -> None
+    | Tuple_u _, _ -> None
     | Record _, _ -> None
     | Variant _, _ -> None
   ;;
@@ -922,9 +1071,42 @@ end = struct
     | None -> assert false
   ;;
 
-  let rec head : type a index. (a, index) t_any -> (a, index) t_any = function
-    | Typerep.Named (_, Some t) -> head (Portable_lazy.force t)
+  let rec head : type (a : any). a t -> a t = function
+    | Typerep.Named (_, First t) -> head (Portable_lazy.force t)
     | t -> t
+  ;;
+
+  let rec kind : type (a : any). a t -> a Typerep.Kind.t = function
+    | Int -> Value
+    | Int32 -> Value
+    | Int64 -> Value
+    | Nativeint -> Value
+    | Char -> Value
+    | Float -> Value
+    | String -> Value
+    | Bytes -> Value
+    | Bool -> Value
+    | Unit -> Value
+    | Option _ -> Value
+    | List _ -> Value
+    | Array _ -> Value
+    | Lazy _ -> Value
+    | Ref _ -> Value
+    | Function _ -> Value
+    | Tuple _ -> Value
+    | Record _ -> Value
+    | Variant _ -> Value
+    | Named (_, First t) -> kind (Portable_lazy.force t)
+    | Named (_, Second kind) -> kind
+    | Int32_u -> Bits32
+    | Int64_u -> Bits64
+    | Nativeint_u -> Word
+    | Float_u -> Float64
+    | Tuple_u (T2 (t1, t2)) -> Tuple2_u (kind t1, kind t2)
+    | Tuple_u (T3 (t1, t2, t3)) -> Tuple3_u (kind t1, kind t2, kind t3)
+    | Tuple_u (T4 (t1, t2, t3, t4)) -> Tuple4_u (kind t1, kind t2, kind t3, kind t4)
+    | Tuple_u (T5 (t1, t2, t3, t4, t5)) ->
+      Tuple5_u (kind t1, kind t2, kind t3, kind t4, kind t5)
   ;;
 end
 
@@ -953,6 +1135,10 @@ let typerep_of_tuple2 a b = Typerep.Tuple (Typerep.Tuple.T2 (a, b))
 let typerep_of_tuple3 a b c = Typerep.Tuple (Typerep.Tuple.T3 (a, b, c))
 let typerep_of_tuple4 a b c d = Typerep.Tuple (Typerep.Tuple.T4 (a, b, c, d))
 let typerep_of_tuple5 a b c d e = Typerep.Tuple (Typerep.Tuple.T5 (a, b, c, d, e))
+let typerep_of_tuple2_u a b = Typerep.Tuple_u (Typerep.Tuple_u.T2 (a, b))
+let typerep_of_tuple3_u a b c = Typerep.Tuple_u (Typerep.Tuple_u.T3 (a, b, c))
+let typerep_of_tuple4_u a b c d = Typerep.Tuple_u (Typerep.Tuple_u.T4 (a, b, c, d))
+let typerep_of_tuple5_u a b c d e = Typerep.Tuple_u (Typerep.Tuple_u.T5 (a, b, c, d, e))
 
 include Name_of
 

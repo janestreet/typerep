@@ -1,5 +1,7 @@
 @@ portable
 
+type ('a : any_non_null) builtin_array := 'a array
+
 open! Base
 open Std_internal
 
@@ -37,14 +39,14 @@ module%template Helper
     (A : Variant_and_record_intf.S
   [@modality portable])
     (B : Variant_and_record_intf.S) : sig
-  type map = { map : 'a. 'a A.t -> 'a B.t }
+  type map = { map : ('a : any). 'a A.t -> 'a B.t }
 
   val map_variant : map -> 'a A.Variant.t -> 'a B.Variant.t
   val map_record : map -> 'a A.Record.t -> 'a B.Record.t
 end
 
 module type Named = sig
-  type 'a computation
+  type ('a : any) computation
 
   module Context : sig
     (** Mutable context used to memorize some info during the traversal of a typerep. A
@@ -69,11 +71,11 @@ module type Named = sig
       After a [set_final_computation] is performed and return a final computation C for a
       type_name, C will be memoized and returned for each further occurrences of the same
       type_name inside the typerep, going further on. *)
-  type 'a t
+  type ('a : any) t
 
-  val init : Context.t -> 'a Typename.t -> 'a t
-  val get_wip_computation : 'a t -> 'a computation
-  val set_final_computation : 'a t -> 'a computation -> 'a computation
+  val init : ('a : any). Context.t -> 'a Typename.t -> 'a t
+  val get_wip_computation : ('a : any). 'a t -> 'a computation
+  val set_final_computation : ('a : any). 'a t -> 'a computation -> 'a computation
 
   (** It might be interesting to inline some computation for a few typerep if they appear
       several times within a typerep. This parameters will allow one to tweak the sharing
@@ -87,42 +89,82 @@ module type Named = sig
       using the name to refere to it later within the typestruct does not lead to a
       shorter typestruct, and is in fact less readable. The benefit of the sharing depends
       on the computation, its memory and building costs. *)
-  val share : _ Typerep.t -> bool
+  val share : ('a : any). 'a Typerep.t -> bool
 end
 
 module type Computation = sig
-  type 'a t
+  type ('a : any) t
 
-  include Variant_and_record_intf.S with type 'a t := 'a t
+  include Variant_and_record_intf.S with type ('a : any) t := 'a t
 
   val int : int t
   val int32 : int32 t
-  val int32_u : (unit -> int32#) t
+  val int32_u : int32# t
   val int64 : int64 t
-  val int64_u : (unit -> int64#) t
+  val int64_u : int64# t
   val nativeint : nativeint t
-  val nativeint_u : (unit -> nativeint#) t
+  val nativeint_u : nativeint# t
   val char : char t
   val float : float t
-  val float_u : (unit -> float#) t
+  val float_u : float# t
   val string : string t
   val bytes : bytes t
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
   val list : 'a t -> 'a list t
-  val array : 'a t -> 'a array t
+  val array : ('a : any_non_null). 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t
   val ref_ : 'a t -> 'a ref t
-  val function_ : 'a t -> 'b t -> ('a -> 'b) t
+
+  val function_
+    : ('a : any) ('b : any).
+    #('a Typerep.Kind.t * 'b Typerep.Kind.t) -> 'a t -> 'b t -> ('a -> 'b) t
+
   val tuple2 : 'a t -> 'b t -> ('a * 'b) t
   val tuple3 : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
   val tuple4 : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
   val tuple5 : 'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
+
+  val tuple2_u
+    : ('a : any) ('b : any).
+    #('a Typerep.Kind.t * 'b Typerep.Kind.t) -> 'a t -> 'b t -> #('a * 'b) t
+
+  val tuple3_u
+    : ('a : any) ('b : any) ('c : any).
+    #('a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t)
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> #('a * 'b * 'c) t
+
+  val tuple4_u
+    : ('a : any) ('b : any) ('c : any) ('d : any).
+    #('a Typerep.Kind.t * 'b Typerep.Kind.t * 'c Typerep.Kind.t * 'd Typerep.Kind.t)
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> #('a * 'b * 'c * 'd) t
+
+  val tuple5_u
+    : ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+    #('a Typerep.Kind.t
+     * 'b Typerep.Kind.t
+     * 'c Typerep.Kind.t
+     * 'd Typerep.Kind.t
+     * 'e Typerep.Kind.t)
+    -> 'a t
+    -> 'b t
+    -> 'c t
+    -> 'd t
+    -> 'e t
+    -> #('a * 'b * 'c * 'd * 'e) t
+
   val record : 'a Record.t -> 'a t
   val variant : 'a Variant.t -> 'a t
 
-  module Named : Named with type 'a computation := 'a t
+  module Named : Named with type ('a : any) computation := 'a t
 end
 
 (** Not all computations are arrow types. For example:
@@ -133,10 +175,10 @@ end
     such a standard case that is seems reasonable to share this extra layer of functor for
     it to build the [Named] module. *)
 module Make_named_for_closure (X : sig
-    type 'a input
-    type 'a output
-    type 'a t = 'a input -> 'a output
-  end) : Named with type 'a computation := 'a X.t
+    type ('a : any) input
+    type ('a : any) output
+    type ('a : any) t = 'a input -> 'a output
+  end) : Named with type ('a : any) computation := 'a X.t
 
 module Ident : sig
   (** Runtime identifier for a generic computation. This is essentially a string whose
@@ -154,7 +196,7 @@ module Ident : sig
 end
 
 module type S = sig
-  type 'a t
+  type ('a : any) t
 
   val ident : Ident.t
 
@@ -162,7 +204,7 @@ module type S = sig
   exception Not_implemented of string * string
 
   (** register mechanism to customize the behavior of this generic *)
-  include Type_generic_intf.S with type 'a t := 'a t
+  include Type_generic_intf.S with type ('a : any) t := 'a t
 
   (** Extending an existing generic for a particular type name
 
@@ -182,10 +224,10 @@ module type S = sig
   val register : 'a Typerep.t -> 'a t -> unit
 
   (** main function : compute the generic computation from the typerep *)
-  val of_typerep : ('a, _) Typerep.t_any -> [ `generic of 'a t ]
+  val of_typerep : ('a : any). 'a Typerep.t -> [ `generic of 'a t ]
 
   (** exported to build a computation on top of a previous one *)
-  module Computation : Computation with type 'a t = 'a t
+  module Computation : Computation with type ('a : any) t = 'a t
 end
 
 (** The [name] is used for debug information only in case of Broken_dependency. The
@@ -193,10 +235,10 @@ end
     the module given to build a generic computation [G] that depends on three other
     computation [A,B,C] then X.required shall be [ A.ident ; B.ident ; C.ident ] *)
 module Make (X : sig
-    type 'a t
+    type ('a : any) t
 
     val name : string
     val required : Ident.t list
 
-    include Computation with type 'a t := 'a t
-  end) : S with type 'a t = 'a X.t
+    include Computation with type ('a : any) t := 'a t
+  end) : S with type ('a : any) t = 'a X.t

@@ -30,16 +30,21 @@ let hash_variant s =
    lib *)
 let () = assert (repr_of_poly_variant `Latency_stats = hash_variant "Latency_stats")
 let () = assert (repr_of_poly_variant `zero = hash_variant "zero")
-let[@inline never] double_array_value () = Sys.opaque_identity (Stdlib.Obj.magic 0.)
 
-let double_array_non_value (type any : any) (typerep : any Typerep.t_non_value)
-  : unit -> any
-  =
-  match Typerep.head typerep with
-  | Float_u -> fun () -> #4.0
-  | Int32_u -> fun () -> #4l
-  | Int64_u -> fun () -> #4L
-  | Nativeint_u -> fun () -> #4n
+external opaque : ('a : any). 'a -> 'a @@ portable = "%opaque" [@@layout_poly]
+
+external obj_magic : ('a : any) ('b : any). 'a -> 'b @@ portable = "%obj_magic"
+[@@layout_poly]
+
+let double_array_value (type a : any) (typerep : a Typerep.t) : unit -> a =
+  match Typerep.kind typerep with
+  | Value -> fun [@inline never] () -> opaque (obj_magic 0.)
+  | Float64 -> fun [@inline never] () -> opaque (obj_magic #1.0)
+  | Bits32 -> fun [@inline never] () -> opaque (obj_magic #2l)
+  | Bits64 -> fun [@inline never] () -> opaque (obj_magic #3L)
+  | Word -> fun [@inline never] () -> opaque (obj_magic #4n)
+  | Tuple2_u _ | Tuple3_u _ | Tuple4_u _ | Tuple5_u _ ->
+    failwith "records containing unboxed tuples are not supported"
 ;;
 
 let has_double_array_tag a =
@@ -58,8 +63,17 @@ let () =
       ; d : int
       }
 
-    let double = { a = double_array_value (); b = double_array_value () }
-    let simple = { c = double_array_value (); d = double_array_value () }
+    let double =
+      { a = double_array_value typerep_of_float ()
+      ; b = double_array_value typerep_of_float ()
+      }
+    ;;
+
+    let simple =
+      { c = double_array_value typerep_of_float ()
+      ; d = double_array_value typerep_of_int ()
+      }
+    ;;
   end
   in
   assert (has_double_array_tag M.double);

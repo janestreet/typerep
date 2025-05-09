@@ -56,8 +56,8 @@ module Key = struct
   ;;
 end
 
-type 'a t = Key.t
-type 'a typename = 'a t
+type ('a : any) t = Key.t
+type ('a : any) typename = 'a t
 
 let key t = t
 let uid t = t.Key.uid
@@ -68,15 +68,15 @@ let create ?(name = "Typename.create") () = { Key.uid = Uid.next name; params = 
 include struct
   (* The argument for Stdlib.Obj.magic here is the same as the one in core/type_equal *)
 
-  let same (type a b) (nm1 : a t) (nm2 : b t) = Key.compare nm1 nm2 = 0
+  let same (type (a : any) (b : any)) (nm1 : a t) (nm2 : b t) = Key.compare nm1 nm2 = 0
 
-  let same_witness (type a b) (nm1 : a t) (nm2 : b t) =
+  let same_witness (type (a : any) (b : any)) (nm1 : a t) (nm2 : b t) =
     if Key.compare nm1 nm2 = 0
     then Some (Stdlib.Obj.magic Type_equal.refl : (a, b) Type_equal.t)
     else None
   ;;
 
-  let same_witness_exn (type a b) (nm1 : a t) (nm2 : b t) =
+  let same_witness_exn (type (a : any) (b : any)) (nm1 : a t) (nm2 : b t) =
     if Key.compare nm1 nm2 = 0
     then (Stdlib.Obj.magic Type_equal.refl : (a, b) Type_equal.t)
     else failwith "Typename.same_witness_exn"
@@ -84,34 +84,40 @@ include struct
 end
 
 module type S0 = sig @@ portable
-  type t
+  type t : any
 
   val typename_of_t : t typename
 end
 
-module type S1 = sig @@ portable
-  type 'a t
+[%%template
+[@@@kind.default k = (any, any_non_null, value)]
 
-  val typename_of_t : 'a typename -> 'a t typename
+module type S1 = sig @@ portable
+  type ('a : k) t : any
+
+  val typename_of_t : ('a : k). 'a typename -> 'a t typename
 end
 
 module type S2 = sig @@ portable
-  type ('a, 'b) t
+  type ('a : k, 'b : k) t : any
 
-  val typename_of_t : 'a typename -> 'b typename -> ('a, 'b) t typename
+  val typename_of_t : ('a : k) ('b : k). 'a typename -> 'b typename -> ('a, 'b) t typename
 end
 
 module type S3 = sig @@ portable
-  type ('a, 'b, 'c) t
+  type ('a : k, 'b : k, 'c : k) t : any
 
-  val typename_of_t : 'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
+  val typename_of_t
+    : ('a : k) ('b : k) ('c : k).
+    'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
 end
 
 module type S4 = sig @@ portable
-  type ('a, 'b, 'c, 'd) t
+  type ('a : k, 'b : k, 'c : k, 'd : k) t : any
 
   val typename_of_t
-    :  'a typename
+    : ('a : k) ('b : k) ('c : k) ('d : k).
+    'a typename
     -> 'b typename
     -> 'c typename
     -> 'd typename
@@ -119,64 +125,68 @@ module type S4 = sig @@ portable
 end
 
 module type S5 = sig @@ portable
-  type ('a, 'b, 'c, 'd, 'e) t
+  type ('a : k, 'b : k, 'c : k, 'd : k, 'e : k) t : any
 
   val typename_of_t
-    :  'a typename
+    : ('a : k) ('b : k) ('c : k) ('d : k) ('e : k).
+    'a typename
     -> 'b typename
     -> 'c typename
     -> 'd typename
     -> 'e typename
     -> ('a, 'b, 'c, 'd, 'e) t typename
-end
+end]
 
 module Make0 (X : Named_intf.S0) = struct
   let uid = Uid.next X.name
   let typename_of_t = { Key.uid; params = [] }
 end
 
-module Make1 (X : Named_intf.S1) = struct
+[%%template
+[@@@kind.default k = (any, any_non_null, value)]
+
+module Make1 (X : Named_intf.S1 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a = { Key.uid; params = [ a ] }
 end
 
-module Make2 (X : Named_intf.S2) = struct
+module Make2 (X : Named_intf.S2 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b = { Key.uid; params = [ a; b ] }
 end
 
-module Make3 (X : Named_intf.S3) = struct
+module Make3 (X : Named_intf.S3 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c = { Key.uid; params = [ a; b; c ] }
 end
 
-module Make4 (X : Named_intf.S4) = struct
+module Make4 (X : Named_intf.S4 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c d = { Key.uid; params = [ a; b; c; d ] }
 end
 
-module Make5 (X : Named_intf.S5) = struct
+module Make5 (X : Named_intf.S5 [@kind k]) = struct
   let uid = Uid.next X.name
   let typename_of_t a b c d e = { Key.uid; params = [ a; b; c; d; e ] }
-end
+end]
 
 module Table (X : sig
-    type 'a t
+    type ('a : any) t
   end) =
 struct
-  type data = Data : 'a t * 'a X.t -> data
+  type data = Data : ('a : any). 'a t * 'a X.t -> data
   type t = data Hashtbl.M(Key).t
 
   let create int = Hashtbl.create (module Key) ~size:int
   let mem table name = Hashtbl.mem table (key name)
   let set table name data = Hashtbl.set table ~key:(key name) ~data:(Data (name, data))
 
-  let find (type a) table (name : a typename) =
+  let find (type a : any) table (name : a typename) =
     let data = Hashtbl.find table (key name) in
     match data with
     | None -> None
     | Some (Data (name', data)) ->
-      (fun (type b) (name' : b typename) (data : b X.t) ->
+      (fun (type b : any) (name' : b typename) (data : b X.t) ->
         let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
         Some (data : a X.t))
         name'
