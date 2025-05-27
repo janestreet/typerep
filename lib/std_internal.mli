@@ -19,6 +19,7 @@ module rec Typerep : sig
     | Bool : bool t
     | Unit : unit t
     | Option : 'a t -> 'a option t
+    | Or_null : 'a t -> 'a or_null t
     | List : 'a t -> 'a list t
     | Array : 'a. 'a t -> 'a builtin_array t
     | Lazy : 'a t -> 'a lazy_t t
@@ -232,6 +233,7 @@ module rec Typerep : sig
   module Kind : sig
     type 'a t =
       | Value : 'a. 'a t
+      | Value_or_null : 'a. 'a t
       | Bits32 : 'a. 'a t
       | Bits64 : 'a. 'a t
       | Word : 'a. 'a t
@@ -319,6 +321,7 @@ val value_tuple0 : tuple0
 
 (* nested *)
 val typerep_of_option : 'a Typerep.t -> 'a option Typerep.t
+val typerep_of_or_null : 'a Typerep.t -> 'a or_null Typerep.t
 val typerep_of_list : 'a Typerep.t -> 'a list Typerep.t
 val typerep_of_array : 'a Typerep.t -> 'a array Typerep.t
 val typerep_of_lazy_t : 'a Typerep.t -> 'a lazy_t Typerep.t
@@ -387,6 +390,7 @@ val typename_of_bytes : bytes Typename.t
 val typename_of_bool : bool Typename.t
 val typename_of_unit : unit Typename.t
 val typename_of_option : 'a Typename.t -> 'a option Typename.t
+val typename_of_or_null : 'a Typename.t -> 'a or_null Typename.t
 val typename_of_list : 'a Typename.t -> 'a list Typename.t
 val typename_of_array : 'a Typename.t -> 'a array Typename.t
 val typename_of_lazy_t : 'a Typename.t -> 'a lazy_t Typename.t

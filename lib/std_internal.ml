@@ -278,6 +278,14 @@ module Name_of = struct
     end)
 
   let typename_of_tuple5_u = M_tuple5_u.typename_of_t
+
+  module M_or_null = Typename.Make1 (struct
+      type 'a t = 'a or_null
+
+      let name = "or_null"
+    end)
+
+  let typename_of_or_null = M_or_null.typename_of_t
 end
 
 module rec Typerep : sig
@@ -293,6 +301,7 @@ module rec Typerep : sig
     | Bool : bool t
     | Unit : unit t
     | Option : 'a t -> 'a option t
+    | Or_null : 'a t -> 'a or_null t
     | List : 'a t -> 'a list t
     | Array : 'a. 'a t -> 'a builtin_array t
     | Lazy : 'a t -> 'a lazy_t t
@@ -503,6 +512,7 @@ module rec Typerep : sig
   module Kind : sig
     type 'a t =
       | Value : 'a. 'a t
+      | Value_or_null : 'a. 'a t
       | Bits32 : 'a. 'a t
       | Bits64 : 'a. 'a t
       | Word : 'a. 'a t
@@ -535,6 +545,7 @@ end = struct
     | Bool : bool t
     | Unit : unit t
     | Option : 'a t -> 'a option t
+    | Or_null : 'a t -> 'a or_null t
     | List : 'a t -> 'a list t
     | Array : 'a. 'a t -> 'a builtin_array t
     | Lazy : 'a t -> 'a lazy_t t
@@ -831,6 +842,7 @@ end = struct
   module Kind = struct
     type 'a t =
       | Value : 'a. 'a t
+      | Value_or_null : 'a. 'a t
       | Bits32 : 'a. 'a t
       | Bits64 : 'a. 'a t
       | Word : 'a. 'a t
@@ -860,6 +872,7 @@ end = struct
     | Bool -> Name_of.typename_of_bool
     | Unit -> Name_of.typename_of_unit
     | Option rep -> Name_of.typename_of_option (typename_of_t rep)
+    | Or_null rep -> Name_of.typename_of_or_null (typename_of_t rep)
     | List rep -> Name_of.typename_of_list (typename_of_t rep)
     | Array rep -> Name_of.typename_of_array (typename_of_t rep)
     | Lazy rep -> Name_of.typename_of_lazy_t (typename_of_t rep)
@@ -912,6 +925,10 @@ end = struct
     | Bool, Bool -> Some E.T
     | Unit, Unit -> Some E.T
     | Option r1, Option r2 ->
+      (match same_witness r1 r2 with
+       | None as x -> x
+       | Some E.T as x -> x)
+    | Or_null r1, Or_null r2 ->
       (match same_witness r1 r2 with
        | None as x -> x
        | Some E.T as x -> x)
@@ -1028,6 +1045,7 @@ end = struct
     | Bool, _ -> None
     | Unit, _ -> None
     | Option _, _ -> None
+    | Or_null _, _ -> None
     | List _, _ -> None
     | Array _, _ -> None
     | Lazy _, _ -> None
@@ -1064,6 +1082,7 @@ end = struct
     | Bool -> Value
     | Unit -> Value
     | Option _ -> Value
+    | Or_null _ -> Value_or_null
     | List _ -> Value
     | Array _ -> Value
     | Lazy _ -> Value
@@ -1101,6 +1120,7 @@ let typerep_of_bytes = Typerep.Bytes
 let typerep_of_bool = Typerep.Bool
 let typerep_of_unit = Typerep.Unit
 let typerep_of_option rep = Typerep.Option rep
+let typerep_of_or_null rep = Typerep.Or_null rep
 let typerep_of_list rep = Typerep.List rep
 let typerep_of_array rep = Typerep.Array rep
 let typerep_of_lazy_t rep = Typerep.Lazy rep

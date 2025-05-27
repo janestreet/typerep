@@ -139,6 +139,7 @@ module type Computation = sig
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
+  val or_null : 'a t -> 'a or_null t
   val list : 'a t -> 'a list t
   val array : 'a. 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t
@@ -741,6 +742,7 @@ struct
       | Typerep.Bool -> X.bool
       | Typerep.Unit -> X.unit
       | Typerep.Option rep -> X.option (of_typerep rep)
+      | Typerep.Or_null rep -> X.or_null (of_typerep rep)
       | Typerep.List rep -> X.list (of_typerep rep)
       | Typerep.Array rep -> X.array (Typerep.kind rep) (of_typerep rep)
       | Typerep.Lazy rep -> X.lazy_t (of_typerep rep)
