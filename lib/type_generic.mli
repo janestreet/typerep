@@ -112,6 +112,7 @@ module type Computation = sig
   val bool : bool t
   val unit : unit t
   val option : 'a t -> 'a option t
+  val or_null : 'a t -> 'a or_null t
   val list : 'a t -> 'a list t
   val array : ('a : any_non_null). 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t

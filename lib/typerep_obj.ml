@@ -39,6 +39,7 @@ external obj_magic : ('a : any) ('b : any). 'a -> 'b @@ portable = "%obj_magic"
 let double_array_value (type a : any) (typerep : a Typerep.t) : unit -> a =
   match Typerep.kind typerep with
   | Value -> fun [@inline never] () -> opaque (obj_magic 0.)
+  | Value_or_null -> fun [@inline never] () -> opaque (obj_magic Null)
   | Float64 -> fun [@inline never] () -> opaque (obj_magic #1.0)
   | Bits32 -> fun [@inline never] () -> opaque (obj_magic #2l)
   | Bits64 -> fun [@inline never] () -> opaque (obj_magic #3L)
