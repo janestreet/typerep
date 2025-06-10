@@ -18,10 +18,10 @@ end = struct
 
   let compare a b = compare (a.code : int) b.code
   let equal a b = (a.code : int) = b.code
-  let uid = Atomic.make 0
+  let uid = Stdlib.Atomic.make 0
 
   let next name =
-    let code = Atomic.fetch_and_add uid 1 in
+    let code = Stdlib.Atomic.fetch_and_add uid 1 in
     { code; name }
   ;;
 
