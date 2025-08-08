@@ -93,9 +93,9 @@ struct
             in
             let bfield = (bfield : (record, a) B.Field.t) in
             get bfield)
-            bfield
+            bfield [@nontail]
       in
-      A.Record.create record { A.Record.get }
+      A.Record.create record { A.Record.get } [@nontail]
     in
     B.Record.internal_use_only
       { B.Record_internal.typename; fields; has_double_array_tag; create }
