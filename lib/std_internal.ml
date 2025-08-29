@@ -173,7 +173,7 @@ module Name_of = struct
 
   let typename_of_list = M_list.typename_of_t
 
-  module%template M_array = Typename.Make1 [@kind any_non_null] (struct
+  module%template M_array = Typename.Make1 [@kind any mod separable] (struct
       type 'a t = 'a builtin_array
 
       let name = "array"

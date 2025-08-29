@@ -47,7 +47,7 @@ module type S0 = sig
 end
 
 [%%template:
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module type S1 = sig
   type 'a t
@@ -97,7 +97,7 @@ end]
 module Make0 (X : Named_intf.S0) : S0 with type t := X.t
 
 [%%template:
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module Make1 (X : Named_intf.S1 [@kind k]) : S1 [@kind k] with type 'a t := 'a X.t
 

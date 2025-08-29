@@ -7,7 +7,7 @@ module type S0 = sig
 end
 
 [%%template
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module type S1 = sig
   type 'a t

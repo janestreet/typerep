@@ -90,7 +90,7 @@ module type S0 = sig
 end
 
 [%%template
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module type S1 = sig
   type 'a t
@@ -143,7 +143,7 @@ module Make0 (X : Named_intf.S0) = struct
 end
 
 [%%template
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module Make1 (X : Named_intf.S1 [@kind k]) = struct
   let uid = Uid.next X.name
