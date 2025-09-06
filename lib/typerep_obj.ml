@@ -52,6 +52,8 @@ let has_double_array_tag a =
 
 let () =
   let module M = struct
+    [@@@warning "-69"]
+
     type double =
       { a : float
       ; b : float
