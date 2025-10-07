@@ -120,7 +120,7 @@ module%template [@modality p = nonportable] Types = struct
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields -> 'a
+      ; create : 'a fields @ local -> 'a
       }
   end
 end
@@ -229,7 +229,7 @@ module%template [@modality p = portable] Types = struct
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields -> 'a @@ portable
+      ; create : 'a fields @ local -> 'a @@ portable
       }
     [@@unsafe_allow_any_mode_crossing]
   end
@@ -580,7 +580,7 @@ struct
     (** Expose one direction of the isomorphism between a value of type ['a] and a value
         of type ['a fields]. Basically, given an encoding way of accessing the value of
         all the fields of a record, create that record and return it. *)
-    val create : 'a t -> 'a fields -> 'a
+    val create : 'a t -> 'a fields @ local -> 'a
 
     (** folding along the tags of the variant type *)
     val fold : 'a t -> init:'acc -> f:('acc -> 'a field -> 'acc) -> 'acc

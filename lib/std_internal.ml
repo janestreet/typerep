@@ -1,4 +1,4 @@
-type ('a : any_non_null) builtin_array = 'a array
+type ('a : any mod separable) builtin_array = 'a array
 
 open! Base
 
@@ -173,8 +173,8 @@ module Name_of = struct
 
   let typename_of_list = M_list.typename_of_t
 
-  module%template M_array = Typename.Make1 [@kind any_non_null] (struct
-      type ('a : any_non_null) t = 'a builtin_array
+  module%template M_array = Typename.Make1 [@kind any mod separable] (struct
+      type ('a : any mod separable) t = 'a builtin_array
 
       let name = "array"
     end)
@@ -304,7 +304,7 @@ module rec Typerep : sig @@ portable
     | Option : 'a t -> 'a option t
     | Or_null : 'a t -> 'a or_null t
     | List : 'a t -> 'a list t
-    | Array : ('a : any_non_null). 'a t -> 'a builtin_array t
+    | Array : ('a : any mod separable). 'a t -> 'a builtin_array t
     | Lazy : 'a t -> 'a lazy_t t
     | Ref : 'a t -> 'a ref t
     | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
@@ -559,7 +559,7 @@ end = struct
     | Option : 'a t -> 'a option t
     | Or_null : 'a t -> 'a or_null t
     | List : 'a t -> 'a list t
-    | Array : ('a : any_non_null). 'a t -> 'a builtin_array t
+    | Array : ('a : any mod separable). 'a t -> 'a builtin_array t
     | Lazy : 'a t -> 'a lazy_t t
     | Ref : 'a t -> 'a ref t
     | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t

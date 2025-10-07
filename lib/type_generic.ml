@@ -1,4 +1,4 @@
-type ('a : any_non_null) builtin_array = 'a array
+type ('a : any mod separable) builtin_array = 'a array
 
 open! Base
 open Std_internal
@@ -93,9 +93,9 @@ struct
             in
             let bfield = (bfield : (record, a) B.Field.t) in
             get bfield)
-            bfield
+            bfield [@nontail]
       in
-      A.Record.create record { A.Record.get }
+      A.Record.create record { A.Record.get } [@nontail]
     in
     B.Record.internal_use_only
       { B.Record_internal.typename; fields; has_double_array_tag; create }
@@ -141,7 +141,7 @@ module type Computation = sig
   val option : 'a t -> 'a option t
   val or_null : 'a t -> 'a or_null t
   val list : 'a t -> 'a list t
-  val array : ('a : any_non_null). 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
+  val array : ('a : any mod separable). 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
   val lazy_t : 'a t -> 'a lazy_t t
   val ref_ : 'a t -> 'a ref t
 

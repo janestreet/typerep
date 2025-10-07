@@ -18,10 +18,10 @@ end = struct
 
   let compare a b = compare (a.code : int) b.code
   let equal a b = (a.code : int) = b.code
-  let uid = Atomic.make 0
+  let uid = Stdlib.Atomic.make 0
 
   let next name =
-    let code = Atomic.fetch_and_add uid 1 in
+    let code = Stdlib.Atomic.fetch_and_add uid 1 in
     { code; name }
   ;;
 
@@ -90,7 +90,7 @@ module type S0 = sig @@ portable
 end
 
 [%%template
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module type S1 = sig @@ portable
   type ('a : k) t : any
@@ -143,7 +143,7 @@ module Make0 (X : Named_intf.S0) = struct
 end
 
 [%%template
-[@@@kind.default k = (any, any_non_null, value)]
+[@@@kind.default k = (any, any mod separable, value)]
 
 module Make1 (X : Named_intf.S1 [@kind k]) = struct
   let uid = Uid.next X.name
