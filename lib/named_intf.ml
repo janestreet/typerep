@@ -7,7 +7,7 @@ module type S0 = sig
 end
 
 [%%template
-[@@@kind.default k = (any, any mod separable, value)]
+[@@@kind.default.explicit ka = (any, any mod separable, value, value_or_null, float64)]
 
 module type S1 = sig
   type 'a t
@@ -15,11 +15,15 @@ module type S1 = sig
   val name : string
 end
 
+[@@@kind.default.explicit kb = (ka, value)]
+
 module type S2 = sig
   type ('a, 'b) t
 
   val name : string
 end
+
+[@@@kind.default.explicit kc = (ka, value)]
 
 module type S3 = sig
   type ('a, 'b, 'c) t
@@ -27,14 +31,25 @@ module type S3 = sig
   val name : string
 end
 
+[@@@kind.default.explicit kd = (ka, value)]
+
 module type S4 = sig
   type ('a, 'b, 'c, 'd) t
 
   val name : string
 end
 
+[@@@kind.default.explicit ke = (ka, value)]
+
 module type S5 = sig
   type ('a, 'b, 'c, 'd, 'e) t
 
   val name : string
 end]
+
+[%%template
+module type S1 = S1 [@kind.explicit value]
+module type S2 = S2 [@kind.explicit value value]
+module type S3 = S3 [@kind.explicit value value value]
+module type S4 = S4 [@kind.explicit value value value value]
+module type S5 = S5 [@kind.explicit value value value value value]]

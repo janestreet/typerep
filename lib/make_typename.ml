@@ -21,7 +21,7 @@ module Make0 (X : Named_intf.S0) = struct
 end
 
 module Make1 (X : Named_intf.S1) = struct
-  module Name_of_x = Typename.Make1 (X)
+  module%template Name_of_x = Typename.Make1 [@kind.explicit value] (X)
 
   let typename_of_t = Name_of_x.typename_of_t
 
@@ -45,7 +45,7 @@ module Make1 (X : Named_intf.S1) = struct
 end
 
 module Make2 (X : Named_intf.S2) = struct
-  module Name_of_x = Typename.Make2 (X)
+  module%template Name_of_x = Typename.Make2 [@kind.explicit value value] (X)
 
   let typename_of_t = Name_of_x.typename_of_t
 
@@ -75,7 +75,7 @@ module Make2 (X : Named_intf.S2) = struct
 end
 
 module Make3 (X : Named_intf.S3) = struct
-  module Name_of_x = Typename.Make3 (X)
+  module%template Name_of_x = Typename.Make3 [@kind.explicit value value value] (X)
 
   let typename_of_t = Name_of_x.typename_of_t
 
@@ -112,7 +112,7 @@ module Make3 (X : Named_intf.S3) = struct
 end
 
 module Make4 (X : Named_intf.S4) = struct
-  module Name_of_x = Typename.Make4 (X)
+  module%template Name_of_x = Typename.Make4 [@kind.explicit value value value value] (X)
 
   let typename_of_t = Name_of_x.typename_of_t
 
@@ -154,7 +154,8 @@ module Make4 (X : Named_intf.S4) = struct
 end
 
 module Make5 (X : Named_intf.S5) = struct
-  module Name_of_x = Typename.Make5 (X)
+  module%template Name_of_x =
+    Typename.Make5 [@kind.explicit value value value value value] (X)
 
   let typename_of_t = Name_of_x.typename_of_t
 

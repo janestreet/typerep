@@ -18,16 +18,16 @@ module rec Typerep : sig
     | Bytes : bytes t
     | Bool : bool t
     | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | Or_null : 'a t -> 'a or_null t
-    | List : 'a t -> 'a list t
+    | Option : 'a. 'a t -> 'a option t
+    | Or_null : 'a. 'a t -> 'a or_null t
+    | List : 'a. 'a t -> 'a list t
     | Array : 'a. 'a t -> 'a builtin_array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
+    | Lazy : 'a. 'a t -> 'a lazy_t t
+    | Ref : 'a. 'a t -> 'a ref t
     | Function : 'dom 'rng. ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
+    | Tuple : 'a. 'a Typerep.Tuple.t -> 'a t
+    | Record : 'a. 'a Typerep.Record.t -> 'a t
+    | Variant : 'a. 'a Typerep.Variant.t -> 'a t
     (** The [Named] constructor both allows for custom implementations of generics based
         on name and provides a way to represent recursive types, the lazy part dealing
         with cycles *)
@@ -198,12 +198,14 @@ module rec Typerep : sig
 
   module Tuple : sig
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 : 'a 'b. ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
+      | T3 : 'a 'b 'c. ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
       | T4 :
+          'a 'b 'c 'd.
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
+          'a 'b 'c 'd 'e.
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
           -> ('a * 'b * 'c * 'd * 'e) t
 
@@ -320,15 +322,15 @@ type tuple0
 val value_tuple0 : tuple0
 
 (* nested *)
-val typerep_of_option : 'a Typerep.t -> 'a option Typerep.t
-val typerep_of_or_null : 'a Typerep.t -> 'a or_null Typerep.t
-val typerep_of_list : 'a Typerep.t -> 'a list Typerep.t
-val typerep_of_array : 'a Typerep.t -> 'a array Typerep.t
-val typerep_of_lazy_t : 'a Typerep.t -> 'a lazy_t Typerep.t
-val typerep_of_ref : 'a Typerep.t -> 'a ref Typerep.t
-val typerep_of_function : 'a Typerep.t -> 'b Typerep.t -> ('a -> 'b) Typerep.t
+val typerep_of_option : 'a. 'a Typerep.t -> 'a option Typerep.t
+val typerep_of_or_null : 'a. 'a Typerep.t -> 'a or_null Typerep.t
+val typerep_of_list : 'a. 'a Typerep.t -> 'a list Typerep.t
+val typerep_of_array : 'a. 'a Typerep.t -> 'a array Typerep.t
+val typerep_of_lazy_t : 'a. 'a Typerep.t -> 'a lazy_t Typerep.t
+val typerep_of_ref : 'a. 'a Typerep.t -> 'a ref Typerep.t
+val typerep_of_function : 'a 'b. 'a Typerep.t -> 'b Typerep.t -> ('a -> 'b) Typerep.t
 val typerep_of_tuple0 : tuple0 Typerep.t
-val typerep_of_tuple2 : 'a Typerep.t -> 'b Typerep.t -> ('a * 'b) Typerep.t
+val typerep_of_tuple2 : 'a 'b. 'a Typerep.t -> 'b Typerep.t -> ('a * 'b) Typerep.t
 
 val typerep_of_tuple3
   :  'a Typerep.t

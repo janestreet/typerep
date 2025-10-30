@@ -109,21 +109,24 @@ module type Computation = sig
   val bytes : bytes t
   val bool : bool t
   val unit : unit t
-  val option : 'a t -> 'a option t
-  val or_null : 'a t -> 'a or_null t
-  val list : 'a t -> 'a list t
+  val option : 'a. 'a t -> 'a option t
+  val or_null : 'a. 'a t -> 'a or_null t
+  val list : 'a. 'a t -> 'a list t
   val array : 'a. 'a Typerep.Kind.t -> 'a t -> 'a builtin_array t
-  val lazy_t : 'a t -> 'a lazy_t t
-  val ref_ : 'a t -> 'a ref t
+  val lazy_t : 'a. 'a t -> 'a lazy_t t
+  val ref_ : 'a. 'a t -> 'a ref t
 
   val function_
     : 'a 'b.
     'a Typerep.Kind.t * 'b Typerep.Kind.t -> 'a t -> 'b t -> ('a -> 'b) t
 
-  val tuple2 : 'a t -> 'b t -> ('a * 'b) t
-  val tuple3 : 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
-  val tuple4 : 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
-  val tuple5 : 'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
+  val tuple2 : 'a 'b. 'a t -> 'b t -> ('a * 'b) t
+  val tuple3 : 'a 'b 'c. 'a t -> 'b t -> 'c t -> ('a * 'b * 'c) t
+  val tuple4 : 'a 'b 'c 'd. 'a t -> 'b t -> 'c t -> 'd t -> ('a * 'b * 'c * 'd) t
+
+  val tuple5
+    : 'a 'b 'c 'd 'e.
+    'a t -> 'b t -> 'c t -> 'd t -> 'e t -> ('a * 'b * 'c * 'd * 'e) t
 
   val tuple2_u
     : 'a 'b.
@@ -160,8 +163,8 @@ module type Computation = sig
     -> 'e t
     -> ('a * 'b * 'c * 'd * 'e) t
 
-  val record : 'a Record.t -> 'a t
-  val variant : 'a Variant.t -> 'a t
+  val record : 'a. 'a Record.t -> 'a t
+  val variant : 'a. 'a Variant.t -> 'a t
 
   module Named : Named with type 'a computation := 'a t
 end
