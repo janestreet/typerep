@@ -48,34 +48,53 @@ module type S0 = sig @@ portable
   val typename_of_t : t typename
 end
 
+module Make0 (X : Named_intf.S0) : S0 with type t := X.t
+
 [%%template:
-[@@@kind.default k = (any, any mod separable, value)]
+[@@@kind.default.explicit ka = (any, any mod separable, value, value_or_null, float64)]
 
 module type S1 = sig @@ portable
-  type ('a : k) t : any
+  type ('a : ka) t : any
 
-  val typename_of_t : ('a : k). 'a typename -> 'a t typename
+  val typename_of_t : ('a : ka). 'a typename -> 'a t typename
 end
+
+module Make1 (X : Named_intf.S1 [@kind.explicit ka]) :
+  S1 [@kind.explicit ka] with type ('a : ka) t := 'a X.t
+
+[@@@kind.default.explicit kb = (ka, value)]
 
 module type S2 = sig @@ portable
-  type ('a : k, 'b : k) t : any
-
-  val typename_of_t : ('a : k) ('b : k). 'a typename -> 'b typename -> ('a, 'b) t typename
-end
-
-module type S3 = sig @@ portable
-  type ('a : k, 'b : k, 'c : k) t : any
+  type ('a : ka, 'b : kb) t : any
 
   val typename_of_t
-    : ('a : k) ('b : k) ('c : k).
+    : ('a : ka) ('b : kb).
+    'a typename -> 'b typename -> ('a, 'b) t typename
+end
+
+module Make2 (X : Named_intf.S2 [@kind.explicit ka kb]) :
+  S2 [@kind.explicit ka kb] with type ('a : ka, 'b : kb) t := ('a, 'b) X.t
+
+[@@@kind.default.explicit kc = (ka, value)]
+
+module type S3 = sig @@ portable
+  type ('a : ka, 'b : kb, 'c : kc) t : any
+
+  val typename_of_t
+    : ('a : ka) ('b : kb) ('c : kc).
     'a typename -> 'b typename -> 'c typename -> ('a, 'b, 'c) t typename
 end
 
+module Make3 (X : Named_intf.S3 [@kind.explicit ka kb kc]) :
+  S3 [@kind.explicit ka kb kc] with type ('a : ka, 'b : kb, 'c : kc) t := ('a, 'b, 'c) X.t
+
+[@@@kind.default.explicit kd = (ka, value)]
+
 module type S4 = sig @@ portable
-  type ('a : k, 'b : k, 'c : k, 'd : k) t : any
+  type ('a : ka, 'b : kb, 'c : kc, 'd : kd) t : any
 
   val typename_of_t
-    : ('a : k) ('b : k) ('c : k) ('d : k).
+    : ('a : ka) ('b : kb) ('c : kc) ('d : kd).
     'a typename
     -> 'b typename
     -> 'c typename
@@ -83,39 +102,37 @@ module type S4 = sig @@ portable
     -> ('a, 'b, 'c, 'd) t typename
 end
 
+module Make4 (X : Named_intf.S4 [@kind.explicit ka kb kc kd]) :
+  S4
+  [@kind.explicit ka kb kc kd]
+  with type ('a : ka, 'b : kb, 'c : kc, 'd : kd) t := ('a, 'b, 'c, 'd) X.t
+
+[@@@kind.default.explicit ke = (ka, value)]
+
 module type S5 = sig @@ portable
-  type ('a : k, 'b : k, 'c : k, 'd : k, 'e : k) t : any
+  type ('a : ka, 'b : kb, 'c : kc, 'd : kd, 'e : ke) t : any
 
   val typename_of_t
-    : ('a : k) ('b : k) ('c : k) ('d : k) ('e : k).
+    : ('a : ka) ('b : kb) ('c : kc) ('d : kd) ('e : ke).
     'a typename
     -> 'b typename
     -> 'c typename
     -> 'd typename
     -> 'e typename
     -> ('a, 'b, 'c, 'd, 'e) t typename
-end]
+end
 
-module Make0 (X : Named_intf.S0) : S0 with type t := X.t
+module Make5 (X : Named_intf.S5 [@kind.explicit ka kb kc kd ke]) :
+  S5
+  [@kind.explicit ka kb kc kd ke]
+  with type ('a : ka, 'b : kb, 'c : kc, 'd : kd, 'e : ke) t := ('a, 'b, 'c, 'd, 'e) X.t]
 
 [%%template:
-[@@@kind.default k = (any, any mod separable, value)]
-
-module Make1 (X : Named_intf.S1 [@kind k]) : S1 [@kind k] with type ('a : k) t := 'a X.t
-
-module Make2 (X : Named_intf.S2 [@kind k]) :
-  S2 [@kind k] with type ('a : k, 'b : k) t := ('a, 'b) X.t
-
-module Make3 (X : Named_intf.S3 [@kind k]) :
-  S3 [@kind k] with type ('a : k, 'b : k, 'c : k) t := ('a, 'b, 'c) X.t
-
-module Make4 (X : Named_intf.S4 [@kind k]) :
-  S4 [@kind k] with type ('a : k, 'b : k, 'c : k, 'd : k) t := ('a, 'b, 'c, 'd) X.t
-
-module Make5 (X : Named_intf.S5 [@kind k]) :
-  S5
-  [@kind k]
-  with type ('a : k, 'b : k, 'c : k, 'd : k, 'e : k) t := ('a, 'b, 'c, 'd, 'e) X.t]
+module type S1 = S1 [@kind.explicit value]
+module type S2 = S2 [@kind.explicit value value]
+module type S3 = S3 [@kind.explicit value value value]
+module type S4 = S4 [@kind.explicit value value value value]
+module type S5 = S5 [@kind.explicit value value value value value]]
 
 module Table (X : sig
     type ('a : any) t

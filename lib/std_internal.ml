@@ -157,16 +157,16 @@ module Name_of = struct
     M.typename_of_t
   ;;
 
-  module M_option = Typename.Make1 (struct
-      type 'a t = 'a option
+  module%template M_option = Typename.Make1 [@kind.explicit value_or_null] (struct
+      type ('a : value_or_null) t = 'a option
 
       let name = "option"
     end)
 
   let typename_of_option = M_option.typename_of_t
 
-  module M_list = Typename.Make1 (struct
-      type 'a t = 'a list
+  module%template M_list = Typename.Make1 [@kind.explicit value_or_null] (struct
+      type ('a : value_or_null) t = 'a list
 
       let name = "list"
     end)
@@ -181,7 +181,7 @@ module Name_of = struct
 
   let typename_of_array = M_array.typename_of_t
 
-  module M_lazy_t = Typename.Make1 (struct
+  module%template M_lazy_t = Typename.Make1 [@kind.explicit value] (struct
       type 'a t = 'a lazy_t
 
       let name = "lazy_t"
@@ -189,15 +189,15 @@ module Name_of = struct
 
   let typename_of_lazy_t = M_lazy_t.typename_of_t
 
-  module M_ref = Typename.Make1 (struct
-      type 'a t = 'a ref
+  module%template M_ref = Typename.Make1 [@kind.explicit value_or_null] (struct
+      type ('a : value_or_null) t = 'a ref
 
       let name = "ref"
     end)
 
   let typename_of_ref = M_ref.typename_of_t
 
-  module%template M_function = Typename.Make2 [@kind any] (struct
+  module%template M_function = Typename.Make2 [@kind any any] (struct
       type ('a : any, 'b : any) t = 'a -> 'b
 
       let name = "function"
@@ -215,39 +215,57 @@ module Name_of = struct
 
   let typename_of_tuple0 = M_tuple0.typename_of_t
 
-  module M_tuple2 = Typename.Make2 (struct
-      type ('a, 'b) t = 'a * 'b
+  module%template M_tuple2 =
+  Typename.Make2 [@kind.explicit value_or_null value_or_null] (struct
+      type ('a : value_or_null, 'b : value_or_null) t = 'a * 'b
 
       let name = "tuple2"
     end)
 
   let typename_of_tuple2 = M_tuple2.typename_of_t
 
-  module M_tuple3 = Typename.Make3 (struct
-      type ('a, 'b, 'c) t = 'a * 'b * 'c
+  module%template M_tuple3 =
+  Typename.Make3 [@kind.explicit value_or_null value_or_null value_or_null] (struct
+      type ('a : value_or_null, 'b : value_or_null, 'c : value_or_null) t = 'a * 'b * 'c
 
       let name = "tuple3"
     end)
 
   let typename_of_tuple3 = M_tuple3.typename_of_t
 
-  module M_tuple4 = Typename.Make4 (struct
-      type ('a, 'b, 'c, 'd) t = 'a * 'b * 'c * 'd
+  module%template M_tuple4 =
+  Typename.Make4 [@kind.explicit value_or_null value_or_null value_or_null value_or_null]
+    (struct
+      type ('a : value_or_null
+           , 'b : value_or_null
+           , 'c : value_or_null
+           , 'd : value_or_null)
+           t =
+        'a * 'b * 'c * 'd
 
       let name = "tuple4"
     end)
 
   let typename_of_tuple4 = M_tuple4.typename_of_t
 
-  module M_tuple5 = Typename.Make5 (struct
-      type ('a, 'b, 'c, 'd, 'e) t = 'a * 'b * 'c * 'd * 'e
+  module%template M_tuple5 =
+  Typename.Make5
+    [@kind.explicit value_or_null value_or_null value_or_null value_or_null value_or_null]
+    (struct
+      type ('a : value_or_null
+           , 'b : value_or_null
+           , 'c : value_or_null
+           , 'd : value_or_null
+           , 'e : value_or_null)
+           t =
+        'a * 'b * 'c * 'd * 'e
 
       let name = "tuple5"
     end)
 
   let typename_of_tuple5 = M_tuple5.typename_of_t
 
-  module%template M_tuple2_u = Typename.Make2 [@kind any] (struct
+  module%template M_tuple2_u = Typename.Make2 [@kind any any] (struct
       type ('a : any, 'b : any) t = #('a * 'b)
 
       let name = "tuple2_u"
@@ -255,7 +273,7 @@ module Name_of = struct
 
   let typename_of_tuple2_u = M_tuple2_u.typename_of_t
 
-  module%template M_tuple3_u = Typename.Make3 [@kind any] (struct
+  module%template M_tuple3_u = Typename.Make3 [@kind any any any] (struct
       type ('a : any, 'b : any, 'c : any) t = #('a * 'b * 'c)
 
       let name = "tuple3_u"
@@ -263,7 +281,7 @@ module Name_of = struct
 
   let typename_of_tuple3_u = M_tuple3_u.typename_of_t
 
-  module%template M_tuple4_u = Typename.Make4 [@kind any] (struct
+  module%template M_tuple4_u = Typename.Make4 [@kind any any any any] (struct
       type ('a : any, 'b : any, 'c : any, 'd : any) t = #('a * 'b * 'c * 'd)
 
       let name = "tuple4_u"
@@ -271,7 +289,7 @@ module Name_of = struct
 
   let typename_of_tuple4_u = M_tuple4_u.typename_of_t
 
-  module%template M_tuple5_u = Typename.Make5 [@kind any] (struct
+  module%template M_tuple5_u = Typename.Make5 [@kind any any any any any] (struct
       type ('a : any, 'b : any, 'c : any, 'd : any, 'e : any) t =
         #('a * 'b * 'c * 'd * 'e)
 
@@ -280,7 +298,7 @@ module Name_of = struct
 
   let typename_of_tuple5_u = M_tuple5_u.typename_of_t
 
-  module M_or_null = Typename.Make1 (struct
+  module%template M_or_null = Typename.Make1 [@kind.explicit value] (struct
       type 'a t = 'a or_null
 
       let name = "or_null"
@@ -301,16 +319,16 @@ module rec Typerep : sig @@ portable
     | Bytes : bytes t
     | Bool : bool t
     | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | Or_null : 'a t -> 'a or_null t
-    | List : 'a t -> 'a list t
+    | Option : ('a : value_or_null). 'a t -> 'a option t
+    | Or_null : ('a : value). 'a t -> 'a or_null t
+    | List : ('a : value_or_null). 'a t -> 'a list t
     | Array : ('a : any mod separable). 'a t -> 'a builtin_array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
+    | Lazy : ('a : value). 'a t -> 'a lazy_t t
+    | Ref : ('a : value_or_null). 'a t -> 'a ref t
     | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
+    | Tuple : ('a : value). 'a Typerep.Tuple.t -> 'a t
+    | Record : ('a : value). 'a Typerep.Record.t -> 'a t
+    | Variant : ('a : value). 'a Typerep.Variant.t -> 'a t
     | Named :
         ('a : any).
         ('a Typerep.Named.t * ('a t Portable_lazy.t, 'a Typerep.Kind.t) Either.t)
@@ -479,12 +497,27 @@ module rec Typerep : sig @@ portable
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose that way *)
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 :
+          ('a : value_or_null) ('b : value_or_null).
+          ('a Typerep.t * 'b Typerep.t)
+          -> ('a * 'b) t
+      | T3 :
+          ('a : value_or_null) ('b : value_or_null) ('c : value_or_null).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t)
+          -> ('a * 'b * 'c) t
       | T4 :
+          ('a : value_or_null)
+          ('b : value_or_null)
+          ('c : value_or_null)
+          ('d : value_or_null).
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
+          ('a : value_or_null)
+          ('b : value_or_null)
+          ('c : value_or_null)
+          ('d : value_or_null)
+          ('e : value_or_null).
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
           -> ('a * 'b * 'c * 'd * 'e) t
 
@@ -556,16 +589,16 @@ end = struct
     | Bytes : bytes t
     | Bool : bool t
     | Unit : unit t
-    | Option : 'a t -> 'a option t
-    | Or_null : 'a t -> 'a or_null t
-    | List : 'a t -> 'a list t
+    | Option : ('a : value_or_null). 'a t -> 'a option t
+    | Or_null : ('a : value). 'a t -> 'a or_null t
+    | List : ('a : value_or_null). 'a t -> 'a list t
     | Array : ('a : any mod separable). 'a t -> 'a builtin_array t
-    | Lazy : 'a t -> 'a lazy_t t
-    | Ref : 'a t -> 'a ref t
+    | Lazy : ('a : value). 'a t -> 'a lazy_t t
+    | Ref : ('a : value_or_null). 'a t -> 'a ref t
     | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
-    | Tuple : 'a Typerep.Tuple.t -> 'a t
-    | Record : 'a Typerep.Record.t -> 'a t
-    | Variant : 'a Typerep.Variant.t -> 'a t
+    | Tuple : ('a : value). 'a Typerep.Tuple.t -> 'a t
+    | Record : ('a : value). 'a Typerep.Record.t -> 'a t
+    | Variant : ('a : value). 'a Typerep.Variant.t -> 'a t
     | Named :
         ('a : any).
         ('a Typerep.Named.t * ('a t Portable_lazy.t, 'a Typerep.Kind.t) Either.t)
@@ -762,12 +795,27 @@ end = struct
     (* these constructors could be plunged at toplevel of Typerep.t, however it is less
        verbose this way *)
     type _ t =
-      | T2 : ('a Typerep.t * 'b Typerep.t) -> ('a * 'b) t
-      | T3 : ('a Typerep.t * 'b Typerep.t * 'c Typerep.t) -> ('a * 'b * 'c) t
+      | T2 :
+          ('a : value_or_null) ('b : value_or_null).
+          ('a Typerep.t * 'b Typerep.t)
+          -> ('a * 'b) t
+      | T3 :
+          ('a : value_or_null) ('b : value_or_null) ('c : value_or_null).
+          ('a Typerep.t * 'b Typerep.t * 'c Typerep.t)
+          -> ('a * 'b * 'c) t
       | T4 :
+          ('a : value_or_null)
+          ('b : value_or_null)
+          ('c : value_or_null)
+          ('d : value_or_null).
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t)
           -> ('a * 'b * 'c * 'd) t
       | T5 :
+          ('a : value_or_null)
+          ('b : value_or_null)
+          ('c : value_or_null)
+          ('d : value_or_null)
+          ('e : value_or_null).
           ('a Typerep.t * 'b Typerep.t * 'c Typerep.t * 'd Typerep.t * 'e Typerep.t)
           -> ('a * 'b * 'c * 'd * 'e) t
 
