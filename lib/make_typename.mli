@@ -3,8 +3,7 @@
 open! Base
 open Std_internal
 
-(*
-   Typerep.Named generation helpers
+(* Typerep.Named generation helpers
 *)
 
 module Make0 (X : Named_intf.S0) : sig @@ portable

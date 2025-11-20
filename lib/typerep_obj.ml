@@ -26,8 +26,7 @@ let hash_variant s =
   if !accu > 0x3FFFFFFF then !accu - (1 lsl 31) else !accu
 ;;
 
-(* a few unit tests of cases that have triggered diffs in the past of this
-   lib *)
+(* a few unit tests of cases that have triggered diffs in the past of this lib *)
 let () = assert (repr_of_poly_variant `Latency_stats = hash_variant "Latency_stats")
 let () = assert (repr_of_poly_variant `zero = hash_variant "zero")
 

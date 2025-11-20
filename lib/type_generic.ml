@@ -273,8 +273,8 @@ module Ident = struct
             if not (implements uid)
             then (
               (* something is wrong with the set up, this is an error during the
-                  initialization of the program, we rather fail with a human
-                  readable output *)
+                 initialization of the program, we rather fail with a human readable
+                 output *)
               let message =
                 Printf.sprintf
                   "Type_generic %S requires %S for uid %S\n"
@@ -309,10 +309,8 @@ module type Extending = sig
   (* special less scary type when the type has no parameters *)
   val register : 'a Typerep.t -> 'a t -> unit
 
-  (*
-     Essentially because we cannot talk about a variable of kind * -> k
-     val register1 : 'a 't Typerep.t -> ('a computation -> 'a 't computation) -> unit
-     ...
+  (* Essentially because we cannot talk about a variable of kind * -> k val register1 : 'a
+     't Typerep.t -> ('a computation -> 'a 't computation) -> unit ...
   *)
 end
 
@@ -325,8 +323,7 @@ module type S_implementation = sig
 
   type implementation = { generic : 'a. 'a Typerep.t -> 'a t }
 
-  (*
-     This function allows you more control on what you want to do
+  (* This function allows you more control on what you want to do
   *)
   val find_extended_implementation
     : ('a : any).
@@ -763,9 +760,8 @@ struct
           (of_typerep dom)
           (of_typerep rng)
       | Typerep.Tuple tuple ->
-        (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)]
-           because of_typerep can contain a side effect and [a] should be executed
-           before [b] *)
+        (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)] because of_typerep can
+           contain a side effect and [a] should be executed before [b] *)
         (match tuple with
          | Typerep.Tuple.T2 (a, b) ->
            let ra = of_typerep a in

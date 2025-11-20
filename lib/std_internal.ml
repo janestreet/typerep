@@ -477,8 +477,8 @@ module rec Typerep : sig @@ portable
     end
 
     (* there the module is necessary because we need to deal with a type [t] with
-       parameters whose kind is not representable as a type variable: ['a 't], even with
-       a gadt. *)
+       parameters whose kind is not representable as a type variable: ['a 't], even with a
+       gadt. *)
     type ('a : any) t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
@@ -747,8 +747,8 @@ end = struct
     end
 
     (* there the module is necessary because we need to deal with a type [t] with
-       parameters whose kind is not representable as a type variable: ['a 't], even with
-       a gadt. *)
+       parameters whose kind is not representable as a type variable: ['a 't], even with a
+       gadt. *)
     type ('a : any) t : value mod contended portable =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
