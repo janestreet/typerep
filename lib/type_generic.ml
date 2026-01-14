@@ -64,24 +64,21 @@ struct
   ;;
 
   let map_record (type record) { map } (record : record A.Record.t) =
-    let map_field field =
-      match field with
-      | A.Record.Field field ->
-        let label = A.Field.label field in
-        let rep = map (A.Field.traverse field) in
-        let index = A.Field.index field in
-        let is_mutable = A.Field.is_mutable field in
-        let tyid = A.Field.tyid field in
-        let get = A.Field.get field in
-        B.Record_internal.Field
-          (B.Field.internal_use_only
-             { B.Field_internal.label; rep; index; is_mutable; tyid; get })
-    in
     let typename = A.Record.typename_of_t record in
     let has_double_array_tag = A.Record.has_double_array_tag record in
     let fields =
       Iarray.init (A.Record.length record) ~f:(fun index ->
-        map_field (A.Record.field record index))
+        match A.Record.field record index with
+        | A.Record.Field field ->
+          let label = A.Field.label field in
+          let rep = map (A.Field.traverse field) in
+          let index = A.Field.index field in
+          let is_mutable = A.Field.is_mutable field in
+          let tyid = A.Field.tyid field in
+          let get = A.Field.get field in
+          B.Record_internal.Field
+            (B.Field.internal_use_only
+               { B.Field_internal.label; rep; index; is_mutable; tyid; get }))
     in
     let create { B.Record_internal.get } =
       let get (type a) (afield : (_, a) A.Field.t) =
@@ -99,6 +96,96 @@ struct
     in
     B.Record.internal_use_only
       { B.Record_internal.typename; fields; has_double_array_tag; create }
+  ;;
+
+  let map_tuple_l (type tuple) { map } (tuple : tuple A.Tuple_l.t) =
+    let map_element subexp =
+      match subexp with
+      | A.Tuple_l.Element subexp ->
+        let label = A.Element.label subexp in
+        let rep = map (A.Element.traverse subexp) in
+        let index = A.Element.index subexp in
+        let tyid = A.Element.tyid subexp in
+        let get = A.Element.get subexp in
+        B.Tuple_l_internal.Element
+          (B.Element.internal_use_only
+             { B.Element_internal.label; rep; index; tyid; get })
+    in
+    let typename = A.Tuple_l.typename_of_t tuple in
+    let elements =
+      Iarray.init (A.Tuple_l.length tuple) ~f:(fun index ->
+        map_element (A.Tuple_l.element tuple index))
+    in
+    let create { B.Tuple_l_internal.get } =
+      let get (type a) (aelement : (_, a) A.Element.t) =
+        match elements.:(A.Element.index aelement) with
+        | B.Tuple_l_internal.Element belement ->
+          (fun (type ex) (belement : (tuple, ex) B.Element.t) ->
+            let Type_equal.T =
+              Typename.same_witness_exn
+                (A.Element.tyid aelement)
+                (B.Element.tyid belement)
+            in
+            let belement = (belement : (tuple, a) B.Element.t) in
+            get belement)
+            belement [@nontail]
+      in
+      A.Tuple_l.create tuple { A.Tuple_l.get } [@nontail]
+    in
+    B.Tuple_l.internal_use_only { B.Tuple_l_internal.typename; elements; create }
+  ;;
+
+  let map_tuple_l_u (type tuple) { map } (tuple : tuple A.Tuple_l_u.t) =
+    match tuple with
+    | T2 { fields; t1; t2; get1; get2; typename } ->
+      let fields =
+        Iarray.map fields ~f:(fun { label; index } ->
+          { B.Tuple_l_u_internal.label; index })
+      in
+      B.Tuple_l_u.T2 { fields; t1 = map t1; t2 = map t2; get1; get2; typename }
+    | T3 { fields; t1; t2; t3; get1; get2; get3; typename } ->
+      let fields =
+        Iarray.map fields ~f:(fun { label; index } ->
+          { B.Tuple_l_u_internal.label; index })
+      in
+      B.Tuple_l_u.T3
+        { fields; t1 = map t1; t2 = map t2; t3 = map t3; get1; get2; get3; typename }
+    | T4 { fields; t1; t2; t3; t4; get1; get2; get3; get4; typename } ->
+      let fields =
+        Iarray.map fields ~f:(fun { label; index } ->
+          { B.Tuple_l_u_internal.label; index })
+      in
+      B.Tuple_l_u.T4
+        { fields
+        ; t1 = map t1
+        ; t2 = map t2
+        ; t3 = map t3
+        ; t4 = map t4
+        ; get1
+        ; get2
+        ; get3
+        ; get4
+        ; typename
+        }
+    | T5 { fields; t1; t2; t3; t4; t5; get1; get2; get3; get4; get5; typename } ->
+      let fields =
+        Iarray.map fields ~f:(fun { label; index } ->
+          { B.Tuple_l_u_internal.label; index })
+      in
+      B.Tuple_l_u.T5
+        { fields
+        ; t1 = map t1
+        ; t2 = map t2
+        ; t3 = map t3
+        ; t4 = map t4
+        ; t5 = map t5
+        ; get1
+        ; get2
+        ; get3
+        ; get4
+        ; get5
+        ; typename
+        }
   ;;
 end
 
@@ -192,7 +279,10 @@ module type Computation = sig
     -> 'e t
     -> ('a * 'b * 'c * 'd * 'e) t
 
+  val tuple_l : 'a. 'a Tuple_l.t -> 'a t
+  val tuple_l_u : 'a. 'a Tuple_l_u.t -> 'a t
   val record : 'a. 'a Record.t -> 'a t
+  val record_u : 'a. 'a Record.t -> 'a t
   val variant : 'a. 'a Variant.t -> 'a t
 
   module Named : Named with type 'a computation := 'a t
@@ -266,8 +356,8 @@ module Ident = struct
             if not (implements uid)
             then (
               (* something is wrong with the set up, this is an error during the
-                  initialization of the program, we rather fail with a human
-                  readable output *)
+                 initialization of the program, we rather fail with a human readable
+                 output *)
               let message =
                 Printf.sprintf
                   "Type_generic %S requires %S for uid %S\n"
@@ -302,10 +392,8 @@ module type Extending = sig
   (* special less scary type when the type has no parameters *)
   val register : 'a Typerep.t -> 'a t -> unit
 
-  (*
-     Essentially because we cannot talk about a variable of kind * -> k
-     val register1 : 'a 't Typerep.t -> ('a computation -> 'a 't computation) -> unit
-     ...
+  (* Essentially because we cannot talk about a variable of kind * -> k val register1 : 'a
+     't Typerep.t -> ('a computation -> 'a 't computation) -> unit ...
   *)
 end
 
@@ -318,8 +406,7 @@ module type S_implementation = sig
 
   type implementation = { generic : 'a. 'a Typerep.t -> 'a t }
 
-  (*
-     This function allows you more control on what you want to do
+  (* This function allows you more control on what you want to do
   *)
   val find_extended_implementation
     : 'a.
@@ -753,9 +840,8 @@ struct
       | Typerep.Function (dom, rng) ->
         X.function_ (Typerep.kind dom, Typerep.kind rng) (of_typerep dom) (of_typerep rng)
       | Typerep.Tuple tuple ->
-        (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)]
-           because of_typerep can contain a side effect and [a] should be executed
-           before [b] *)
+        (* do NOT write [X.tuple2 (of_typerep a) (of_typerep b)] because of_typerep can
+           contain a side effect and [a] should be executed before [b] *)
         (match tuple with
          | Typerep.Tuple.T2 (a, b) ->
            let ra = of_typerep a in
@@ -817,8 +903,14 @@ struct
            let rd = of_typerep d in
            let re = of_typerep e in
            X.tuple5_u (ka, kb, kc, kd, ke) ra rb rc rd re)
+      | Typerep.Tuple_l tuple_l ->
+        X.tuple_l (Helper.map_tuple_l { Helper.map = of_typerep } tuple_l)
+      | Typerep.Tuple_l_u tuple_l_u ->
+        X.tuple_l_u (Helper.map_tuple_l_u { Helper.map = of_typerep } tuple_l_u)
       | Typerep.Record record ->
         X.record (Helper.map_record { Helper.map = of_typerep } record)
+      | Typerep.Record_u record ->
+        X.record_u (Helper.map_record { Helper.map = of_typerep } record)
       | Typerep.Variant variant ->
         X.variant (Helper.map_variant { Helper.map = of_typerep } variant)
       | Typerep.Named (named, content) ->

@@ -40,6 +40,60 @@ end
 val uid : 'a. 'a t -> Uid.t
 val name : 'a. 'a t -> string
 
+module Tuple_l : sig
+  type 'a typename := 'a t
+
+  module Internal_use_only : sig
+    module Boxed : sig
+      module Element : sig
+        type t = T : string option * 'a typename -> t
+      end
+
+      type t = Element.t list
+
+      (** Generate a typename for the element at some index within a particular labeled
+          tuple type. For example, [typename_of_element typename_of_t 1] produces a
+          typename which uniquely identifies [label:string] within the [t] described
+          above.
+
+          This function is deterministic and injective. *)
+      val typename_of_index : _ typename -> int -> _ typename
+
+      (** Generate a typename for the labeled tuple containing these elements. For
+          example, [type t = int * label:string] has the elements
+          [[ T (None, typename_of_int); T (Some "label", typename_of_string) ]].
+
+          This function is deterministic and injective. *)
+      val typename_of_t : t -> _ typename
+    end
+
+    module Unboxed : sig
+      module Element : sig
+        type _ t = T : 'a. string option * 'a typename -> 'a t
+      end
+
+      type _ t =
+        | T2 : 'tuple 'a 'b. 'a Element.t * 'b Element.t -> 'tuple t
+        | T3 : 'tuple 'a 'b 'c. 'a Element.t * 'b Element.t * 'c Element.t -> 'tuple t
+        | T4 :
+            'tuple 'a 'b 'c 'd.
+            'a Element.t * 'b Element.t * 'c Element.t * 'd Element.t
+            -> 'tuple t
+        | T5 :
+            'tuple 'a 'b 'c 'd 'e.
+            'a Element.t * 'b Element.t * 'c Element.t * 'd Element.t * 'e Element.t
+            -> 'tuple t
+
+      (** Generate a typename for the labeled tuple containing these elements. For
+          example, [type t = #(int * label:string)] has the elements
+          [ T2 (T (None, typename_of_int), T (Some "label", typename_of_string)) ].
+
+          This function is deterministic and injective. *)
+      val typename_of_t : 'a. 'a t -> 'a typename
+    end
+  end
+end
+
 module type S0 = sig
   type t
 

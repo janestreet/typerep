@@ -315,6 +315,7 @@ module rec Typerep : sig
     | Ref : 'a. 'a t -> 'a ref t
     | Function : 'dom 'rng. ('dom t * 'rng t) -> ('dom -> 'rng) t
     | Tuple : 'a. 'a Typerep.Tuple.t -> 'a t
+    | Tuple_l : 'a. 'a Typerep.Tuple_l.t -> 'a t
     | Record : 'a. 'a Typerep.Record.t -> 'a t
     | Variant : 'a. 'a Typerep.Variant.t -> 'a t
     | Named :
@@ -326,6 +327,8 @@ module rec Typerep : sig
     | Nativeint_u : nativeint t
     | Float_u : float t
     | Tuple_u : 'a. 'a Typerep.Tuple_u.t -> 'a t
+    | Tuple_l_u : 'a. 'a Typerep.Tuple_l_u.t -> 'a t
+    | Record_u : 'a. 'a Typerep.Record.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed = T : 'a t -> packed [@@unsafe_allow_any_mode_crossing]
@@ -464,8 +467,8 @@ module rec Typerep : sig
     end
 
     (* there the module is necessary because we need to deal with a type [t] with
-       parameters whose kind is not representable as a type variable: ['a 't], even with
-       a gadt. *)
+       parameters whose kind is not representable as a type variable: ['a 't], even with a
+       gadt. *)
     type 'a t =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
@@ -533,6 +536,9 @@ module rec Typerep : sig
           'a 'b 'c 'd 'e.
           'a t * 'b t * 'c t * 'd t * 'e t
           -> ('a * 'b * 'c * 'd * 'e) t
+      | Isomorphism : 'a 'b. 'a t -> 'b t
+
+    type packed = T : 'a. 'a t -> packed
   end
 
   val same : 'a 'b. 'a t -> 'b t -> bool
@@ -561,6 +567,7 @@ end = struct
     | Ref : 'a. 'a t -> 'a ref t
     | Function : 'dom 'rng. ('dom t * 'rng t) -> ('dom -> 'rng) t
     | Tuple : 'a. 'a Typerep.Tuple.t -> 'a t
+    | Tuple_l : 'a. 'a Typerep.Tuple_l.t -> 'a t
     | Record : 'a. 'a Typerep.Record.t -> 'a t
     | Variant : 'a. 'a Typerep.Variant.t -> 'a t
     | Named :
@@ -572,6 +579,8 @@ end = struct
     | Nativeint_u : nativeint t
     | Float_u : float t
     | Tuple_u : 'a. 'a Typerep.Tuple_u.t -> 'a t
+    | Tuple_l_u : 'a. 'a Typerep.Tuple_l_u.t -> 'a t
+    | Record_u : 'a. 'a Typerep.Record.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed = T : 'a t -> packed [@@unsafe_allow_any_mode_crossing]
@@ -710,8 +719,8 @@ end = struct
     end
 
     (* there the module is necessary because we need to deal with a type [t] with
-       parameters whose kind is not representable as a type variable: ['a 't], even with
-       a gadt. *)
+       parameters whose kind is not representable as a type variable: ['a 't], even with a
+       gadt. *)
     type 'a t =
       | T0 of (module T0 with type t = 'a)
       | T1 of (module T1 with type t = 'a)
@@ -865,6 +874,9 @@ end = struct
           'a 'b 'c 'd 'e.
           'a t * 'b t * 'c t * 'd t * 'e t
           -> ('a * 'b * 'c * 'd * 'e) t
+      | Isomorphism : 'a 'b. 'a t -> 'b t
+
+    type packed = T : 'a. 'a t -> packed
   end
 
   let rec typename_of_t : type a. a t -> a Typename.t = function
@@ -891,8 +903,11 @@ end = struct
     | Function (dom, rng) ->
       Name_of.typename_of_function (typename_of_t dom) (typename_of_t rng)
     | Tuple rep -> Typerep.Tuple.typename_of_t rep
+    | Tuple_l rep -> Typerep.Tuple_l.typename_of_t rep
     | Tuple_u rep -> Typerep.Tuple_u.typename_of_t rep
+    | Tuple_l_u rep -> Typerep.Tuple_l_u.typename_of_t rep
     | Record rep -> Typerep.Record.typename_of_t rep
+    | Record_u rep -> Typerep.Record.typename_of_t rep
     | Variant rep -> Typerep.Variant.typename_of_t rep
     | Named (name, _) -> Named.typename_of_t name
   ;;
@@ -1033,7 +1048,19 @@ end = struct
        | T.T3 _, _ -> None
        | T.T4 _, _ -> None
        | T.T5 _, _ -> None)
+    | Tuple_l t1, Tuple_l t2 ->
+      Typename.same_witness
+        (Typerep.Tuple_l.typename_of_t t1)
+        (Typerep.Tuple_l.typename_of_t t2)
+    | Tuple_l_u t1, Tuple_l_u t2 ->
+      Typename.same_witness
+        (Typerep.Tuple_l_u.typename_of_t t1)
+        (Typerep.Tuple_l_u.typename_of_t t2)
     | Record r1, Record r2 ->
+      Typename.same_witness
+        (Typerep.Record.typename_of_t r1)
+        (Typerep.Record.typename_of_t r2)
+    | Record_u r1, Record_u r2 ->
       Typename.same_witness
         (Typerep.Record.typename_of_t r1)
         (Typerep.Record.typename_of_t r2)
@@ -1063,8 +1090,11 @@ end = struct
     | Ref _, _ -> None
     | Function _, _ -> None
     | Tuple _, _ -> None
+    | Tuple_l _, _ -> None
     | Tuple_u _, _ -> None
+    | Tuple_l_u _, _ -> None
     | Record _, _ -> None
+    | Record_u _, _ -> None
     | Variant _, _ -> None
   ;;
 
@@ -1100,6 +1130,7 @@ end = struct
     | Ref _ -> Value
     | Function _ -> Value
     | Tuple _ -> Value
+    | Tuple_l _ -> Value
     | Record _ -> Value
     | Variant _ -> Value
     | Named (_, First t) -> kind (Portable_lazy.force t)
@@ -1113,6 +1144,60 @@ end = struct
     | Tuple_u (T4 (t1, t2, t3, t4)) -> Tuple4_u (kind t1, kind t2, kind t3, kind t4)
     | Tuple_u (T5 (t1, t2, t3, t4, t5)) ->
       Tuple5_u (kind t1, kind t2, kind t3, kind t4, kind t5)
+    | Tuple_l_u (T2 { t1; t2; _ }) -> Isomorphism (Tuple2_u (kind t1, kind t2))
+    | Tuple_l_u (T3 { t1; t2; t3; _ }) ->
+      Isomorphism (Tuple3_u (kind t1, kind t2, kind t3))
+    | Tuple_l_u (T4 { t1; t2; t3; t4; _ }) ->
+      Isomorphism (Tuple4_u (kind t1, kind t2, kind t3, kind t4))
+    | Tuple_l_u (T5 { t1; t2; t3; t4; t5; _ }) ->
+      Isomorphism (Tuple5_u (kind t1, kind t2, kind t3, kind t4, kind t5))
+    | Record_u record ->
+      let len = Typerep.Record.length record in
+      let rec loop pos : Typerep.Kind.packed =
+        let remaining_fields = len - pos in
+        match remaining_fields with
+        | 1 ->
+          let (Field f) = Typerep.Record.field record (pos + 0) in
+          let k = kind (Typerep.Field.traverse f) in
+          T k
+        | 2 ->
+          let (Field f0) = Typerep.Record.field record (pos + 0) in
+          let (Field f1) = Typerep.Record.field record (pos + 1) in
+          let k0 = kind (Typerep.Field.traverse f0) in
+          let k1 = kind (Typerep.Field.traverse f1) in
+          T (Tuple2_u (k0, k1))
+        | 3 ->
+          let (Field f0) = Typerep.Record.field record (pos + 0) in
+          let (Field f1) = Typerep.Record.field record (pos + 1) in
+          let (Field f2) = Typerep.Record.field record (pos + 2) in
+          let k0 = kind (Typerep.Field.traverse f0) in
+          let k1 = kind (Typerep.Field.traverse f1) in
+          let k2 = kind (Typerep.Field.traverse f2) in
+          T (Tuple3_u (k0, k1, k2))
+        | 4 ->
+          let (Field f0) = Typerep.Record.field record (pos + 0) in
+          let (Field f1) = Typerep.Record.field record (pos + 1) in
+          let (Field f2) = Typerep.Record.field record (pos + 2) in
+          let (Field f3) = Typerep.Record.field record (pos + 3) in
+          let k0 = kind (Typerep.Field.traverse f0) in
+          let k1 = kind (Typerep.Field.traverse f1) in
+          let k2 = kind (Typerep.Field.traverse f2) in
+          let k3 = kind (Typerep.Field.traverse f3) in
+          T (Tuple4_u (k0, k1, k2, k3))
+        | _ ->
+          let (Field f0) = Typerep.Record.field record (pos + 0) in
+          let (Field f1) = Typerep.Record.field record (pos + 1) in
+          let (Field f2) = Typerep.Record.field record (pos + 2) in
+          let (Field f3) = Typerep.Record.field record (pos + 3) in
+          let k0 = kind (Typerep.Field.traverse f0) in
+          let k1 = kind (Typerep.Field.traverse f1) in
+          let k2 = kind (Typerep.Field.traverse f2) in
+          let k3 = kind (Typerep.Field.traverse f3) in
+          let (T k_rest) = loop (pos + 4) in
+          T (Tuple5_u (k0, k1, k2, k3, k_rest))
+      in
+      let (T kind) = loop 0 in
+      Isomorphism kind
   ;;
 end
 

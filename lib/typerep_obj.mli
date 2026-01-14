@@ -6,5 +6,5 @@ open Std_internal
 val repr_of_poly_variant : [> ] -> int
 
 val hash_variant : string -> int
-val double_array_value : 'a. 'a Typerep.t -> unit -> 'a
+val double_array_value : 'a. 'a Typerep.t -> (unit -> 'a) option
 val has_double_array_tag : 'a -> bool

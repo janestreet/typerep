@@ -26,6 +26,7 @@ module rec Typerep : sig
     | Ref : 'a. 'a t -> 'a ref t
     | Function : 'dom 'rng. ('dom t * 'rng t) -> ('dom -> 'rng) t
     | Tuple : 'a. 'a Typerep.Tuple.t -> 'a t
+    | Tuple_l : 'a. 'a Typerep.Tuple_l.t -> 'a t
     | Record : 'a. 'a Typerep.Record.t -> 'a t
     | Variant : 'a. 'a Typerep.Variant.t -> 'a t
     (** The [Named] constructor both allows for custom implementations of generics based
@@ -45,6 +46,8 @@ module rec Typerep : sig
     | Nativeint_u : nativeint t
     | Float_u : float t
     | Tuple_u : 'a. 'a Typerep.Tuple_u.t -> 'a t
+    | Tuple_l_u : 'a. 'a Typerep.Tuple_l_u.t -> 'a t
+    | Record_u : 'a. 'a Typerep.Record.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed = T : 'a t -> packed [@@unsafe_allow_any_mode_crossing]
@@ -247,6 +250,9 @@ module rec Typerep : sig
           'a 'b 'c 'd 'e.
           'a t * 'b t * 'c t * 'd t * 'e t
           -> ('a * 'b * 'c * 'd * 'e) t
+      | Isomorphism : 'a 'b. 'a t -> 'b t
+
+    type packed = T : 'a. 'a t -> packed
   end
 
   (** [same t t'] will return a proof a equality if [t] and [t'] are the same type. One

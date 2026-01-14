@@ -67,6 +67,21 @@ module%template [@modality p = nonportable] Types = struct
     end
   end
 
+  module type Element = sig
+    type ('tuple, 'element) t
+  end
+
+  module Tuple_l (Element : Element) = struct
+    module type S = sig
+      type _ element = Element : 'tuple 'a. ('tuple, 'a) Element.t -> 'tuple element
+
+      type 'tuple elements =
+        { get : 'element. ('tuple, 'element) Element.t -> unit -> 'element }
+
+      type 'a t
+    end
+  end
+
   module Tag_internal (X : X [@modality p]) = struct
     type ('variant, 'args) create =
       | Args of ((unit -> 'args) -> 'variant)
@@ -117,8 +132,93 @@ module%template [@modality p = nonportable] Types = struct
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields -> 'a
+      ; create : 'a fields -> unit -> 'a
       }
+  end
+
+  module Element_internal (X : X [@modality p]) = struct
+    type ('tuple, 'element) t =
+      { label : string option
+      ; rep : 'element X.t
+      ; index : int
+      ; tyid : 'element Typename.t
+      ; get : 'tuple -> unit -> 'element
+      }
+  end
+
+  module Tuple_l_internal (Element : Element) = struct
+    type _ element = Element : 'tuple 'a. ('tuple, 'a) Element.t -> 'tuple element
+
+    type 'tuple elements =
+      { get : 'element. ('tuple, 'element) Element.t -> unit -> 'element }
+
+    type 'a t =
+      { typename : 'a Typename.t
+      ; elements : 'a element iarray
+      ; create : 'a elements -> 'a
+      }
+  end
+
+  module Tuple_l_u_internal (X : X [@modality p]) = struct
+    type field_info =
+      { label : string option
+      ; index : int
+      }
+
+    type _ t =
+      | T2 :
+          'tuple 'a 'b.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          'tuple 'a 'b 'c.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          'tuple 'a 'b 'c 'd.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          'tuple 'a 'b 'c 'd 'e.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; get5 : 'tuple -> 'e
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+    [@@unsafe_allow_any_mode_crossing]
   end
 end
 
@@ -159,6 +259,22 @@ module%template [@modality p = portable] Types = struct
       [@@unsafe_allow_any_mode_crossing]
 
       type 'record fields = { get : 'field. ('record, 'field) Field.t -> unit -> 'field }
+      type 'a t
+    end
+  end
+
+  module type Element = sig
+    type ('tuple, 'element) t
+  end
+
+  module Tuple_l (Element : Element) = struct
+    module type S = sig
+      type _ element = Element : 'tuple 'a. ('tuple, 'a) Element.t -> 'tuple element
+      [@@unsafe_allow_any_mode_crossing]
+
+      type 'tuple elements =
+        { get : 'element. ('tuple, 'element) Element.t -> unit -> 'element }
+
       type 'a t
     end
   end
@@ -219,8 +335,96 @@ module%template [@modality p = portable] Types = struct
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields -> 'a
+      ; create : 'a fields -> unit -> 'a
       }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Element_internal (X : X [@modality p]) = struct
+    type ('tuple, 'element) t =
+      { label : string option
+      ; rep : 'element X.t
+      ; index : int
+      ; tyid : 'element Typename.t
+      ; get : 'tuple -> unit -> 'element
+      }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Tuple_l_internal (Element : Element) = struct
+    type _ element = Element : 'tuple 'a. ('tuple, 'a) Element.t -> 'tuple element
+    [@@unsafe_allow_any_mode_crossing]
+
+    type 'tuple elements =
+      { get : 'element. ('tuple, 'element) Element.t -> unit -> 'element }
+
+    type 'a t =
+      { typename : 'a Typename.t
+      ; elements : 'a element iarray
+      ; create : 'a elements -> 'a
+      }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Tuple_l_u_internal (X : X [@modality p]) = struct
+    type field_info =
+      { label : string option
+      ; index : int
+      }
+
+    type _ t =
+      | T2 :
+          'tuple 'a 'b.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          'tuple 'a 'b 'c.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          'tuple 'a 'b 'c 'd.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          'tuple 'a 'b 'c 'd 'e.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; get5 : 'tuple -> 'e
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
     [@@unsafe_allow_any_mode_crossing]
   end
 end
@@ -247,8 +451,8 @@ struct
   open Types [@modality p]
 
   (* The functions prefixed by [internal] as well as the module suffixed by [_internal]
-     are used by the code generated by the camlp4 extension [with typerep] as well as some
-     internals of the typerep library. Do not consider using these somewhere else.  They
+     are used by the code generated by the ppx [@@deriving typerep] as well as some
+     internals of the typerep library. Do not consider using these somewhere else. They
      should ideally not be exported outside the typerep library, but the generated code
      needs somehow to access this, even outside. *)
 
@@ -414,8 +618,8 @@ struct
     (** get the representation/computation of the arguments *)
     val traverse : 'variant 'args. ('variant, 'args) t -> 'args X.t
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
     val internal_use_only : 'a 'b. ('a, 'b) Tag_internal.t -> ('a, 'b) t
   end = struct
     include Tag_internal
@@ -459,8 +663,8 @@ struct
     (** folding along the tags of the variant type *)
     val fold : 'a t -> init:'acc -> f:('acc -> 'a tag -> 'acc) -> 'acc
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
     val internal_use_only : 'a Variant_internal.t -> 'a t
   end = struct
     include Variant_internal
@@ -524,8 +728,8 @@ struct
     (** get the computation of the arguments *)
     val traverse : 'record 'field. ('record, 'field) t -> 'field X.t
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
     val internal_use_only : 'a 'b. ('a, 'b) Field_internal.t -> ('a, 'b) t
   end = struct
     include Field_internal
@@ -544,13 +748,13 @@ struct
   module Record : sig
     include Record(Field).S
 
-    val typename_of_t : 'a t -> 'a Typename.t
+    val typename_of_t : 'a. 'a t -> 'a Typename.t
 
     (** Returns the number of fields of this record type definition. *)
-    val length : 'a t -> int
+    val length : 'a. 'a t -> int
 
     (** Get the nth field of this record type, indexed from 0. *)
-    val field : 'a t -> int -> 'a field
+    val field : 'a. 'a t -> int -> 'a field
 
     (** This is a low level metadata regarding the way the ocaml compiler represent the
         array underneath that is the runtime value of a record of type ['a] given a
@@ -565,19 +769,19 @@ struct
 
         This is computed lazily so that a self-referential named record can inspect other
         details of its own typerep during the process. *)
-    val has_double_array_tag : _ t -> bool Portable_lazy.t
+    val has_double_array_tag : 'a. 'a t -> bool Portable_lazy.t
 
     (** Expose one direction of the isomorphism between a value of type ['a] and a value
         of type ['a fields]. Basically, given an encoding way of accessing the value of
         all the fields of a record, create that record and return it. *)
-    val create : 'a t -> 'a fields -> 'a
+    val create : 'a. 'a t -> 'a fields -> unit -> 'a
 
     (** folding along the tags of the variant type *)
-    val fold : 'a t -> init:'acc -> f:('acc -> 'a field -> 'acc) -> 'acc
+    val fold : 'a 'acc. 'a t -> init:'acc -> f:('acc -> 'a field -> 'acc) -> 'acc
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
-    val internal_use_only : 'a Record_internal.t -> 'a t
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
+    val internal_use_only : 'a. 'a Record_internal.t -> 'a t
   end = struct
     include Record_internal
 
@@ -587,6 +791,173 @@ struct
     let has_double_array_tag t = t.has_double_array_tag
     let create t = t.create
     let fold t ~init ~f = Iarray.fold ~f ~init t.fields
+    let internal_use_only t = t
+  end
+
+  module Element_internal = Element_internal (X)
+
+  module Element : sig
+    include Element
+
+    (** Get the label (wrapped inside an option type), as represented in concrete syntax.
+        Example:
+        {[
+          x:int (* Some "x" *)
+          * string (* None *)
+          * y:float (* Some "y" *)
+        ]} *)
+    val label : 'a 'b. ('a, 'b) t -> string option
+
+    (** The 0-based index of the element in the list of all element for this labeled tuple
+        type. Example:
+        {[
+          type t = x:int (* 0 *) * string (* 1 *) * y:float (* 2 *)
+        ]} *)
+    val index : 'a 'b. ('a, 'b) t -> int
+
+    (** Element accessors. [Element.get foo_element t] returns the element [foo] (with or
+        without label) of the labeled tuple value [t]. *)
+    val get : 'tuple 'element. ('tuple, 'element) t -> 'tuple -> unit -> 'element
+
+    (** return the type_name of the arguments. Might be used to perform some lookup based
+        on it *)
+    val tyid : 'tuple 'element. ('tuple, 'element) t -> 'element Typename.t
+
+    (** get the computation of the arguments *)
+    val traverse : 'tuple 'element. ('tuple, 'element) t -> 'element X.t
+
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep; it
+       should not be used in user code *)
+    val internal_use_only : 'a 'b. ('a, 'b) Element_internal.t -> ('a, 'b) t
+  end = struct
+    include Element_internal
+
+    let label t = t.label
+    let index t = t.index
+    let get t = t.get
+    let tyid t = t.tyid
+    let traverse t = t.rep
+    let internal_use_only t = t
+  end
+
+  module Tuple_l_internal = Tuple_l_internal (Element)
+
+  module Tuple_l : sig
+    include Tuple_l(Element).S
+
+    val typename_of_t : 'a t -> 'a Typename.t
+
+    (** Returns the number of fields of this labeled tuple type definition. *)
+    val length : 'a t -> int
+
+    (** Get the nth element of this labeled tuple type, indexed from 0. *)
+    val element : 'a t -> int -> 'a element
+
+    (** Expose one direction of the isomorphism between a value of type ['a] and a value
+        of type ['a elements]. Basically, given an encoding way of accessing the value of
+        all the elements of a labeled tuple, create that labeled tuple and return it. *)
+    val create : 'a t -> 'a elements -> 'a
+
+    (** folding along the elements of the labeled tuple type *)
+    val fold : 'a t -> init:'acc -> f:('acc -> 'a element -> 'acc) -> 'acc
+
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep; it
+       should not be used in user code *)
+    val internal_use_only : 'a Tuple_l_internal.t -> 'a t
+  end = struct
+    include Tuple_l_internal
+
+    let typename_of_t t = t.typename
+    let length t = Iarray.length t.elements
+    let element t index = Iarray.get t.elements index
+    let create t = t.create
+    let fold t ~init ~f = Iarray.fold ~f ~init t.elements
+    let internal_use_only t = t
+  end
+
+  module Tuple_l_u_internal = Tuple_l_u_internal (X)
+
+  module Tuple_l_u : sig
+    (* Expose the field_info type *)
+    type field_info = Tuple_l_u_internal.field_info =
+      { label : string option
+      ; index : int
+      }
+
+    (* Expose the concrete GADT type so it can be pattern matched externally *)
+    type 'a t = 'a Tuple_l_u_internal.t =
+      | T2 :
+          'tuple 'a 'b.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          'tuple 'a 'b 'c.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          'tuple 'a 'b 'c 'd.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          'tuple 'a 'b 'c 'd 'e.
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a
+          ; get2 : 'tuple -> 'b
+          ; get3 : 'tuple -> 'c
+          ; get4 : 'tuple -> 'd
+          ; get5 : 'tuple -> 'e
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+    [@@unsafe_allow_any_mode_crossing]
+
+    val typename_of_t : 'a. 'a t -> 'a Typename.t
+    val length : 'a. 'a t -> int
+    val internal_use_only : 'a. 'a Tuple_l_u_internal.t -> 'a t
+  end = struct
+    include Tuple_l_u_internal
+
+    let typename_of_t = function
+      | T2 { typename; _ } | T3 { typename; _ } | T4 { typename; _ } | T5 { typename; _ }
+        -> typename
+    ;;
+
+    let length : 'a. 'a t -> int = function
+      | T2 _ -> 2
+      | T3 _ -> 3
+      | T4 _ -> 4
+      | T5 _ -> 5
+    ;;
+
     let internal_use_only t = t
   end
 end
