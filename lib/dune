@@ -3,4 +3,4 @@
  (public_name typerep)
  (preprocess
   (pps ppx_template))
- (libraries base))
+ (libraries base portable))

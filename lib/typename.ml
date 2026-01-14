@@ -83,6 +83,135 @@ include struct
   ;;
 end
 
+module Tuple_l = struct
+  module Labels = struct
+    type t = string option list
+
+    let compare x y = compare_list (compare_option compare_string) x y
+    let sexp_of_t t = sexp_of_list (sexp_of_option sexp_of_string) t
+
+    include (val (Comparator.make [@modality portable]) ~compare ~sexp_of_t)
+  end
+
+  module Internal_use_only = struct
+    module Uids : sig
+      type ('a, 'cmp) t : value mod contended portable
+
+      val create
+        : 'a ('cmp : value mod portable).
+        ((module Comparator.S with type t = 'a and type comparator_witness = 'cmp)
+        [@modality portable])
+        -> ('a, 'cmp) t
+
+      val find_or_add
+        : ('a : value mod contended portable) ('cmp : value mod portable).
+        ('a, 'cmp) t -> 'a -> name:('a -> string) @ portable -> Uid.t
+    end = struct
+      type ('a, 'cmp) t = ('a, Uid.t, 'cmp) Map.t Portable.Atomic.t
+
+      let create
+        (type a (cmp : value mod portable))
+        (m :
+          ((module Comparator.S with type t = a and type comparator_witness = cmp)
+          [@modality portable]))
+        =
+        Portable.Atomic.make ((Map.empty [@mode portable]) m)
+      ;;
+
+      let find_or_add
+        (type (a : value mod contended portable) (cmp : value mod portable))
+        (t : (a, cmp) t)
+        key
+        ~name
+        =
+        let name = Portable_lazy.from_fun (fun () -> name key) in
+        Portable.Atomic.update t ~pure_f:(fun t ->
+          Map.update t key ~f:(function
+            | None -> Uid.next (Portable_lazy.force name)
+            | Some uid -> uid));
+        Map.find_exn (Portable.Atomic.get t) key
+      ;;
+    end
+
+    let uids_of_t = Uids.create (module Labels)
+    let uids_of_element = Uids.create (module Int)
+
+    module Boxed = struct
+      module Element = struct
+        type t = T : string option * Key.t -> t
+      end
+
+      type t = Element.t list
+
+      let typename_of_index typename_of_t index =
+        { Key.uid =
+            Uids.find_or_add uids_of_element index ~name:(fun index ->
+              Printf.sprintf "element%d" index)
+        ; params = [ typename_of_t ]
+        }
+      ;;
+
+      let typename_of_t elements =
+        let labels, params =
+          List.map elements ~f:(fun (Element.T (label, key)) -> label, key) |> List.unzip
+        in
+        { Key.uid =
+            Uids.find_or_add uids_of_t labels ~name:(fun labels ->
+              Printf.sprintf "tuple%d" (List.length labels)
+              :: List.map labels ~f:(Option.value ~default:".")
+              |> String.concat ~sep:"_")
+        ; params
+        }
+      ;;
+    end
+
+    module Unboxed = struct
+      module Element = struct
+        type (_ : any) t = T : ('a : any). string option * 'a typename -> 'a t
+      end
+
+      type (_ : any) t =
+        | T2 :
+            ('tuple : any) ('a : any) ('b : any).
+            'a Element.t * 'b Element.t
+            -> 'tuple t
+        | T3 :
+            ('tuple : any) ('a : any) ('b : any) ('c : any).
+            'a Element.t * 'b Element.t * 'c Element.t
+            -> 'tuple t
+        | T4 :
+            ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any).
+            'a Element.t * 'b Element.t * 'c Element.t * 'd Element.t
+            -> 'tuple t
+        | T5 :
+            ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+            'a Element.t * 'b Element.t * 'c Element.t * 'd Element.t * 'e Element.t
+            -> 'tuple t
+
+      let typename_of_t : type (a : any). a t -> a typename =
+        fun t ->
+        let labels, params =
+          match t with
+          | T2 (T (l1, t1), T (l2, t2)) -> [ l1; l2 ], [ key t1; key t2 ]
+          | T3 (T (l1, t1), T (l2, t2), T (l3, t3)) ->
+            [ l1; l2; l3 ], [ key t1; key t2; key t3 ]
+          | T4 (T (l1, t1), T (l2, t2), T (l3, t3), T (l4, t4)) ->
+            [ l1; l2; l3; l4 ], [ key t1; key t2; key t3; key t4 ]
+          | T5 (T (l1, t1), T (l2, t2), T (l3, t3), T (l4, t4), T (l5, t5)) ->
+            [ l1; l2; l3; l4; l5 ], [ key t1; key t2; key t3; key t4; key t5 ]
+        in
+        { Key.uid =
+            Uids.find_or_add uids_of_t labels ~name:(fun labels ->
+              Printf.sprintf "tuple%d" (List.length labels)
+              :: List.map labels ~f:(Option.value ~default:".")
+              |> String.concat ~sep:"_")
+        ; params
+        }
+      ;;
+    end
+  end
+end
+
 module type S0 = sig @@ portable
   type t : any
 

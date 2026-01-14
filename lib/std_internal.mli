@@ -28,6 +28,7 @@ module rec Typerep : sig
     | Ref : ('a : value_or_null). 'a t -> 'a ref t
     | Function : ('dom : any) ('rng : any). ('dom t * 'rng t) -> ('dom -> 'rng) t
     | Tuple : ('a : value). 'a Typerep.Tuple.t -> 'a t
+    | Tuple_l : ('a : value). 'a Typerep.Tuple_l.t -> 'a t
     | Record : ('a : value). 'a Typerep.Record.t -> 'a t
     | Variant : ('a : value). 'a Typerep.Variant.t -> 'a t
     (** The [Named] constructor both allows for custom implementations of generics based
@@ -47,6 +48,8 @@ module rec Typerep : sig
     | Nativeint_u : nativeint# t
     | Float_u : float# t
     | Tuple_u : ('a : any). 'a Typerep.Tuple_u.t -> 'a t
+    | Tuple_l_u : ('a : any). 'a Typerep.Tuple_l_u.t -> 'a t
+    | Record_u : ('a : any). 'a Typerep.Record.t -> 'a t
   [@@unsafe_allow_any_mode_crossing]
 
   type packed : value mod contended portable = T : 'a t -> packed
@@ -273,6 +276,9 @@ module rec Typerep : sig
           ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
           'a t * 'b t * 'c t * 'd t * 'e t
           -> #('a * 'b * 'c * 'd * 'e) t
+      | Isomorphism : ('a : any) ('b : any). 'a t -> 'b t
+
+    type packed = T : ('a : any). 'a t -> packed
   end
 
   (** [same t t'] will return a proof a equality if [t] and [t'] are the same type. One

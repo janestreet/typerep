@@ -45,7 +45,7 @@ module%template [@modality p = nonportable] Types = struct
   end
 
   module type Field = sig
-    type ('record, 'field : any) t
+    type ('record : any, 'field : any) t
   end
 
   module Record (Field : Field) = struct
@@ -54,16 +54,33 @@ module%template [@modality p = nonportable] Types = struct
           ['record] parameter is the record type, it is the same for all the field of that
           record type. The type of the fields might be different for each field and is
           thus existential. *)
-      type _ field = Field : 'record ('a : any). ('record, 'a) Field.t -> 'record field
+      type (_ : any) field =
+        | Field : ('record : any) ('a : any). ('record, 'a) Field.t -> 'record field
 
       (** ['record fields] is a type isomorphic to ['record]. This gives a way to get the
           field value for each field of the record. The advantage of this representation
           is that it is convenient for writing generic computations. *)
-      type 'record fields =
+      type ('record : any) fields =
         { get : ('field : any). ('record, 'field) Field.t -> unit -> 'field }
 
       (** Witness of a record type. The parameter is the type of the record type
           witnessed. *)
+      type ('a : any) t
+    end
+  end
+
+  module type Element = sig
+    type ('tuple, 'element : any) t
+  end
+
+  module Tuple_l (Element : Element) = struct
+    module type S = sig
+      type _ element =
+        | Element : 'tuple ('a : any). ('tuple, 'a) Element.t -> 'tuple element
+
+      type 'tuple elements =
+        { get : ('element : any). ('tuple, 'element) Element.t -> unit -> 'element }
+
       type 'a t
     end
   end
@@ -100,7 +117,7 @@ module%template [@modality p = nonportable] Types = struct
   end
 
   module Field_internal (X : X [@modality p]) = struct
-    type ('record, 'field : any) t =
+    type ('record : any, 'field : any) t =
       { label : string
       ; rep : 'field X.t
       ; index : int
@@ -111,17 +128,104 @@ module%template [@modality p = nonportable] Types = struct
   end
 
   module Record_internal (Field : Field) = struct
-    type _ field = Field : 'record ('a : any). ('record, 'a) Field.t -> 'record field
+    type (_ : any) field =
+      | Field : ('record : any) ('a : any). ('record, 'a) Field.t -> 'record field
 
-    type 'record fields =
+    type ('record : any) fields =
       { get : ('field : any). ('record, 'field) Field.t -> unit -> 'field }
 
-    type 'a t =
+    type ('a : any) t =
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields @ local -> 'a
+      ; create : 'a fields @ local -> (unit -> 'a)
       }
+  end
+
+  module Element_internal (X : X [@modality p]) = struct
+    type ('tuple, 'element : any) t =
+      { label : string option
+      ; rep : 'element X.t
+      ; index : int
+      ; tyid : 'element Typename.t
+      ; get : 'tuple -> unit -> 'element
+      }
+  end
+
+  module Tuple_l_internal (Element : Element) = struct
+    type _ element =
+      | Element : 'tuple ('a : any). ('tuple, 'a) Element.t -> 'tuple element
+
+    type 'tuple elements =
+      { get : ('element : any). ('tuple, 'element) Element.t -> unit -> 'element }
+
+    type 'a t =
+      { typename : 'a Typename.t
+      ; elements : 'a element iarray
+      ; create : 'a elements @ local -> 'a
+      }
+  end
+
+  module Tuple_l_u_internal (X : X [@modality p]) = struct
+    type field_info =
+      { label : string option
+      ; index : int
+      }
+
+    type (_ : any) t : value mod contended portable =
+      | T2 :
+          ('tuple : any) ('a : any) ('b : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; get5 : 'tuple -> 'e @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+    [@@unsafe_allow_any_mode_crossing]
   end
 end
 
@@ -154,17 +258,34 @@ module%template [@modality p = portable] Types = struct
   end
 
   module type Field = sig
-    type ('record, 'field : any) t : value mod contended portable
+    type ('record : any, 'field : any) t : value mod contended portable
   end
 
   module Record (Field : Field) = struct
     module type S = sig
-      type _ field : value mod contended portable =
-        | Field : 'record ('a : any). ('record, 'a) Field.t -> 'record field
+      type (_ : any) field : value mod contended portable =
+        | Field : ('record : any) ('a : any). ('record, 'a) Field.t -> 'record field
       [@@unsafe_allow_any_mode_crossing]
 
-      type 'record fields =
+      type ('record : any) fields =
         { get : ('field : any). ('record, 'field) Field.t -> unit -> 'field }
+
+      type ('a : any) t : value mod contended portable
+    end
+  end
+
+  module type Element = sig
+    type ('tuple, 'element : any) t : value mod contended portable
+  end
+
+  module Tuple_l (Element : Element) = struct
+    module type S = sig
+      type _ element : value mod contended portable =
+        | Element : 'tuple ('a : any). ('tuple, 'a) Element.t -> 'tuple element
+      [@@unsafe_allow_any_mode_crossing]
+
+      type 'tuple elements =
+        { get : ('element : any). ('tuple, 'element) Element.t -> unit -> 'element }
 
       type 'a t : value mod contended portable
     end
@@ -206,7 +327,7 @@ module%template [@modality p = portable] Types = struct
   end
 
   module Field_internal (X : X [@modality p]) = struct
-    type ('record, 'field : any) t : value mod contended portable =
+    type ('record : any, 'field : any) t : value mod contended portable =
       { label : string
       ; rep : 'field X.t
       ; index : int
@@ -218,19 +339,108 @@ module%template [@modality p = portable] Types = struct
   end
 
   module Record_internal (Field : Field) = struct
-    type _ field : value mod contended portable =
-      | Field : 'record ('a : any). ('record, 'a) Field.t -> 'record field
+    type (_ : any) field : value mod contended portable =
+      | Field : ('record : any) ('a : any). ('record, 'a) Field.t -> 'record field
     [@@unsafe_allow_any_mode_crossing]
 
-    type 'record fields =
+    type ('record : any) fields =
       { get : ('field : any). ('record, 'field) Field.t -> unit -> 'field }
 
-    type 'a t : value mod contended portable =
+    type ('a : any) t : value mod contended portable =
       { typename : 'a Typename.t
       ; fields : 'a field iarray
       ; has_double_array_tag : bool Portable_lazy.t
-      ; create : 'a fields @ local -> 'a @@ portable
+      ; create : 'a fields @ local -> (unit -> 'a) @@ portable
       }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Element_internal (X : X [@modality p]) = struct
+    type ('tuple, 'element : any) t : value mod contended portable =
+      { label : string option
+      ; rep : 'element X.t
+      ; index : int
+      ; tyid : 'element Typename.t
+      ; get : 'tuple -> unit -> 'element @@ portable
+      }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Tuple_l_internal (Element : Element) = struct
+    type _ element : value mod contended portable =
+      | Element : 'tuple ('a : any). ('tuple, 'a) Element.t -> 'tuple element
+    [@@unsafe_allow_any_mode_crossing]
+
+    type 'tuple elements =
+      { get : ('element : any). ('tuple, 'element) Element.t -> unit -> 'element }
+
+    type 'a t : value mod contended portable =
+      { typename : 'a Typename.t
+      ; elements : 'a element iarray
+      ; create : 'a elements @ local -> 'a @@ portable
+      }
+    [@@unsafe_allow_any_mode_crossing]
+  end
+
+  module Tuple_l_u_internal (X : X [@modality p]) = struct
+    type field_info =
+      { label : string option
+      ; index : int
+      }
+
+    type (_ : any) t : value mod contended portable =
+      | T2 :
+          ('tuple : any) ('a : any) ('b : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; get5 : 'tuple -> 'e @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
     [@@unsafe_allow_any_mode_crossing]
   end
 end
@@ -257,7 +467,7 @@ struct
   open Types [@modality p]
 
   (* The functions prefixed by [internal] as well as the module suffixed by [_internal]
-     are used by the code generated by the camlp4 extension [with typerep] as well as some
+     are used by the code generated by the ppx [@@deriving typerep] as well as some
      internals of the typerep library. Do not consider using these somewhere else. They
      should ideally not be exported outside the typerep library, but the generated code
      needs somehow to access this, even outside. *)
@@ -424,8 +634,8 @@ struct
     (** get the representation/computation of the arguments *)
     val traverse : 'variant ('args : any). ('variant, 'args) t -> 'args X.t
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
     val internal_use_only : 'a ('b : any). ('a, 'b) Tag_internal.t -> ('a, 'b) t
   end = struct
     include Tag_internal
@@ -469,8 +679,8 @@ struct
     (** folding along the tags of the variant type *)
     val fold : 'a t -> init:'acc -> f:('acc -> 'a tag -> 'acc) -> 'acc
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
     val internal_use_only : 'a Variant_internal.t -> 'a t
   end = struct
     include Variant_internal
@@ -506,7 +716,7 @@ struct
                      foo : string; (* "foo" *)
                                    bar : float (* "bar" *) }
         ]} *)
-    val label : 'a ('b : any). ('a, 'b) t -> string
+    val label : ('a : any) ('b : any). ('a, 'b) t -> string
 
     (** The 0-based index of the field in the list of all fields for this record type.
         Example:
@@ -517,26 +727,28 @@ struct
             ; bar : string (* 2 *)
             }
         ]} *)
-    val index : 'a ('b : any). ('a, 'b) t -> int
+    val index : ('a : any) ('b : any). ('a, 'b) t -> int
 
     (** Field accessors. This corresponds to the dot operation. [Field.get bar_field t]
         returns the field [bar] of the record value [t], just the same as [t.bar] *)
-    val get : 'record ('field : any). ('record, 'field) t -> 'record -> unit -> 'field
+    val get
+      : ('record : any) ('field : any).
+      ('record, 'field) t -> 'record -> unit -> 'field
 
     (** return whether the field is mutable, i.e. whether its declaration is prefixed with
         the keyword [mutable] *)
-    val is_mutable : 'a ('b : any). ('a, 'b) t -> bool
+    val is_mutable : ('a : any) ('b : any). ('a, 'b) t -> bool
 
     (** return the type_name of the arguments. Might be used to perform some lookup based
         on it *)
-    val tyid : 'record ('field : any). ('record, 'field) t -> 'field Typename.t
+    val tyid : ('record : any) ('field : any). ('record, 'field) t -> 'field Typename.t
 
     (** get the computation of the arguments *)
-    val traverse : 'record ('field : any). ('record, 'field) t -> 'field X.t
+    val traverse : ('record : any) ('field : any). ('record, 'field) t -> 'field X.t
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
-    val internal_use_only : 'a ('b : any). ('a, 'b) Field_internal.t -> ('a, 'b) t
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
+    val internal_use_only : ('a : any) ('b : any). ('a, 'b) Field_internal.t -> ('a, 'b) t
   end = struct
     include Field_internal
 
@@ -554,13 +766,13 @@ struct
   module Record : sig @@ portable
     include Record(Field).S
 
-    val typename_of_t : 'a t -> 'a Typename.t
+    val typename_of_t : ('a : any). 'a t -> 'a Typename.t
 
     (** Returns the number of fields of this record type definition. *)
-    val length : 'a t -> int
+    val length : ('a : any). 'a t -> int
 
     (** Get the nth field of this record type, indexed from 0. *)
-    val field : 'a t -> int -> 'a field
+    val field : ('a : any). 'a t -> int -> 'a field
 
     (** This is a low level metadata regarding the way the ocaml compiler represent the
         array underneath that is the runtime value of a record of type ['a] given a
@@ -575,19 +787,19 @@ struct
 
         This is computed lazily so that a self-referential named record can inspect other
         details of its own typerep during the process. *)
-    val has_double_array_tag : _ t -> bool Portable_lazy.t
+    val has_double_array_tag : ('a : any). 'a t -> bool Portable_lazy.t
 
     (** Expose one direction of the isomorphism between a value of type ['a] and a value
         of type ['a fields]. Basically, given an encoding way of accessing the value of
         all the fields of a record, create that record and return it. *)
-    val create : 'a t -> 'a fields @ local -> 'a
+    val create : ('a : any). 'a t -> 'a fields @ local -> (unit -> 'a)
 
     (** folding along the tags of the variant type *)
-    val fold : 'a t -> init:'acc -> f:('acc -> 'a field -> 'acc) -> 'acc
+    val fold : ('a : any) 'acc. 'a t -> init:'acc -> f:('acc -> 'a field -> 'acc) -> 'acc
 
-    (* used by the camlp4 extension to build type witnesses, or by some internal parts of
-       typerep. you should feel bad if you need to use it in some user code *)
-    val internal_use_only : 'a Record_internal.t -> 'a t
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
+       should feel bad if you need to use it in some user code *)
+    val internal_use_only : ('a : any). 'a Record_internal.t -> 'a t
   end = struct
     include Record_internal
 
@@ -597,6 +809,173 @@ struct
     let has_double_array_tag t = t.has_double_array_tag
     let create t = t.create
     let fold t ~init ~f = Iarray.fold ~f ~init t.fields
+    let internal_use_only t = t
+  end
+
+  module Element_internal = Element_internal (X)
+
+  module Element : sig @@ portable
+    include Element
+
+    (** Get the label (wrapped inside an option type), as represented in concrete syntax.
+        Example:
+        {[
+          x:int (* Some "x" *)
+          * string (* None *)
+          * y:float (* Some "y" *)
+        ]} *)
+    val label : 'a ('b : any). ('a, 'b) t -> string option
+
+    (** The 0-based index of the element in the list of all element for this labeled tuple
+        type. Example:
+        {[
+          type t = x:int (* 0 *) * string (* 1 *) * y:float (* 2 *)
+        ]} *)
+    val index : 'a ('b : any). ('a, 'b) t -> int
+
+    (** Element accessors. [Element.get foo_element t] returns the element [foo] (with or
+        without label) of the labeled tuple value [t]. *)
+    val get : 'tuple ('element : any). ('tuple, 'element) t -> 'tuple -> unit -> 'element
+
+    (** return the type_name of the arguments. Might be used to perform some lookup based
+        on it *)
+    val tyid : 'tuple ('element : any). ('tuple, 'element) t -> 'element Typename.t
+
+    (** get the computation of the arguments *)
+    val traverse : 'tuple ('element : any). ('tuple, 'element) t -> 'element X.t
+
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep; it
+       should not be used in user code *)
+    val internal_use_only : 'a ('b : any). ('a, 'b) Element_internal.t -> ('a, 'b) t
+  end = struct
+    include Element_internal
+
+    let label t = t.label
+    let index t = t.index
+    let get t = t.get
+    let tyid t = t.tyid
+    let traverse t = t.rep
+    let internal_use_only t = t
+  end
+
+  module Tuple_l_internal = Tuple_l_internal (Element)
+
+  module Tuple_l : sig @@ portable
+    include Tuple_l(Element).S
+
+    val typename_of_t : 'a t -> 'a Typename.t
+
+    (** Returns the number of fields of this labeled tuple type definition. *)
+    val length : 'a t -> int
+
+    (** Get the nth element of this labeled tuple type, indexed from 0. *)
+    val element : 'a t -> int -> 'a element
+
+    (** Expose one direction of the isomorphism between a value of type ['a] and a value
+        of type ['a elements]. Basically, given an encoding way of accessing the value of
+        all the elements of a labeled tuple, create that labeled tuple and return it. *)
+    val create : 'a t -> 'a elements @ local -> 'a
+
+    (** folding along the elements of the labeled tuple type *)
+    val fold : 'a t -> init:'acc -> f:('acc -> 'a element -> 'acc) -> 'acc
+
+    (* used by the ppx to build type witnesses, or by some internal parts of typerep; it
+       should not be used in user code *)
+    val internal_use_only : 'a Tuple_l_internal.t -> 'a t
+  end = struct
+    include Tuple_l_internal
+
+    let typename_of_t t = t.typename
+    let length t = Iarray.length t.elements
+    let element t index = Iarray.get t.elements index
+    let create t = t.create
+    let fold t ~init ~f = Iarray.fold ~f ~init t.elements
+    let internal_use_only t = t
+  end
+
+  module Tuple_l_u_internal = Tuple_l_u_internal (X)
+
+  module Tuple_l_u : sig @@ portable
+    (* Expose the field_info type *)
+    type field_info = Tuple_l_u_internal.field_info =
+      { label : string option
+      ; index : int
+      }
+
+    (* Expose the concrete GADT type so it can be pattern matched externally *)
+    type ('a : any) t : value mod contended portable = 'a Tuple_l_u_internal.t =
+      | T2 :
+          ('tuple : any) ('a : any) ('b : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T3 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T4 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+      | T5 :
+          ('tuple : any) ('a : any) ('b : any) ('c : any) ('d : any) ('e : any).
+          { fields : field_info iarray
+          ; t1 : 'a X.t
+          ; t2 : 'b X.t
+          ; t3 : 'c X.t
+          ; t4 : 'd X.t
+          ; t5 : 'e X.t
+          ; get1 : 'tuple -> 'a @@ portable
+          ; get2 : 'tuple -> 'b @@ portable
+          ; get3 : 'tuple -> 'c @@ portable
+          ; get4 : 'tuple -> 'd @@ portable
+          ; get5 : 'tuple -> 'e @@ portable
+          ; typename : 'tuple Typename.t
+          }
+          -> 'tuple t
+    [@@unsafe_allow_any_mode_crossing]
+
+    val typename_of_t : ('a : any). 'a t -> 'a Typename.t
+    val length : ('a : any). 'a t -> int
+    val internal_use_only : ('a : any). 'a Tuple_l_u_internal.t -> 'a t
+  end = struct
+    include Tuple_l_u_internal
+
+    let typename_of_t = function
+      | T2 { typename; _ } | T3 { typename; _ } | T4 { typename; _ } | T5 { typename; _ }
+        -> typename
+    ;;
+
+    let length : ('a : any). 'a t -> int = function
+      | T2 _ -> 2
+      | T3 _ -> 3
+      | T4 _ -> 4
+      | T5 _ -> 5
+    ;;
+
     let internal_use_only t = t
   end
 end

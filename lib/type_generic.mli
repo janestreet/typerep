@@ -43,6 +43,7 @@ module%template Helper
 
   val map_variant : map -> 'a A.Variant.t -> 'a B.Variant.t
   val map_record : map -> 'a A.Record.t -> 'a B.Record.t
+  val map_tuple_l : map -> 'a A.Tuple_l.t -> 'a B.Tuple_l.t
 end
 
 module type Named = sig
@@ -172,7 +173,10 @@ module type Computation = sig
     -> 'e t
     -> #('a * 'b * 'c * 'd * 'e) t
 
+  val tuple_l : ('a : value). 'a Tuple_l.t -> 'a t
+  val tuple_l_u : ('a : any). 'a Tuple_l_u.t -> 'a t
   val record : ('a : value). 'a Record.t -> 'a t
+  val record_u : ('a : any). 'a Record.t -> 'a t
   val variant : ('a : value). 'a Variant.t -> 'a t
 
   module Named : Named with type ('a : any) computation := 'a t
