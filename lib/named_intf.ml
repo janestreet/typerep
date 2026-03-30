@@ -7,7 +7,8 @@ module type S0 = sig
 end
 
 [%%template
-[@@@kind.default.explicit ka = (any, any mod separable, value, value_or_null, float64)]
+[@@@kind.default.explicit
+  ka = (any, any mod separable, value, value_or_null, float64, immediate64_or_null)]
 
 module type S1 = sig
   type 'a t
