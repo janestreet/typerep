@@ -224,7 +224,10 @@ module Make0 (X : Named_intf.S0) = struct
 end
 
 [%%template
-[@@@kind.default.explicit ka = (any, any mod separable, value, value_or_null, float64)]
+[@@@warning "-incompatible-with-upstream"]
+
+[@@@kind.default.explicit
+  ka = (any, any mod separable, value, value_or_null, float64, immediate64_or_null)]
 
 module type S1 = sig @@ portable
   type ('a : ka) t : any
@@ -350,9 +353,11 @@ module Same_witness_exn_1 (A : S1) (B : S1) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static) in
     let uid_b = uid (B.typename_of_t static) in
-    if Uid.equal uid_a uid_b
-    then { eq = Stdlib.Obj.magic Type_equal.refl }
-    else fail uid_a uid_b
+    (* [eq] must be bound in a [let] so OCaml generalizes its type to match the
+       polymorphic record field. Inlining it as [{ eq = Obj.magic ... }] fails on OCaml
+       5.3+ (see https://github.com/ocaml/ocaml/issues/13176). *)
+    let eq = Stdlib.Obj.magic Type_equal.refl in
+    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
   ;;
 end
 
@@ -362,9 +367,8 @@ module Same_witness_exn_2 (A : S2) (B : S2) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static) in
     let uid_b = uid (B.typename_of_t static static) in
-    if Uid.equal uid_a uid_b
-    then { eq = Stdlib.Obj.magic Type_equal.refl }
-    else fail uid_a uid_b
+    let eq = Stdlib.Obj.magic Type_equal.refl in
+    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
   ;;
 end
 
@@ -374,9 +378,8 @@ module Same_witness_exn_3 (A : S3) (B : S3) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static) in
     let uid_b = uid (B.typename_of_t static static static) in
-    if Uid.equal uid_a uid_b
-    then { eq = Stdlib.Obj.magic Type_equal.refl }
-    else fail uid_a uid_b
+    let eq = Stdlib.Obj.magic Type_equal.refl in
+    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
   ;;
 end
 
@@ -386,9 +389,8 @@ module Same_witness_exn_4 (A : S4) (B : S4) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static static) in
     let uid_b = uid (B.typename_of_t static static static static) in
-    if Uid.equal uid_a uid_b
-    then { eq = Stdlib.Obj.magic Type_equal.refl }
-    else fail uid_a uid_b
+    let eq = Stdlib.Obj.magic Type_equal.refl in
+    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
   ;;
 end
 
@@ -401,8 +403,7 @@ module Same_witness_exn_5 (A : S5) (B : S5) = struct
   let witness =
     let uid_a = uid (A.typename_of_t static static static static static) in
     let uid_b = uid (B.typename_of_t static static static static static) in
-    if Uid.equal uid_a uid_b
-    then { eq = Stdlib.Obj.magic Type_equal.refl }
-    else fail uid_a uid_b
+    let eq = Stdlib.Obj.magic Type_equal.refl in
+    if Uid.equal uid_a uid_b then { eq } else fail uid_a uid_b
   ;;
 end

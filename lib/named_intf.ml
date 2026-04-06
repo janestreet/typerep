@@ -7,7 +7,10 @@ module type S0 = sig
 end
 
 [%%template
-[@@@kind.default.explicit ka = (any, any mod separable, value, value_or_null, float64)]
+[@@@warning "-incompatible-with-upstream"]
+
+[@@@kind.default.explicit
+  ka = (any, any mod separable, value, value_or_null, float64, immediate64_or_null)]
 
 module type S1 = sig
   type ('a : ka) t : any
