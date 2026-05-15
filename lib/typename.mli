@@ -22,6 +22,7 @@ module Key : sig
   val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int
+  val sexp_of_t : t -> Sexp.t
 end
 
 val key : 'a. 'a t -> Key.t
@@ -38,6 +39,9 @@ module Uid : sig
 end
 
 val uid : 'a. 'a t -> Uid.t
+
+(** For debugging it is better to call [Key.sexp_of_t] as that'll include all the [name]s
+    of the type parameters of ['a], if any. *)
 val name : 'a. 'a t -> string
 
 module Tuple_l : sig
