@@ -224,10 +224,20 @@ module Make0 (X : Named_intf.S0) = struct
 end
 
 [%%template
-[@@@warning "-incompatible-with-upstream"]
-
 [@@@kind.default.explicit
-  ka = (any, any mod separable, value, value_or_null, float64, immediate64_or_null)]
+  ka
+  = ( any
+    , any mod separable
+    , value
+    , value_or_null
+    , float64
+    , immediate64_or_null
+    , immediate
+    , immediate64
+    , value mod external_
+    , value mod external64
+    , value_or_null mod external_
+    , value_or_null mod external64 )]
 
 module type S1 = sig @@ portable
   type ('a : ka) t : any
@@ -331,7 +341,7 @@ struct
     let data = Hashtbl.find table (key name) in
     match data with
     | None -> None
-    | Some (Data (type b) ((name', data) : b typename * b X.t)) ->
+    | Some (Data (type (b : any)) ((name', data) : b typename * b X.t)) ->
       let Type_equal.T = (same_witness_exn name' name : (b, a) Type_equal.t) in
       Some (data : a X.t)
   ;;

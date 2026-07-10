@@ -1295,7 +1295,7 @@ let typerep_of_tuple5_u a b c d e = Typerep.Tuple_u (Typerep.Tuple_u.T5 (a, b, c
 
 include Name_of
 
-let value_tuple0 = ()
+let value_tuple0 () = ()
 
 let typerep_of_int63, typename_of_int63 =
   let typerep_and_typename_of_int63_repr

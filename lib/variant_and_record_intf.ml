@@ -635,8 +635,12 @@ struct
     val traverse : 'variant ('args : any). ('variant, 'args) t -> 'args X.t
 
     (* used by the ppx to build type witnesses, or by some internal parts of typerep. you
-       should feel bad if you need to use it in some user code *)
-    val internal_use_only : 'a ('b : any). ('a, 'b) Tag_internal.t -> ('a, 'b) t
+       should feel bad if you need to use it in some user code. it's an external so that
+       the compiler can see it's a constant, even in dev builds *)
+    external internal_use_only
+      : 'a ('b : any).
+      ('a, 'b) Tag_internal.t -> ('a, 'b) t
+      = "%identity"
   end = struct
     include Tag_internal
 
@@ -648,7 +652,8 @@ struct
     let create t = t.create
     let tyid t = t.tyid
     let traverse t = t.rep
-    let internal_use_only t = t
+
+    external internal_use_only : 'a -> 'a @@ portable = "%identity"
   end
 
   module Variant_internal = Variant_internal (Tag)
