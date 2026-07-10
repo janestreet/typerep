@@ -325,7 +325,7 @@ val typerep_of_float_u : float Typerep.t
 (* variant with no argument *)
 type tuple0
 
-val value_tuple0 : tuple0
+val value_tuple0 : unit -> tuple0
 
 (* nested *)
 val typerep_of_option : 'a. 'a Typerep.t -> 'a option Typerep.t

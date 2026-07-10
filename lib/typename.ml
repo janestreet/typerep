@@ -212,7 +212,19 @@ end
 
 [%%template
 [@@@kind.default.explicit
-  ka = (any, any mod separable, value, value_or_null, float64, immediate64_or_null)]
+  ka
+  = ( any
+    , any mod separable
+    , value
+    , value_or_null
+    , float64
+    , immediate64_or_null
+    , immediate
+    , immediate64
+    , value mod external_
+    , value mod external64
+    , value_or_null mod external_
+    , value_or_null mod external64 )]
 
 module type S1 = sig
   type 'a t
